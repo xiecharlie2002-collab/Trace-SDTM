@@ -1,0 +1,106 @@
+20:39:20,804 |-INFO in ch.qos.logback.classic.LoggerContext[default] - This is logback-classic version 1.0.9
+20:39:20,804 |-INFO in ch.qos.logback.classic.util.ContextInitializer@7a4ccb53 - No custom configurators were discovered as a service.
+20:39:20,804 |-INFO in ch.qos.logback.classic.util.ContextInitializer@7a4ccb53 - Trying to configure with ch.qos.logback.classic.joran.SerializedModelConfigurator
+20:39:20,804 |-INFO in ch.qos.logback.classic.util.ContextInitializer@7a4ccb53 - Constructed configurator of type class ch.qos.logback.classic.joran.SerializedModelConfigurator
+20:39:20,804 |-INFO in ch.qos.logback.classic.LoggerContext[default] - Could NOT find resource [logback-test.scmo]
+20:39:20,804 |-INFO in ch.qos.logback.classic.LoggerContext[default] - Could NOT find resource [logback.scmo]
+20:39:20,804 |-INFO in ch.qos.logback.classic.util.ContextInitializer@7a4ccb53 - ch.qos.logback.classic.joran.SerializedModelConfigurator.configure() call lasted 0 milliseconds. ExecutionStatus=INVOKE_NEXT_IF_ANY
+20:39:20,804 |-INFO in ch.qos.logback.classic.util.ContextInitializer@7a4ccb53 - Trying to configure with ch.qos.logback.classic.util.DefaultJoranConfigurator
+20:39:20,804 |-INFO in ch.qos.logback.classic.util.ContextInitializer@7a4ccb53 - Constructed configurator of type class ch.qos.logback.classic.util.DefaultJoranConfigurator
+20:39:20,804 |-INFO in ch.qos.logback.classic.LoggerContext[default] - Could NOT find resource [logback-test.xml]
+20:39:20,804 |-INFO in ch.qos.logback.classic.LoggerContext[default] - Found resource [logback.xml] at [jar:file:/D:/Pinnacle/resources/app.asar.unpacked/components/lib/p21-client-1.0.9.jar!/logback.xml]
+20:39:20,811 |-INFO in ch.qos.logback.core.joran.spi.ConfigurationWatchList@309e345f - URL [jar:file:/D:/Pinnacle/resources/app.asar.unpacked/components/lib/p21-client-1.0.9.jar!/logback.xml] is not of type file
+20:39:20,962 |-INFO in ch.qos.logback.core.model.processor.DefineModelHandler - About to instantiate property definer of type [net.pinnacle21.oce.logging.JarNameDefiner]
+20:39:21,009 |-INFO in ch.qos.logback.core.model.processor.DefineModelHandler - Setting property jarName=D:\Pinnacle\resources\app.asar.unpacked\components\lib\p21-client-1.0.9.log in scope LOCAL
+20:39:21,009 |-INFO in ch.qos.logback.core.model.processor.DefineModelHandler - About to instantiate property definer of type [net.pinnacle21.oce.logging.LogLevelDefiner]
+20:39:21,012 |-INFO in ch.qos.logback.core.model.processor.DefineModelHandler - Setting property logLevel=info in scope LOCAL
+20:39:21,012 |-INFO in ch.qos.logback.core.model.processor.DefineModelHandler - About to instantiate property definer of type [net.pinnacle21.oce.logging.LogAppendFlagDefiner]
+20:39:21,012 |-INFO in ch.qos.logback.core.model.processor.DefineModelHandler - Setting property appendFlag=false in scope LOCAL
+20:39:21,014 |-INFO in ch.qos.logback.core.model.processor.AppenderModelHandler - Processing appender named [CLI-APPENDER]
+20:39:21,014 |-INFO in ch.qos.logback.core.model.processor.AppenderModelHandler - About to instantiate appender of type [ch.qos.logback.core.FileAppender]
+20:39:21,022 |-INFO in ch.qos.logback.core.model.processor.ImplicitModelHandler - Assuming default type [ch.qos.logback.classic.encoder.PatternLayoutEncoder] for [encoder] property
+20:39:21,052 |-INFO in ch.qos.logback.core.FileAppender[CLI-APPENDER] - File property is set to [D:\Pinnacle\resources\app.asar.unpacked\components\lib\p21-client-1.0.9.log]
+20:39:21,053 |-INFO in ch.qos.logback.core.model.processor.AppenderModelHandler - Processing appender named [REMOTE]
+20:39:21,053 |-INFO in ch.qos.logback.core.model.processor.AppenderModelHandler - About to instantiate appender of type [net.pinnacle21.oce.services.RemoteAppender]
+20:39:21,085 |-INFO in ch.qos.logback.core.model.processor.AppenderModelHandler - Processing appender named [STDOUT]
+20:39:21,085 |-INFO in ch.qos.logback.core.model.processor.AppenderModelHandler - About to instantiate appender of type [ch.qos.logback.core.ConsoleAppender]
+20:39:21,087 |-WARN in ch.qos.logback.core.ConsoleAppender[STDOUT] - This appender no longer admits a layout as a sub-component, set an encoder instead.
+20:39:21,087 |-WARN in ch.qos.logback.core.ConsoleAppender[STDOUT] - To ensure compatibility, wrapping your layout in LayoutWrappingEncoder.
+20:39:21,087 |-WARN in ch.qos.logback.core.ConsoleAppender[STDOUT] - See also http://logback.qos.ch/codes.html#layoutInsteadOfEncoder for details
+20:39:21,088 |-INFO in ch.qos.logback.classic.model.processor.RootLoggerModelHandler - Setting level of ROOT logger to INFO
+20:39:21,088 |-INFO in ch.qos.logback.core.model.processor.AppenderRefModelHandler - Attaching appender named [REMOTE] to Logger[ROOT]
+20:39:21,088 |-INFO in ch.qos.logback.core.model.processor.AppenderRefModelHandler - Attaching appender named [CLI-APPENDER] to Logger[ROOT]
+20:39:21,088 |-INFO in ch.qos.logback.core.model.processor.AppenderRefModelHandler - Attaching appender named [STDOUT] to Logger[ROOT]
+20:39:21,088 |-INFO in ch.qos.logback.classic.model.processor.LoggerModelHandler - Setting level of logger [net.pinnacle21.validator.data.SourceProvider] to OFF
+20:39:21,088 |-INFO in ch.qos.logback.core.model.processor.DefaultProcessor@56a6d5a6 - End of configuration.
+20:39:21,089 |-INFO in ch.qos.logback.classic.joran.JoranConfigurator@18ce0030 - Registering current configuration as safe fallback point
+20:39:21,089 |-INFO in ch.qos.logback.classic.util.ContextInitializer@7a4ccb53 - ch.qos.logback.classic.util.DefaultJoranConfigurator.configure() call lasted 285 milliseconds. ExecutionStatus=DO_NOT_INVOKE_NEXT_IF_ANY
+
+2026-09-01 20:39:21 [main] WARN  n.pinnacle21.oce.utils.DataSources - 'logs' folder or file is not found.
+SLF4J: A number (1) of logging calls during the initialization phase have been intercepted and are
+SLF4J: now being replayed. These are subject to the filtering rules of the underlying logging system.
+SLF4J: See also https://www.slf4j.org/codes.html#replay
+2026-09-01 20:39:21 [main] INFO  n.pinnacle21.oce.model.input.Input - Use default value 3
+2026-09-01 20:39:22 [RxIoScheduler-3] INFO  net.bootstrap.core.AbstractCommand - command='cmd-aws-healthCheck', runTime=284
+2026-09-01 20:39:22 [RxIoScheduler-3] INFO  net.bootstrap.utils.S3Loader - Services are healthy
+2026-09-01 20:39:22 [main] INFO  n.p.oce.model.input.ParseResults - Loaded parameters |Command line: --standard=SDTM --standard.version=3.4 --engine.version=2508.1 --filter=FDA --config=D:\Pinnacle\resources\app.asar.unpacked\components\lib\configs --source.sdtm=D:/clinical_programming_10weeks/02_project/output/sdtm/xpt --cdisc.ct.sdtm.version=2026-03-27 --report=D:/clinical_programming_10weeks/02_project/output/validation/p21/p21_report.xlsx --report.type=Excel --report.cutoff=100|
+2026-09-01 20:39:22 [main] INFO  n.pinnacle21.oce.utils.DataSources - Folder D:\clinical_programming_10weeks\02_project\output\sdtm\xpt contains XPT files. Setting format to XPT by default
+2026-09-01 20:39:22 [main] INFO  n.p.o.m.r.StandardRequestBuilder - Source format is determined as 'xport'
+2026-09-01 20:39:22 [main] INFO  n.p.o.m.r.StandardRequestBuilder - Determined engine version 2508.1
+2026-09-01 20:39:22 [main] INFO  n.p.o.m.r.ValidatorRequestBuilder - Build validator request
+2026-09-01 20:39:22 [main] INFO  net.pinnacle21.oce.model.FormatType - Cannot determine output format type. Set to default 'excel'
+2026-09-01 20:39:22 [main] INFO  net.pinnacle21.oce.model.FormatType - Failed to find format type for file 'p21_report' and extension 'xlsx'. Trying default 'excel'
+2026-09-01 20:39:22 [main] INFO  net.pinnacle21.oce.model.FormatType - Output format type is determined as 'excel'
+2026-09-01 20:39:22 [main] INFO  net.pinnacle21.oce.model.FormatType - Failed to find format type for file 'p21_report' and extension 'xlsx'. Trying default 'excel'
+2026-09-01 20:39:22 [main] INFO  net.pinnacle21.oce.model.FormatType - Output format type is default as 'excel'
+2026-09-01 20:39:22 [main] INFO  n.p.o.m.r.ValidatorRequestBuilder - No output provided. Report URL will be written to standard output
+2026-09-01 20:39:22 [main] INFO  n.p.o.m.r.StandardRequestBuilder - Source format is determined as 'xport'
+2026-09-01 20:39:22 [main] INFO  n.p.o.m.r.StandardRequestBuilder - Determined engine version 2508.1
+2026-09-01 20:39:22 [main] INFO  n.pinnacle21.oce.utils.DataSources - Found 'lib' folder in parent dir D:\Pinnacle\resources\app.asar.unpacked\components\lib. Will use it
+2026-09-01 20:39:22 [main] INFO  n.p.oce.model.input.ConfigInfo - Config 'D:\Pinnacle\resources\app.asar.unpacked\components\lib\configs' is a directory. Cannot parse for standard, version, and filter
+2026-09-01 20:39:22 [main] INFO  n.pinnacle21.oce.utils.ResourceUtils - Looking for config file in folder=D:\Pinnacle\resources\app.asar.unpacked\components\lib\configs
+2026-09-01 20:39:22 [main] INFO  n.pinnacle21.oce.utils.ResourceUtils - Checking config file=D:\Pinnacle\resources\app.asar.unpacked\components\lib\configs\SDTM-IG 3.4 (FDA).xml
+2026-09-01 20:39:22 [main] INFO  n.p.oce.model.input.ConfigInfo - Config D:\Pinnacle\resources\app.asar.unpacked\components\lib\configs\SDTM-IG 3.4 (FDA).xml does not exist. Looking up in engine versioned folder D:\Pinnacle\resources\app.asar.unpacked\components\lib\configs\2508.1
+2026-09-01 20:39:22 [main] INFO  n.pinnacle21.oce.utils.ResourceUtils - Looking for config file in folder=D:\Pinnacle\resources\app.asar.unpacked\components\lib\configs\2508.1
+2026-09-01 20:39:22 [main] INFO  n.pinnacle21.oce.utils.ResourceUtils - Checking config file=D:\Pinnacle\resources\app.asar.unpacked\components\lib\configs\2508.1\SDTM-IG 3.4 (FDA).xml
+2026-09-01 20:39:22 [main] INFO  n.pinnacle21.oce.utils.ResourceUtils - Found latest version 'D:\Pinnacle\resources\app.asar.unpacked\components\lib\configs\data\CDISC\Define-XML\latest
+Validate D:\clinical_programming_10weeks\02_project\output\sdtm\xpt
+2026-09-01 20:39:22 [main] INFO  n.p.oce.clients.BootstrapCli - Engine Version: 2508.1
+2026-09-01 20:39:25 [main] INFO  n.p.oce.services.ValidationService - Engine folder: D:\Pinnacle\resources\app.asar.unpacked\components\lib
+The ItemDef IT.APDM.ETHNIC contains a reference to the unknown codelist CL.ETHNIC
+The ItemDef IT.DM.ETHNIC contains a reference to the unknown codelist CL.ETHNIC
+The ItemDef IT.APDM.RACE contains a reference to the unknown codelist CL.RACE
+The ItemDef IT.DM.RACE contains a reference to the unknown codelist CL.RACE
+The ItemDef IT.QS.QSTESTCD.QSCAT.EQ.CRQ-SAS FIRST ADMINISTRATION VERSION contains a reference to the unknown codelist CL.CRQ01T
+The ItemDef IT.TS.TSVALCD.TSPARMCD.EQ.CONROLE contains a reference to the unknown codelist CL.CONROL.CD
+The ItemDef IT.TS.TSVALCD.TSPARMCD.EQ.CTAUG contains a reference to the unknown codelist CL.CTAUGRS.CD
+The ItemDef IT.TS.TSVALCD.TSPARMCD.EQ.DOSFRM contains a reference to the unknown codelist CL.FRM.CD
+The ItemDef IT.TS.TSVALCD.TSPARMCD.EQ.EGLEADPR contains a reference to the unknown codelist CL.EGLEAD.CD
+The ItemDef IT.TS.TSVALCD.TSPARMCD.EQ.FDATCHSP contains a reference to the unknown codelist CL.FDATSRS.CD
+The ItemDef IT.TS.TSVALCD.TSPARMCD.EQ.OBSMODEL contains a reference to the unknown codelist CL.OBSSMO.CD
+The ItemDef IT.TS.TSVALCD.TSPARMCD.EQ.OBSTIMP contains a reference to the unknown codelist CL.OBSSTP.CD
+The ItemDef IT.TS.TSVALCD.TSPARMCD.EQ.OBSTSMM contains a reference to the unknown codelist CL.OBSSSM.CD
+The ItemDef IT.TS.TSVALCD.TSPARMCD.EQ.PROTRSK contains a reference to the unknown codelist CL.RSKASMT.CD
+The ItemDef IT.TS.TSVALCD.TSPARMCD.EQ.SDTIGVER contains a reference to the unknown codelist CL.SDTMIGRS.CD
+The ItemDef IT.TS.TSVALCD.TSPARMCD.EQ.SDTMDVER contains a reference to the unknown codelist CL.SDTMDVRS.CD
+The ItemDef IT.TS.TSVALCD.TSPARMCD.EQ.SDTMVER contains a reference to the unknown codelist CL.SDTMVRS.CD
+2026-09-01 20:39:27 [ForkJoinPool.commonPool-worker-1] WARN  n.p.validator.settings.Template - Refusing to register rule DD0101 because rule type Define is invalid
+2026-09-01 20:39:27 [ForkJoinPool.commonPool-worker-1] INFO  n.p.validator.engine.BlockValidator - Beginning validation tasks
+2026-09-01 20:39:27 [pool-2-thread-3] INFO  n.p.validator.engine.BlockValidator - Beginning validation of dataset
+2026-09-01 20:39:27 [pool-2-thread-1] INFO  n.p.validator.engine.BlockValidator - Beginning validation of dataset
+2026-09-01 20:39:27 [pool-2-thread-2] INFO  n.p.validator.engine.BlockValidator - Beginning validation of dataset
+2026-09-01 20:39:27 [pool-2-thread-1] INFO  n.p.validator.engine.BlockValidator - Finished validation of dataset
+2026-09-01 20:39:27 [pool-2-thread-1] INFO  n.p.validator.engine.BlockValidator - Beginning validation of dataset
+2026-09-01 20:39:27 [pool-2-thread-3] INFO  n.p.validator.engine.BlockValidator - Finished validation of dataset
+2026-09-01 20:39:27 [pool-2-thread-3] INFO  n.p.validator.engine.BlockValidator - Beginning validation of dataset
+2026-09-01 20:39:27 [pool-2-thread-1] INFO  n.p.validator.engine.BlockValidator - Finished validation of dataset
+2026-09-01 20:39:27 [pool-2-thread-1] INFO  n.p.validator.engine.BlockValidator - Beginning validation of dataset
+2026-09-01 20:39:27 [pool-2-thread-2] INFO  n.p.validator.engine.BlockValidator - Finished validation of dataset
+2026-09-01 20:39:27 [pool-2-thread-2] INFO  n.p.validator.engine.BlockValidator - Beginning validation of dataset
+2026-09-01 20:39:27 [pool-2-thread-1] INFO  n.p.validator.engine.BlockValidator - Finished validation of dataset
+2026-09-01 20:39:27 [pool-2-thread-3] INFO  n.p.validator.engine.BlockValidator - Finished validation of dataset
+2026-09-01 20:39:27 [pool-2-thread-2] INFO  n.p.validator.engine.BlockValidator - Finished validation of dataset
+2026-09-01 20:39:27 [ForkJoinPool.commonPool-worker-1] INFO  n.p.validator.engine.BlockValidator - Finished validation tasks
+Generating Report->p21_report.xlsx [...........]2026-09-01 20:39:29 [main] INFO  net.bootstrap.api.iq.data.IQData - Start IQ check ...
+2026-09-01 20:39:31 [main] INFO  n.p.oce.services.ExcelService - Open report 'D:\clinical_programming_10weeks\02_project\output\validation\p21\p21_report.xlsx' for read and analysis
+2026-09-01 20:39:31 [main] INFO  n.p.oce.events.CommandLineReporter - Validation: Process completed.

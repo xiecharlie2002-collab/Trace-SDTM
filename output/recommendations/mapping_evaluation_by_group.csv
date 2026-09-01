@@ -1,0 +1,13 @@
+target_domain_gold,difficulty,correct,total
+AE,controlled_term,5,5
+AE,date,2,2
+AE,derived,3,3
+AE,direct,3,3
+DM,controlled_term,3,3
+DM,date,2,2
+DM,derived,2,2
+DM,direct,8,8
+VS,date,1,1
+VS,derived,3,3
+VS,direct,2,2
+VS,transpose,6,6

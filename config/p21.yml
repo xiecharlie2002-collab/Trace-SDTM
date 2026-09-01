@@ -1,0 +1,39 @@
+community:
+  expected_version: 4.2.0.5013
+  executable: 'D:\Pinnacle\Pinnacle 21 Community.exe'
+  java: 'D:\Pinnacle\resources\app.asar.unpacked\components\java64\bin\java.exe'
+  client_jar: 'D:\Pinnacle\resources\app.asar.unpacked\components\lib\p21-client-1.0.9.jar'
+  client_version: 1.0.9
+  config_root: 'D:\Pinnacle\resources\app.asar.unpacked\components\lib\configs'
+validation:
+  engine_version: 2508.1
+  engine_name: FDA 2508.1
+  filter: FDA
+  standard: SDTM
+  standard_version: '3.4'
+  controlled_terminology_version: '2026-03-27'
+  report_cutoff: 100
+  java_initial_memory: 256m
+  java_max_memory: 2048m
+scope:
+  generated_domains:
+    - DM
+    - AE
+    - VS
+  omitted_domains:
+    - TS
+    - TA
+    - TE
+    - TV
+    - TI
+    - SE
+    - SV
+    - DS
+    - EX
+    - CM
+    - LB
+    - MH
+    - SC
+    - QS
+    - RELREC
+  define_xml_in_scope: false

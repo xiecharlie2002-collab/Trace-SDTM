@@ -1,0 +1,1775 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<style>body{background-color:white;}</style>
+
+  <meta charset="utf-8"/>
+  <title>TraceSDTM 项目报告</title>
+  <style>
+    body {font-family: Segoe UI, Arial, sans-serif; margin: 0; color: #172033; background: #f4f7fb;}
+    main {max-width: 1180px; margin: 0 auto; padding: 28px;}
+    h1 {margin-bottom: 4px;} h2 {margin-top: 34px; border-bottom: 2px solid #dce4ef; padding-bottom: 8px;}
+    .subtitle,.muted {color:#637083;} .grid {display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); gap:12px;}
+    .metric {background:white; border:1px solid #dce4ef; border-radius:10px; padding:16px; display:flex; flex-direction:column;}
+    .metric-value {font-size:26px; font-weight:700;} .metric-label {color:#637083; margin-top:4px;}
+    .warning {border-left:5px solid #e7a33e;} .good {border-left:5px solid #2c9b68;}
+    .flow {display:flex; flex-wrap:wrap; gap:8px; align-items:center;} .flow span {background:#173b63;color:white;padding:10px 12px;border-radius:7px;}
+    .flow b {color:#6f7f94;} .callout {background:#fff7df;border-left:5px solid #e7a33e;padding:14px 18px;border-radius:6px;}
+    .table-wrap {overflow:auto; background:white; border:1px solid #dce4ef; border-radius:8px;} table {border-collapse:collapse;width:100%;font-size:13px;}
+    th,td {border-bottom:1px solid #e8edf4;text-align:left;padding:8px;vertical-align:top;} th {background:#eaf0f7;position:sticky;top:0;}
+    code {background:#eaf0f7;padding:2px 5px;border-radius:4px;} pre {background:#172033;color:#edf4ff;padding:14px;border-radius:8px;overflow:auto;}
+  </style>
+</head>
+<html>
+  <body>
+    <main>
+      <h1>TraceSDTM</h1>
+      <p class="subtitle">人工监督、规格驱动、可追溯的 SDTM 自动化生成演示</p>
+      <div class="grid">
+        <div class="metric normal">
+          <span class="metric-value">43</span>
+          <span class="metric-label">原始字段</span>
+        </div>
+        <div class="metric normal">
+          <span class="metric-value">3</span>
+          <span class="metric-label">生成域</span>
+        </div>
+        <div class="metric good">
+          <span class="metric-value">0</span>
+          <span class="metric-label">本地错误</span>
+        </div>
+        <div class="metric good">
+          <span class="metric-value">0</span>
+          <span class="metric-label">Pinnacle 21 域内问题</span>
+        </div>
+        <div class="metric normal">
+          <span class="metric-value">31</span>
+          <span class="metric-label">范围导致问题</span>
+        </div>
+        <div class="metric normal">
+          <span class="metric-value">reference_seed</span>
+          <span class="metric-label">推荐来源</span>
+        </div>
+      </div>
+      <h2>流程架构</h2>
+      <div class="flow">
+        <span>原始数据</span>
+        <b>→</b>
+        <span>字段画像</span>
+        <b>→</b>
+        <span>候选映射</span>
+        <b>→</b>
+        <span>人工审核</span>
+        <b>→</b>
+        <span>确定性构建</span>
+        <b>→</b>
+        <span>双层验证</span>
+        <b>→</b>
+        <span>追溯报告</span>
+      </div>
+      <h2>运行信息</h2>
+      <div class="table-wrap">
+        <table>
+          <tr>
+            <th>item</th>
+            <th>value</th>
+          </tr>
+          <tr>
+            <td>标准</td>
+            <td>SDTMIG 3.4</td>
+          </tr>
+          <tr>
+            <td>模型运行状态</td>
+            <td>reference_seed</td>
+          </tr>
+          <tr>
+            <td>模型来源</td>
+            <td>reference_seed</td>
+          </tr>
+          <tr>
+            <td>Pinnacle 21 引擎</td>
+            <td>FDA 2508.1</td>
+          </tr>
+          <tr>
+            <td>Pinnacle 21 退出状态</td>
+            <td>1</td>
+          </tr>
+          <tr>
+            <td>报告生成时间</td>
+            <td>2026-09-01T12:39:32Z</td>
+          </tr>
+        </table>
+      </div>
+      <div class="callout">当前候选映射来自参考种子，不是实际模型输出。评价指标仅用于验证评价程序，不能写成模型准确率。</div>
+      <h2>数据画像</h2>
+      <div class="table-wrap">
+        <table>
+          <tr>
+            <th>source_domain</th>
+            <th>source_dataset</th>
+            <th>source_variable</th>
+            <th>label</th>
+            <th>data_type</th>
+            <th>example_values</th>
+            <th>missing_rate</th>
+            <th>unique_count</th>
+            <th>form_name</th>
+            <th>record_count</th>
+          </tr>
+          <tr>
+            <td>AE</td>
+            <td>ae_raw</td>
+            <td>AEBODSYS</td>
+            <td>Adverse event body system</td>
+            <td>character</td>
+            <td>Nervous system disorders | Gastrointestinal disorders | General disorders and administration site conditions | Skin a...</td>
+            <td>0</td>
+            <td>4</td>
+            <td>ae_raw</td>
+            <td>8</td>
+          </tr>
+          <tr>
+            <td>AE</td>
+            <td>ae_raw</td>
+            <td>AEDECOD</td>
+            <td>Coded adverse event term</td>
+            <td>character</td>
+            <td>HEADACHE | NAUSEA | APPLICATION SITE ERYTHEMA | DIZZINESS | FATIGUE</td>
+            <td>0</td>
+            <td>7</td>
+            <td>ae_raw</td>
+            <td>8</td>
+          </tr>
+          <tr>
+            <td>AE</td>
+            <td>ae_raw</td>
+            <td>AEOUTCOME</td>
+            <td>Adverse event outcome</td>
+            <td>character</td>
+            <td>Recovered/Resolved | Not Recovered/not Resolved | Recovering/Resolving</td>
+            <td>0</td>
+            <td>3</td>
+            <td>ae_raw</td>
+            <td>8</td>
+          </tr>
+          <tr>
+            <td>AE</td>
+            <td>ae_raw</td>
+            <td>FOLDER</td>
+            <td>FOLDER</td>
+            <td>character</td>
+            <td>AE</td>
+            <td>0</td>
+            <td>1</td>
+            <td>ae_raw</td>
+            <td>8</td>
+          </tr>
+          <tr>
+            <td>AE</td>
+            <td>ae_raw</td>
+            <td>FOLDERL</td>
+            <td>FOLDERL</td>
+            <td>character</td>
+            <td>Adverse Events</td>
+            <td>0</td>
+            <td>1</td>
+            <td>ae_raw</td>
+            <td>8</td>
+          </tr>
+          <tr>
+            <td>AE</td>
+            <td>ae_raw</td>
+            <td>IT.AEENDAT</td>
+            <td>Adverse event end date</td>
+            <td>character</td>
+            <td>01/07/2025 | 01/08/2025 | 01/15/2025 | 01/09/2025 | 01/13/2025</td>
+            <td>0.25</td>
+            <td>5</td>
+            <td>ae_raw</td>
+            <td>8</td>
+          </tr>
+          <tr>
+            <td>AE</td>
+            <td>ae_raw</td>
+            <td>IT.AEREL</td>
+            <td>Adverse event relationship</td>
+            <td>character</td>
+            <td>Possibly Related | Probably Related | Unlikely Related | Not Related</td>
+            <td>0</td>
+            <td>4</td>
+            <td>ae_raw</td>
+            <td>8</td>
+          </tr>
+          <tr>
+            <td>AE</td>
+            <td>ae_raw</td>
+            <td>IT.AESER</td>
+            <td>Serious event indicator</td>
+            <td>character</td>
+            <td>No | Yes</td>
+            <td>0</td>
+            <td>2</td>
+            <td>ae_raw</td>
+            <td>8</td>
+          </tr>
+          <tr>
+            <td>AE</td>
+            <td>ae_raw</td>
+            <td>IT.AESEV</td>
+            <td>Adverse event severity</td>
+            <td>character</td>
+            <td>Mild Adverse Event | Moderate Adverse Event | Severe Adverse Event</td>
+            <td>0</td>
+            <td>3</td>
+            <td>ae_raw</td>
+            <td>8</td>
+          </tr>
+          <tr>
+            <td>AE</td>
+            <td>ae_raw</td>
+            <td>IT.AESHOSP</td>
+            <td>Hospitalization seriousness criterion</td>
+            <td>character</td>
+            <td>No | Yes</td>
+            <td>0</td>
+            <td>2</td>
+            <td>ae_raw</td>
+            <td>8</td>
+          </tr>
+          <tr>
+            <td>AE</td>
+            <td>ae_raw</td>
+            <td>IT.AESTDAT</td>
+            <td>Adverse event start date</td>
+            <td>character</td>
+            <td>01/06/2025 | 01/09/2025 | 01/08/2025 | 01/10/2025 | 01/11/2025</td>
+            <td>0</td>
+            <td>6</td>
+            <td>ae_raw</td>
+            <td>8</td>
+          </tr>
+          <tr>
+            <td>AE</td>
+            <td>ae_raw</td>
+            <td>IT.AETERM</td>
+            <td>Reported adverse event term</td>
+            <td>character</td>
+            <td>Headache | Nausea | Application site erythema | Dizziness | Fatigue</td>
+            <td>0</td>
+            <td>7</td>
+            <td>ae_raw</td>
+            <td>8</td>
+          </tr>
+          <tr>
+            <td>AE</td>
+            <td>ae_raw</td>
+            <td>PATNUM</td>
+            <td>Subject identifier</td>
+            <td>character</td>
+            <td>701-1001 | 701-1002 | 701-1003 | 702-1001 | 702-1002</td>
+            <td>0</td>
+            <td>6</td>
+            <td>ae_raw</td>
+            <td>8</td>
+          </tr>
+          <tr>
+            <td>AE</td>
+            <td>ae_raw</td>
+            <td>STUDY</td>
+            <td>Study identifier</td>
+            <td>character</td>
+            <td>TRACE001</td>
+            <td>0</td>
+            <td>1</td>
+            <td>ae_raw</td>
+            <td>8</td>
+          </tr>
+          <tr>
+            <td>DM</td>
+            <td>dm_raw</td>
+            <td>ACTUAL_ARM</td>
+            <td>Actual treatment arm</td>
+            <td>character</td>
+            <td>Placebo | Trace Drug 10 mg</td>
+            <td>0</td>
+            <td>2</td>
+            <td>dm_raw</td>
+            <td>6</td>
+          </tr>
+          <tr>
+            <td>DM</td>
+            <td>dm_raw</td>
+            <td>ACTUAL_ARMCD</td>
+            <td>Actual treatment arm code</td>
+            <td>character</td>
+            <td>PBO | TRT10</td>
+            <td>0</td>
+            <td>2</td>
+            <td>dm_raw</td>
+            <td>6</td>
+          </tr>
+          <tr>
+            <td>DM</td>
+            <td>dm_raw</td>
+            <td>COL_DT</td>
+            <td>COL DT</td>
+            <td>character</td>
+            <td>12/20/2024 | 12/21/2024 | 12/22/2024 | 12/23/2024 | 12/24/2024</td>
+            <td>0</td>
+            <td>6</td>
+            <td>dm_raw</td>
+            <td>6</td>
+          </tr>
+          <tr>
+            <td>DM</td>
+            <td>dm_raw</td>
+            <td>COUNTRY</td>
+            <td>Country</td>
+            <td>character</td>
+            <td>USA | CAN | GBR</td>
+            <td>0</td>
+            <td>3</td>
+            <td>dm_raw</td>
+            <td>6</td>
+          </tr>
+          <tr>
+            <td>DM</td>
+            <td>dm_raw</td>
+            <td>FIRST_DOSE_DT</td>
+            <td>First dose date</td>
+            <td>character</td>
+            <td>01/05/2025 | 01/06/2025 | 01/07/2025 | 01/08/2025</td>
+            <td>0</td>
+            <td>4</td>
+            <td>dm_raw</td>
+            <td>6</td>
+          </tr>
+          <tr>
+            <td>DM</td>
+            <td>dm_raw</td>
+            <td>IC_DT</td>
+            <td>Informed consent date</td>
+            <td>character</td>
+            <td>12/20/2024 | 12/21/2024 | 12/22/2024 | 12/23/2024 | 12/24/2024</td>
+            <td>0</td>
+            <td>6</td>
+            <td>dm_raw</td>
+            <td>6</td>
+          </tr>
+          <tr>
+            <td>DM</td>
+            <td>dm_raw</td>
+            <td>IT.AGE</td>
+            <td>Age</td>
+            <td>numeric</td>
+            <td>42 | 57 | 35 | 66 | 49</td>
+            <td>0</td>
+            <td>6</td>
+            <td>dm_raw</td>
+            <td>6</td>
+          </tr>
+          <tr>
+            <td>DM</td>
+            <td>dm_raw</td>
+            <td>IT.ETHNIC</td>
+            <td>Ethnicity</td>
+            <td>character</td>
+            <td>Not Hispanic or Latino | Hispanic or Latino | Unknown</td>
+            <td>0</td>
+            <td>3</td>
+            <td>dm_raw</td>
+            <td>6</td>
+          </tr>
+          <tr>
+            <td>DM</td>
+            <td>dm_raw</td>
+            <td>IT.RACE</td>
+            <td>Race</td>
+            <td>character</td>
+            <td>White | Asian | Black or African American | Multiple | American Indian or Alaska Native</td>
+            <td>0</td>
+            <td>5</td>
+            <td>dm_raw</td>
+            <td>6</td>
+          </tr>
+          <tr>
+            <td>DM</td>
+            <td>dm_raw</td>
+            <td>IT.SEX</td>
+            <td>Sex</td>
+            <td>character</td>
+            <td>Female | Male</td>
+            <td>0</td>
+            <td>2</td>
+            <td>dm_raw</td>
+            <td>6</td>
+          </tr>
+          <tr>
+            <td>DM</td>
+            <td>dm_raw</td>
+            <td>PATNUM</td>
+            <td>Subject identifier</td>
+            <td>character</td>
+            <td>701-1001 | 701-1002 | 701-1003 | 702-1001 | 702-1002</td>
+            <td>0</td>
+            <td>6</td>
+            <td>dm_raw</td>
+            <td>6</td>
+          </tr>
+          <tr>
+            <td>DM</td>
+            <td>dm_raw</td>
+            <td>PLANNED_ARM</td>
+            <td>Planned treatment arm</td>
+            <td>character</td>
+            <td>Placebo | Trace Drug 10 mg</td>
+            <td>0</td>
+            <td>2</td>
+            <td>dm_raw</td>
+            <td>6</td>
+          </tr>
+          <tr>
+            <td>DM</td>
+            <td>dm_raw</td>
+            <td>PLANNED_ARMCD</td>
+            <td>Planned treatment arm code</td>
+            <td>character</td>
+            <td>PBO | TRT10</td>
+            <td>0</td>
+            <td>2</td>
+            <td>dm_raw</td>
+            <td>6</td>
+          </tr>
+          <tr>
+            <td>DM</td>
+            <td>dm_raw</td>
+            <td>STUDY</td>
+            <td>Study identifier</td>
+            <td>character</td>
+            <td>TRACE001</td>
+            <td>0</td>
+            <td>1</td>
+            <td>dm_raw</td>
+            <td>6</td>
+          </tr>
+          <tr>
+            <td>VS</td>
+            <td>vs_raw</td>
+            <td>DIA_BP</td>
+            <td>Diastolic blood pressure</td>
+            <td>numeric</td>
+            <td>78 | 82 | 74 | 86 | 80</td>
+            <td>0</td>
+            <td>8</td>
+            <td>VS</td>
+            <td>12</td>
+          </tr>
+          <tr>
+            <td>VS</td>
+            <td>vs_raw</td>
+            <td>FORM</td>
+            <td>FORM</td>
+            <td>character</td>
+            <td>VS</td>
+            <td>0</td>
+            <td>1</td>
+            <td>VS</td>
+            <td>12</td>
+          </tr>
+        </table>
+      </div>
+      <p class="muted">仅显示前 30 行，共 43 行。</p>
+      <h2>映射评价</h2>
+      <div class="table-wrap">
+        <table>
+          <tr>
+            <th>metric</th>
+            <th>value</th>
+          </tr>
+          <tr>
+            <td>status</td>
+            <td>reference_seed</td>
+          </tr>
+          <tr>
+            <td>provenance</td>
+            <td>reference_seed</td>
+          </tr>
+          <tr>
+            <td>evaluated_fields</td>
+            <td>40</td>
+          </tr>
+          <tr>
+            <td>covered_fields</td>
+            <td>40</td>
+          </tr>
+          <tr>
+            <td>top1_correct</td>
+            <td>40</td>
+          </tr>
+          <tr>
+            <td>top1_denominator</td>
+            <td>40</td>
+          </tr>
+          <tr>
+            <td>top3_hit</td>
+            <td>40</td>
+          </tr>
+          <tr>
+            <td>top3_denominator</td>
+            <td>40</td>
+          </tr>
+          <tr>
+            <td>accepted</td>
+            <td>40</td>
+          </tr>
+          <tr>
+            <td>modified</td>
+            <td>0</td>
+          </tr>
+          <tr>
+            <td>rejected</td>
+            <td>0</td>
+          </tr>
+          <tr>
+            <td>needs_information</td>
+            <td>0</td>
+          </tr>
+          <tr>
+            <td>disclaimer</td>
+            <td>参考种子不是实际模型结果，指标仅验证评价程序。</td>
+          </tr>
+        </table>
+      </div>
+      <h2>生成数据集</h2>
+      <div class="table-wrap">
+        <table>
+          <tr>
+            <th>domain</th>
+            <th>records</th>
+            <th>variables</th>
+            <th>data_sha256</th>
+            <th>csv_sha256</th>
+            <th>xpt_sha256</th>
+            <th>csv_path</th>
+            <th>xpt_path</th>
+          </tr>
+          <tr>
+            <td>DM</td>
+            <td>6</td>
+            <td>17</td>
+            <td>c4b87f9358e5806f2fb42dae998fbb56e135ab65162a36fc0353c3aff93d7ac8</td>
+            <td>e6c114315913952065776bae534e2fec222290131d81a22808e8a79e9ee2a4c3</td>
+            <td>2fd62dd97f23678af41f2b54ae14dc991d7c89c1c96405a17ccda9f965e4170d</td>
+            <td>D:/clinical_programming_10weeks/02_project/output/sdtm/csv/dm.csv</td>
+            <td>D:/clinical_programming_10weeks/02_project/output/sdtm/xpt/dm.xpt</td>
+          </tr>
+          <tr>
+            <td>AE</td>
+            <td>8</td>
+            <td>17</td>
+            <td>48f7fcf1922a535cf7f08a6fcde80988e0a1f475439ed71a4c1ae9f9bb9571e5</td>
+            <td>9dfc9ea007ea60fdd70ae0bb78953fb9f70a0e33f02b2123266672249ec00fe1</td>
+            <td>8f8500227cba675a0bee2847386863997427bfb1c58da81bca4d3c003c79ee2f</td>
+            <td>D:/clinical_programming_10weeks/02_project/output/sdtm/csv/ae.csv</td>
+            <td>D:/clinical_programming_10weeks/02_project/output/sdtm/xpt/ae.xpt</td>
+          </tr>
+          <tr>
+            <td>VS</td>
+            <td>60</td>
+            <td>16</td>
+            <td>00807b692805d2def04f834f806feda908f4b4329d4303ed89adc46d44533d3d</td>
+            <td>723d02fca73bd95ef05bfe71292fc70708c136a599ad23835f7019a37a63aceb</td>
+            <td>ebbdab3d68530daceba75e5108af4d600501305857d3552d521ce5d61e93df06</td>
+            <td>D:/clinical_programming_10weeks/02_project/output/sdtm/csv/vs.csv</td>
+            <td>D:/clinical_programming_10weeks/02_project/output/sdtm/xpt/vs.xpt</td>
+          </tr>
+        </table>
+      </div>
+      <h2>本地检查</h2>
+      <p class="muted">无记录</p>
+      <h2>Pinnacle 21 Community</h2>
+      <p>原始问题完整保留；缺少 Define-XML 和未覆盖域的问题标记为最小项目范围导致，不计作合规通过。</p>
+      <div class="table-wrap">
+        <table>
+          <tr>
+            <th>rule_id</th>
+            <th>severity</th>
+            <th>domain</th>
+            <th>variable</th>
+            <th>record_key</th>
+            <th>message</th>
+            <th>actual_value</th>
+            <th>mapping_id</th>
+            <th>run_id</th>
+            <th>validator</th>
+            <th>issue_class</th>
+            <th>severity_raw</th>
+            <th>p21_record</th>
+            <th>p21_count</th>
+          </tr>
+          <tr>
+            <td>DD0101</td>
+            <td>Reject</td>
+            <td>GLOBAL</td>
+            <td></td>
+            <td>GLOBAL</td>
+            <td>Missing define.xml file</td>
+            <td></td>
+            <td></td>
+            <td>p21_import_20260901_203932_14696</td>
+            <td>pinnacle21_community</td>
+            <td>expected_mvp_scope</td>
+            <td>Reject</td>
+            <td></td>
+            <td></td>
+          </tr>
+          <tr>
+            <td>SD1107</td>
+            <td>UNSPECIFIED</td>
+            <td>GLOBAL</td>
+            <td>DOMAIN</td>
+            <td>GLOBAL</td>
+            <td>Missing LB dataset</td>
+            <td>LB</td>
+            <td></td>
+            <td>p21_import_20260901_203932_14696</td>
+            <td>pinnacle21_community</td>
+            <td>expected_mvp_scope</td>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+          <tr>
+            <td>SD1109</td>
+            <td>UNSPECIFIED</td>
+            <td>GLOBAL</td>
+            <td>DOMAIN</td>
+            <td>GLOBAL</td>
+            <td>Missing EX dataset</td>
+            <td>EX</td>
+            <td></td>
+            <td>p21_import_20260901_203932_14696</td>
+            <td>pinnacle21_community</td>
+            <td>expected_mvp_scope</td>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+          <tr>
+            <td>SD1110</td>
+            <td>UNSPECIFIED</td>
+            <td>GLOBAL</td>
+            <td>DOMAIN</td>
+            <td>GLOBAL</td>
+            <td>Missing DS dataset</td>
+            <td>DS</td>
+            <td></td>
+            <td>p21_import_20260901_203932_14696</td>
+            <td>pinnacle21_community</td>
+            <td>expected_mvp_scope</td>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+          <tr>
+            <td>SD1111</td>
+            <td>UNSPECIFIED</td>
+            <td>GLOBAL</td>
+            <td>DOMAIN</td>
+            <td>GLOBAL</td>
+            <td>Missing SE dataset</td>
+            <td>SE</td>
+            <td></td>
+            <td>p21_import_20260901_203932_14696</td>
+            <td>pinnacle21_community</td>
+            <td>expected_mvp_scope</td>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+          <tr>
+            <td>SD1112</td>
+            <td>UNSPECIFIED</td>
+            <td>GLOBAL</td>
+            <td>DOMAIN</td>
+            <td>GLOBAL</td>
+            <td>Missing TA dataset</td>
+            <td>TA</td>
+            <td></td>
+            <td>p21_import_20260901_203932_14696</td>
+            <td>pinnacle21_community</td>
+            <td>expected_mvp_scope</td>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+          <tr>
+            <td>SD1113</td>
+            <td>UNSPECIFIED</td>
+            <td>GLOBAL</td>
+            <td>DOMAIN</td>
+            <td>GLOBAL</td>
+            <td>Missing TE dataset</td>
+            <td>TE</td>
+            <td></td>
+            <td>p21_import_20260901_203932_14696</td>
+            <td>pinnacle21_community</td>
+            <td>expected_mvp_scope</td>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+          <tr>
+            <td>SD1115</td>
+            <td>Reject</td>
+            <td>GLOBAL</td>
+            <td>DOMAIN</td>
+            <td>GLOBAL</td>
+            <td>Missing TS dataset</td>
+            <td>TS</td>
+            <td></td>
+            <td>p21_import_20260901_203932_14696</td>
+            <td>pinnacle21_community</td>
+            <td>expected_mvp_scope</td>
+            <td>Reject</td>
+            <td></td>
+            <td></td>
+          </tr>
+          <tr>
+            <td>SD1321</td>
+            <td>UNSPECIFIED</td>
+            <td>GLOBAL</td>
+            <td>DOMAIN</td>
+            <td>GLOBAL</td>
+            <td>No Treatment Emergent info for Adverse Event (missing SUPPAE)</td>
+            <td>SUPPAE</td>
+            <td></td>
+            <td>p21_import_20260901_203932_14696</td>
+            <td>pinnacle21_community</td>
+            <td>expected_mvp_scope</td>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+          <tr>
+            <td>SD0057</td>
+            <td>UNSPECIFIED</td>
+            <td>AE</td>
+            <td>VARIABLE</td>
+            <td>AE</td>
+            <td>SDTM Expected variable AEACN not found</td>
+            <td>AEACN</td>
+            <td></td>
+            <td>p21_import_20260901_203932_14696</td>
+            <td>pinnacle21_community</td>
+            <td>expected_mvp_scope</td>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+          <tr>
+            <td>SD0057</td>
+            <td>UNSPECIFIED</td>
+            <td>AE</td>
+            <td>VARIABLE</td>
+            <td>AE</td>
+            <td>SDTM Expected variable AEBDSYCD not found</td>
+            <td>AEBDSYCD</td>
+            <td></td>
+            <td>p21_import_20260901_203932_14696</td>
+            <td>pinnacle21_community</td>
+            <td>expected_mvp_scope</td>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+          <tr>
+            <td>SD0057</td>
+            <td>UNSPECIFIED</td>
+            <td>AE</td>
+            <td>VARIABLE</td>
+            <td>AE</td>
+            <td>SDTM Expected variable AEHLGT not found</td>
+            <td>AEHLGT</td>
+            <td></td>
+            <td>p21_import_20260901_203932_14696</td>
+            <td>pinnacle21_community</td>
+            <td>expected_mvp_scope</td>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+          <tr>
+            <td>SD0057</td>
+            <td>UNSPECIFIED</td>
+            <td>AE</td>
+            <td>VARIABLE</td>
+            <td>AE</td>
+            <td>SDTM Expected variable AEHLGTCD not found</td>
+            <td>AEHLGTCD</td>
+            <td></td>
+            <td>p21_import_20260901_203932_14696</td>
+            <td>pinnacle21_community</td>
+            <td>expected_mvp_scope</td>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+          <tr>
+            <td>SD0057</td>
+            <td>UNSPECIFIED</td>
+            <td>AE</td>
+            <td>VARIABLE</td>
+            <td>AE</td>
+            <td>SDTM Expected variable AEHLT not found</td>
+            <td>AEHLT</td>
+            <td></td>
+            <td>p21_import_20260901_203932_14696</td>
+            <td>pinnacle21_community</td>
+            <td>expected_mvp_scope</td>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+          <tr>
+            <td>SD0057</td>
+            <td>UNSPECIFIED</td>
+            <td>AE</td>
+            <td>VARIABLE</td>
+            <td>AE</td>
+            <td>SDTM Expected variable AEHLTCD not found</td>
+            <td>AEHLTCD</td>
+            <td></td>
+            <td>p21_import_20260901_203932_14696</td>
+            <td>pinnacle21_community</td>
+            <td>expected_mvp_scope</td>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+          <tr>
+            <td>SD0057</td>
+            <td>UNSPECIFIED</td>
+            <td>AE</td>
+            <td>VARIABLE</td>
+            <td>AE</td>
+            <td>SDTM Expected variable AELLT not found</td>
+            <td>AELLT</td>
+            <td></td>
+            <td>p21_import_20260901_203932_14696</td>
+            <td>pinnacle21_community</td>
+            <td>expected_mvp_scope</td>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+          <tr>
+            <td>SD0057</td>
+            <td>UNSPECIFIED</td>
+            <td>AE</td>
+            <td>VARIABLE</td>
+            <td>AE</td>
+            <td>SDTM Expected variable AELLTCD not found</td>
+            <td>AELLTCD</td>
+            <td></td>
+            <td>p21_import_20260901_203932_14696</td>
+            <td>pinnacle21_community</td>
+            <td>expected_mvp_scope</td>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+          <tr>
+            <td>SD0057</td>
+            <td>UNSPECIFIED</td>
+            <td>AE</td>
+            <td>VARIABLE</td>
+            <td>AE</td>
+            <td>SDTM Expected variable AEPTCD not found</td>
+            <td>AEPTCD</td>
+            <td></td>
+            <td>p21_import_20260901_203932_14696</td>
+            <td>pinnacle21_community</td>
+            <td>expected_mvp_scope</td>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+          <tr>
+            <td>SD0057</td>
+            <td>UNSPECIFIED</td>
+            <td>AE</td>
+            <td>VARIABLE</td>
+            <td>AE</td>
+            <td>SDTM Expected variable AESOC not found</td>
+            <td>AESOC</td>
+            <td></td>
+            <td>p21_import_20260901_203932_14696</td>
+            <td>pinnacle21_community</td>
+            <td>expected_mvp_scope</td>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+          <tr>
+            <td>SD0057</td>
+            <td>UNSPECIFIED</td>
+            <td>AE</td>
+            <td>VARIABLE</td>
+            <td>AE</td>
+            <td>SDTM Expected variable AESOCCD not found</td>
+            <td>AESOCCD</td>
+            <td></td>
+            <td>p21_import_20260901_203932_14696</td>
+            <td>pinnacle21_community</td>
+            <td>expected_mvp_scope</td>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+          <tr>
+            <td>SD1077</td>
+            <td>UNSPECIFIED</td>
+            <td>AE</td>
+            <td>VARIABLE, DATASET</td>
+            <td>AE</td>
+            <td>Regulatory Expected variable EPOCH not found</td>
+            <td>EPOCH, AE</td>
+            <td></td>
+            <td>p21_import_20260901_203932_14696</td>
+            <td>pinnacle21_community</td>
+            <td>expected_mvp_scope</td>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+          <tr>
+            <td>SD0057</td>
+            <td>UNSPECIFIED</td>
+            <td>DM</td>
+            <td>VARIABLE</td>
+            <td>DM</td>
+            <td>SDTM Expected variable ACTARMUD not found</td>
+            <td>ACTARMUD</td>
+            <td></td>
+            <td>p21_import_20260901_203932_14696</td>
+            <td>pinnacle21_community</td>
+            <td>expected_mvp_scope</td>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+          <tr>
+            <td>SD0057</td>
+            <td>UNSPECIFIED</td>
+            <td>DM</td>
+            <td>VARIABLE</td>
+            <td>DM</td>
+            <td>SDTM Expected variable ARMNRS not found</td>
+            <td>ARMNRS</td>
+            <td></td>
+            <td>p21_import_20260901_203932_14696</td>
+            <td>pinnacle21_community</td>
+            <td>expected_mvp_scope</td>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+          <tr>
+            <td>SD0057</td>
+            <td>UNSPECIFIED</td>
+            <td>DM</td>
+            <td>VARIABLE</td>
+            <td>DM</td>
+            <td>SDTM Expected variable DTHDTC not found</td>
+            <td>DTHDTC</td>
+            <td></td>
+            <td>p21_import_20260901_203932_14696</td>
+            <td>pinnacle21_community</td>
+            <td>expected_mvp_scope</td>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+          <tr>
+            <td>SD0057</td>
+            <td>UNSPECIFIED</td>
+            <td>DM</td>
+            <td>VARIABLE</td>
+            <td>DM</td>
+            <td>SDTM Expected variable DTHFL not found</td>
+            <td>DTHFL</td>
+            <td></td>
+            <td>p21_import_20260901_203932_14696</td>
+            <td>pinnacle21_community</td>
+            <td>expected_mvp_scope</td>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+          <tr>
+            <td>SD0057</td>
+            <td>UNSPECIFIED</td>
+            <td>DM</td>
+            <td>VARIABLE</td>
+            <td>DM</td>
+            <td>SDTM Expected variable RFENDTC not found</td>
+            <td>RFENDTC</td>
+            <td></td>
+            <td>p21_import_20260901_203932_14696</td>
+            <td>pinnacle21_community</td>
+            <td>expected_mvp_scope</td>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+          <tr>
+            <td>SD0057</td>
+            <td>UNSPECIFIED</td>
+            <td>DM</td>
+            <td>VARIABLE</td>
+            <td>DM</td>
+            <td>SDTM Expected variable RFPENDTC not found</td>
+            <td>RFPENDTC</td>
+            <td></td>
+            <td>p21_import_20260901_203932_14696</td>
+            <td>pinnacle21_community</td>
+            <td>expected_mvp_scope</td>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+          <tr>
+            <td>SD0057</td>
+            <td>UNSPECIFIED</td>
+            <td>DM</td>
+            <td>VARIABLE</td>
+            <td>DM</td>
+            <td>SDTM Expected variable RFXENDTC not found</td>
+            <td>RFXENDTC</td>
+            <td></td>
+            <td>p21_import_20260901_203932_14696</td>
+            <td>pinnacle21_community</td>
+            <td>expected_mvp_scope</td>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+          <tr>
+            <td>SD0057</td>
+            <td>UNSPECIFIED</td>
+            <td>DM</td>
+            <td>VARIABLE</td>
+            <td>DM</td>
+            <td>SDTM Expected variable RFXSTDTC not found</td>
+            <td>RFXSTDTC</td>
+            <td></td>
+            <td>p21_import_20260901_203932_14696</td>
+            <td>pinnacle21_community</td>
+            <td>expected_mvp_scope</td>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+          <tr>
+            <td>SD0057</td>
+            <td>UNSPECIFIED</td>
+            <td>VS</td>
+            <td>VARIABLE</td>
+            <td>VS</td>
+            <td>SDTM Expected variable VSLOBXFL not found</td>
+            <td>VSLOBXFL</td>
+            <td></td>
+            <td>p21_import_20260901_203932_14696</td>
+            <td>pinnacle21_community</td>
+            <td>expected_mvp_scope</td>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+          <tr>
+            <td>SD1077</td>
+            <td>UNSPECIFIED</td>
+            <td>VS</td>
+            <td>VARIABLE, DATASET</td>
+            <td>VS</td>
+            <td>Regulatory Expected variable EPOCH not found</td>
+            <td>EPOCH, VS</td>
+            <td></td>
+            <td>p21_import_20260901_203932_14696</td>
+            <td>pinnacle21_community</td>
+            <td>expected_mvp_scope</td>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+        </table>
+      </div>
+      <h2>字段追溯示例</h2>
+      <div class="table-wrap">
+        <table>
+          <tr>
+            <th>mapping_id</th>
+            <th>target_domain</th>
+            <th>target_variable</th>
+            <th>target_value</th>
+            <th>source_dataset</th>
+            <th>source_variables</th>
+            <th>transform_id</th>
+            <th>transform_parameters</th>
+            <th>records_created</th>
+            <th>reviewer</th>
+            <th>approved_at</th>
+          </tr>
+          <tr>
+            <td>AE001</td>
+            <td>AE</td>
+            <td>STUDYID</td>
+            <td></td>
+            <td>ae_raw</td>
+            <td>STUDY</td>
+            <td>direct_map</td>
+            <td>[]</td>
+            <td>8</td>
+            <td>portfolio_demo_reviewer</td>
+            <td>2026-09-01 12:39:14</td>
+          </tr>
+          <tr>
+            <td>AE002</td>
+            <td>AE</td>
+            <td>DOMAIN</td>
+            <td></td>
+            <td>ae_raw</td>
+            <td></td>
+            <td>assign_constant</td>
+            <td>{"value":"AE"}</td>
+            <td>8</td>
+            <td>portfolio_demo_reviewer</td>
+            <td>2026-09-01 12:39:14</td>
+          </tr>
+          <tr>
+            <td>AE003</td>
+            <td>AE</td>
+            <td>USUBJID</td>
+            <td></td>
+            <td>ae_raw</td>
+            <td>STUDY | PATNUM</td>
+            <td>derive_usubjid</td>
+            <td>{"separator":"-"}</td>
+            <td>8</td>
+            <td>portfolio_demo_reviewer</td>
+            <td>2026-09-01 12:39:14</td>
+          </tr>
+          <tr>
+            <td>AE004</td>
+            <td>AE</td>
+            <td>AESEQ</td>
+            <td></td>
+            <td>ae_raw</td>
+            <td></td>
+            <td>derive_sequence</td>
+            <td>{"record_variables":["STUDYID","USUBJID","AESTDTC","AETERM","AEDECOD",".SOURCE_ROW"]}</td>
+            <td>8</td>
+            <td>portfolio_demo_reviewer</td>
+            <td>2026-09-01 12:39:14</td>
+          </tr>
+          <tr>
+            <td>AE005</td>
+            <td>AE</td>
+            <td>AETERM</td>
+            <td></td>
+            <td>ae_raw</td>
+            <td>IT.AETERM</td>
+            <td>direct_map</td>
+            <td>[]</td>
+            <td>8</td>
+            <td>portfolio_demo_reviewer</td>
+            <td>2026-09-01 12:39:14</td>
+          </tr>
+          <tr>
+            <td>AE006</td>
+            <td>AE</td>
+            <td>AEDECOD</td>
+            <td></td>
+            <td>ae_raw</td>
+            <td>AEDECOD</td>
+            <td>direct_map</td>
+            <td>[]</td>
+            <td>8</td>
+            <td>portfolio_demo_reviewer</td>
+            <td>2026-09-01 12:39:14</td>
+          </tr>
+          <tr>
+            <td>AE007</td>
+            <td>AE</td>
+            <td>AEBODSYS</td>
+            <td></td>
+            <td>ae_raw</td>
+            <td>AEBODSYS</td>
+            <td>custom_transform</td>
+            <td>{"name":"uppercase"}</td>
+            <td>8</td>
+            <td>portfolio_demo_reviewer</td>
+            <td>2026-09-01 12:39:14</td>
+          </tr>
+          <tr>
+            <td>AE008</td>
+            <td>AE</td>
+            <td>AESEV</td>
+            <td></td>
+            <td>ae_raw</td>
+            <td>IT.AESEV</td>
+            <td>map_controlled_term</td>
+            <td>{"terms":{"Mild Adverse Event":"MILD","Moderate Adverse Event":"MODERATE","Severe Adverse Event":"SEVERE"}}</td>
+            <td>8</td>
+            <td>portfolio_demo_reviewer</td>
+            <td>2026-09-01 12:39:14</td>
+          </tr>
+          <tr>
+            <td>AE009</td>
+            <td>AE</td>
+            <td>AESER</td>
+            <td></td>
+            <td>ae_raw</td>
+            <td>IT.AESER</td>
+            <td>map_controlled_term</td>
+            <td>{"terms":{"Yes":"Y","No":"N"}}</td>
+            <td>8</td>
+            <td>portfolio_demo_reviewer</td>
+            <td>2026-09-01 12:39:14</td>
+          </tr>
+          <tr>
+            <td>AE010</td>
+            <td>AE</td>
+            <td>AEREL</td>
+            <td></td>
+            <td>ae_raw</td>
+            <td>IT.AEREL</td>
+            <td>map_controlled_term</td>
+            <td>{"terms":{"Probably Related":"PROBABLE","Possibly Related":"POSSIBLE","Unlikely Related":"UNLIKELY","Not Related":"NOT RELATED"}}</td>
+            <td>8</td>
+            <td>portfolio_demo_reviewer</td>
+            <td>2026-09-01 12:39:14</td>
+          </tr>
+          <tr>
+            <td>AE011</td>
+            <td>AE</td>
+            <td>AEOUT</td>
+            <td></td>
+            <td>ae_raw</td>
+            <td>AEOUTCOME</td>
+            <td>map_controlled_term</td>
+            <td>{"terms":{"Recovered/Resolved":"RECOVERED/RESOLVED","Recovering/Resolving":"RECOVERING/RESOLVING","Not Recovered/not Resolved":"NOT RECOVERED/NOT RESOLVED","Fatal":"FATAL","Unknown":"UNKNOWN"}}</td>
+            <td>8</td>
+            <td>portfolio_demo_reviewer</td>
+            <td>2026-09-01 12:39:14</td>
+          </tr>
+          <tr>
+            <td>AE012</td>
+            <td>AE</td>
+            <td>AESTDTC</td>
+            <td></td>
+            <td>ae_raw</td>
+            <td>IT.AESTDAT</td>
+            <td>to_iso8601_date</td>
+            <td>{"formats":["m/d/y","dd-mmm-yyyy","y-m-d"]}</td>
+            <td>8</td>
+            <td>portfolio_demo_reviewer</td>
+            <td>2026-09-01 12:39:14</td>
+          </tr>
+          <tr>
+            <td>AE013</td>
+            <td>AE</td>
+            <td>AEENDTC</td>
+            <td></td>
+            <td>ae_raw</td>
+            <td>IT.AEENDAT</td>
+            <td>to_iso8601_date</td>
+            <td>{"formats":["m/d/y","dd-mmm-yyyy","y-m-d"]}</td>
+            <td>8</td>
+            <td>portfolio_demo_reviewer</td>
+            <td>2026-09-01 12:39:14</td>
+          </tr>
+          <tr>
+            <td>AE014</td>
+            <td>AE</td>
+            <td>AESHOSP</td>
+            <td></td>
+            <td>ae_raw</td>
+            <td>IT.AESHOSP</td>
+            <td>map_controlled_term</td>
+            <td>{"terms":{"Yes":"Y","No":"N"}}</td>
+            <td>8</td>
+            <td>portfolio_demo_reviewer</td>
+            <td>2026-09-01 12:39:14</td>
+          </tr>
+          <tr>
+            <td>AE015</td>
+            <td>AE</td>
+            <td>AEENRF</td>
+            <td></td>
+            <td>ae_raw</td>
+            <td>IT.AEENDAT</td>
+            <td>custom_transform</td>
+            <td>{"name":"ongoing_if_missing"}</td>
+            <td>8</td>
+            <td>portfolio_demo_reviewer</td>
+            <td>2026-09-01 12:39:14</td>
+          </tr>
+          <tr>
+            <td>AE016</td>
+            <td>AE</td>
+            <td>AESTDY</td>
+            <td></td>
+            <td>ae_raw</td>
+            <td>IT.AESTDAT</td>
+            <td>derive_study_day</td>
+            <td>{"target_date":"AESTDTC","reference_date":"RFSTDTC"}</td>
+            <td>8</td>
+            <td>portfolio_demo_reviewer</td>
+            <td>2026-09-01 12:39:14</td>
+          </tr>
+          <tr>
+            <td>AE017</td>
+            <td>AE</td>
+            <td>AEENDY</td>
+            <td></td>
+            <td>ae_raw</td>
+            <td>IT.AEENDAT</td>
+            <td>derive_study_day</td>
+            <td>{"target_date":"AEENDTC","reference_date":"RFSTDTC"}</td>
+            <td>8</td>
+            <td>portfolio_demo_reviewer</td>
+            <td>2026-09-01 12:39:14</td>
+          </tr>
+          <tr>
+            <td>DM001</td>
+            <td>DM</td>
+            <td>STUDYID</td>
+            <td></td>
+            <td>dm_raw</td>
+            <td>STUDY</td>
+            <td>direct_map</td>
+            <td>[]</td>
+            <td>6</td>
+            <td>portfolio_demo_reviewer</td>
+            <td>2026-09-01 12:39:14</td>
+          </tr>
+          <tr>
+            <td>DM002</td>
+            <td>DM</td>
+            <td>DOMAIN</td>
+            <td></td>
+            <td>dm_raw</td>
+            <td></td>
+            <td>assign_constant</td>
+            <td>{"value":"DM"}</td>
+            <td>6</td>
+            <td>portfolio_demo_reviewer</td>
+            <td>2026-09-01 12:39:14</td>
+          </tr>
+          <tr>
+            <td>DM003</td>
+            <td>DM</td>
+            <td>USUBJID</td>
+            <td></td>
+            <td>dm_raw</td>
+            <td>STUDY | PATNUM</td>
+            <td>derive_usubjid</td>
+            <td>{"separator":"-"}</td>
+            <td>6</td>
+            <td>portfolio_demo_reviewer</td>
+            <td>2026-09-01 12:39:14</td>
+          </tr>
+          <tr>
+            <td>DM004</td>
+            <td>DM</td>
+            <td>SUBJID</td>
+            <td></td>
+            <td>dm_raw</td>
+            <td>PATNUM</td>
+            <td>direct_map</td>
+            <td>[]</td>
+            <td>6</td>
+            <td>portfolio_demo_reviewer</td>
+            <td>2026-09-01 12:39:14</td>
+          </tr>
+          <tr>
+            <td>DM005</td>
+            <td>DM</td>
+            <td>RFSTDTC</td>
+            <td></td>
+            <td>dm_raw</td>
+            <td>FIRST_DOSE_DT</td>
+            <td>to_iso8601_date</td>
+            <td>{"formats":["m/d/y","dd-mmm-yyyy","y-m-d"]}</td>
+            <td>6</td>
+            <td>portfolio_demo_reviewer</td>
+            <td>2026-09-01 12:39:14</td>
+          </tr>
+          <tr>
+            <td>DM006</td>
+            <td>DM</td>
+            <td>RFICDTC</td>
+            <td></td>
+            <td>dm_raw</td>
+            <td>IC_DT</td>
+            <td>to_iso8601_date</td>
+            <td>{"formats":["m/d/y","dd-mmm-yyyy","y-m-d"]}</td>
+            <td>6</td>
+            <td>portfolio_demo_reviewer</td>
+            <td>2026-09-01 12:39:14</td>
+          </tr>
+          <tr>
+            <td>DM007</td>
+            <td>DM</td>
+            <td>AGE</td>
+            <td></td>
+            <td>dm_raw</td>
+            <td>IT.AGE</td>
+            <td>direct_map</td>
+            <td>[]</td>
+            <td>6</td>
+            <td>portfolio_demo_reviewer</td>
+            <td>2026-09-01 12:39:14</td>
+          </tr>
+          <tr>
+            <td>DM008</td>
+            <td>DM</td>
+            <td>AGEU</td>
+            <td></td>
+            <td>dm_raw</td>
+            <td></td>
+            <td>assign_constant</td>
+            <td>{"value":"YEARS"}</td>
+            <td>6</td>
+            <td>portfolio_demo_reviewer</td>
+            <td>2026-09-01 12:39:14</td>
+          </tr>
+          <tr>
+            <td>DM009</td>
+            <td>DM</td>
+            <td>SEX</td>
+            <td></td>
+            <td>dm_raw</td>
+            <td>IT.SEX</td>
+            <td>map_controlled_term</td>
+            <td>{"terms":{"Female":"F","Male":"M","Unknown":"U"}}</td>
+            <td>6</td>
+            <td>portfolio_demo_reviewer</td>
+            <td>2026-09-01 12:39:14</td>
+          </tr>
+          <tr>
+            <td>DM010</td>
+            <td>DM</td>
+            <td>ETHNIC</td>
+            <td></td>
+            <td>dm_raw</td>
+            <td>IT.ETHNIC</td>
+            <td>map_controlled_term</td>
+            <td>{"terms":{"Hispanic or Latino":"HISPANIC OR LATINO","Not Hispanic or Latino":"NOT HISPANIC OR LATINO","Unknown":"UNKNOWN","Not Reported":"NOT REPORTED"}}</td>
+            <td>6</td>
+            <td>portfolio_demo_reviewer</td>
+            <td>2026-09-01 12:39:14</td>
+          </tr>
+          <tr>
+            <td>DM011</td>
+            <td>DM</td>
+            <td>RACE</td>
+            <td></td>
+            <td>dm_raw</td>
+            <td>IT.RACE</td>
+            <td>map_controlled_term</td>
+            <td>{"terms":{"White":"WHITE","Asian":"ASIAN","Black or African American":"BLACK OR AFRICAN AMERICAN","American Indian or Alaska Native":"AMERICAN INDIAN OR ALASKA NATIVE","Multiple":"MULTIPLE","Unknown":"UNKNOWN"}}</td>
+            <td>6</td>
+            <td>portfolio_demo_reviewer</td>
+            <td>2026-09-01 12:39:14</td>
+          </tr>
+          <tr>
+            <td>DM012</td>
+            <td>DM</td>
+            <td>COUNTRY</td>
+            <td></td>
+            <td>dm_raw</td>
+            <td>COUNTRY</td>
+            <td>direct_map</td>
+            <td>[]</td>
+            <td>6</td>
+            <td>portfolio_demo_reviewer</td>
+            <td>2026-09-01 12:39:14</td>
+          </tr>
+          <tr>
+            <td>DM013</td>
+            <td>DM</td>
+            <td>ARMCD</td>
+            <td></td>
+            <td>dm_raw</td>
+            <td>PLANNED_ARMCD</td>
+            <td>direct_map</td>
+            <td>[]</td>
+            <td>6</td>
+            <td>portfolio_demo_reviewer</td>
+            <td>2026-09-01 12:39:14</td>
+          </tr>
+          <tr>
+            <td>DM014</td>
+            <td>DM</td>
+            <td>ARM</td>
+            <td></td>
+            <td>dm_raw</td>
+            <td>PLANNED_ARM</td>
+            <td>direct_map</td>
+            <td>[]</td>
+            <td>6</td>
+            <td>portfolio_demo_reviewer</td>
+            <td>2026-09-01 12:39:14</td>
+          </tr>
+          <tr>
+            <td>DM015</td>
+            <td>DM</td>
+            <td>ACTARMCD</td>
+            <td></td>
+            <td>dm_raw</td>
+            <td>ACTUAL_ARMCD</td>
+            <td>direct_map</td>
+            <td>[]</td>
+            <td>6</td>
+            <td>portfolio_demo_reviewer</td>
+            <td>2026-09-01 12:39:14</td>
+          </tr>
+          <tr>
+            <td>DM016</td>
+            <td>DM</td>
+            <td>ACTARM</td>
+            <td></td>
+            <td>dm_raw</td>
+            <td>ACTUAL_ARM</td>
+            <td>direct_map</td>
+            <td>[]</td>
+            <td>6</td>
+            <td>portfolio_demo_reviewer</td>
+            <td>2026-09-01 12:39:14</td>
+          </tr>
+          <tr>
+            <td>DM017</td>
+            <td>DM</td>
+            <td>SITEID</td>
+            <td></td>
+            <td>dm_raw</td>
+            <td>PATNUM</td>
+            <td>custom_transform</td>
+            <td>{"name":"extract_siteid"}</td>
+            <td>6</td>
+            <td>portfolio_demo_reviewer</td>
+            <td>2026-09-01 12:39:14</td>
+          </tr>
+          <tr>
+            <td>VS001</td>
+            <td>VS</td>
+            <td>STUDYID</td>
+            <td></td>
+            <td>vs_raw</td>
+            <td>STUDY</td>
+            <td>direct_map</td>
+            <td>[]</td>
+            <td>12</td>
+            <td>portfolio_demo_reviewer</td>
+            <td>2026-09-01 12:39:14</td>
+          </tr>
+          <tr>
+            <td>VS002</td>
+            <td>VS</td>
+            <td>DOMAIN</td>
+            <td></td>
+            <td>vs_raw</td>
+            <td></td>
+            <td>assign_constant</td>
+            <td>{"value":"VS"}</td>
+            <td>12</td>
+            <td>portfolio_demo_reviewer</td>
+            <td>2026-09-01 12:39:14</td>
+          </tr>
+          <tr>
+            <td>VS003</td>
+            <td>VS</td>
+            <td>USUBJID</td>
+            <td></td>
+            <td>vs_raw</td>
+            <td>STUDY | PATNUM</td>
+            <td>derive_usubjid</td>
+            <td>{"separator":"-"}</td>
+            <td>12</td>
+            <td>portfolio_demo_reviewer</td>
+            <td>2026-09-01 12:39:14</td>
+          </tr>
+          <tr>
+            <td>VS004</td>
+            <td>VS</td>
+            <td>VSSEQ</td>
+            <td></td>
+            <td>vs_raw</td>
+            <td></td>
+            <td>derive_sequence</td>
+            <td>{"record_variables":["STUDYID","USUBJID","VSDTC","VSTESTCD","VSPOS","VISITNUM",".SOURCE_ROW"]}</td>
+            <td>60</td>
+            <td>portfolio_demo_reviewer</td>
+            <td>2026-09-01 12:39:14</td>
+          </tr>
+          <tr>
+            <td>VS005</td>
+            <td>VS</td>
+            <td>VSDTC</td>
+            <td></td>
+            <td>vs_raw</td>
+            <td>VTLD</td>
+            <td>to_iso8601_date</td>
+            <td>{"formats":["dd-mmm-yyyy","m/d/y","y-m-d"]}</td>
+            <td>12</td>
+            <td>portfolio_demo_reviewer</td>
+            <td>2026-09-01 12:39:14</td>
+          </tr>
+          <tr>
+            <td>VS006</td>
+            <td>VS</td>
+            <td>VSPOS</td>
+            <td></td>
+            <td>vs_raw</td>
+            <td>SUBPOS</td>
+            <td>custom_transform</td>
+            <td>{"name":"uppercase"}</td>
+            <td>12</td>
+            <td>portfolio_demo_reviewer</td>
+            <td>2026-09-01 12:39:14</td>
+          </tr>
+          <tr>
+            <td>VS007</td>
+            <td>VS</td>
+            <td>VISIT</td>
+            <td></td>
+            <td>vs_raw</td>
+            <td>INSTANCE</td>
+            <td>direct_map</td>
+            <td>[]</td>
+            <td>12</td>
+            <td>portfolio_demo_reviewer</td>
+            <td>2026-09-01 12:39:14</td>
+          </tr>
+          <tr>
+            <td>VS008</td>
+            <td>VS</td>
+            <td>VISITNUM</td>
+            <td></td>
+            <td>vs_raw</td>
+            <td>INSTANCE</td>
+            <td>derive_visitnum</td>
+            <td>{"terms":{"Screening 1":-1,"Week 2":2}}</td>
+            <td>12</td>
+            <td>portfolio_demo_reviewer</td>
+            <td>2026-09-01 12:39:14</td>
+          </tr>
+          <tr>
+            <td>VS009</td>
+            <td>VS</td>
+            <td>VSDY</td>
+            <td></td>
+            <td>vs_raw</td>
+            <td>VTLD</td>
+            <td>derive_study_day</td>
+            <td>{"target_date":"VSDTC","reference_date":"RFSTDTC"}</td>
+            <td>60</td>
+            <td>portfolio_demo_reviewer</td>
+            <td>2026-09-01 12:39:14</td>
+          </tr>
+          <tr>
+            <td>VS101</td>
+            <td>VS</td>
+            <td>VSTESTCD</td>
+            <td>HEIGHT</td>
+            <td>vs_raw</td>
+            <td>IT.HEIGHT_VSORRES</td>
+            <td>transpose_findings</td>
+            <td>[]</td>
+            <td>6</td>
+            <td>portfolio_demo_reviewer</td>
+            <td>2026-09-01 12:39:14</td>
+          </tr>
+          <tr>
+            <td>VS102</td>
+            <td>VS</td>
+            <td>VSTESTCD</td>
+            <td>WEIGHT</td>
+            <td>vs_raw</td>
+            <td>IT.WEIGHT</td>
+            <td>transpose_findings</td>
+            <td>[]</td>
+            <td>6</td>
+            <td>portfolio_demo_reviewer</td>
+            <td>2026-09-01 12:39:14</td>
+          </tr>
+          <tr>
+            <td>VS103</td>
+            <td>VS</td>
+            <td>VSTESTCD</td>
+            <td>TEMP</td>
+            <td>vs_raw</td>
+            <td>IT.TEMP</td>
+            <td>transpose_findings</td>
+            <td>[]</td>
+            <td>12</td>
+            <td>portfolio_demo_reviewer</td>
+            <td>2026-09-01 12:39:14</td>
+          </tr>
+          <tr>
+            <td>VS104</td>
+            <td>VS</td>
+            <td>VSTESTCD</td>
+            <td>SYSBP</td>
+            <td>vs_raw</td>
+            <td>SYS_BP</td>
+            <td>transpose_findings</td>
+            <td>[]</td>
+            <td>12</td>
+            <td>portfolio_demo_reviewer</td>
+            <td>2026-09-01 12:39:14</td>
+          </tr>
+          <tr>
+            <td>VS105</td>
+            <td>VS</td>
+            <td>VSTESTCD</td>
+            <td>DIABP</td>
+            <td>vs_raw</td>
+            <td>DIA_BP</td>
+            <td>transpose_findings</td>
+            <td>[]</td>
+            <td>12</td>
+            <td>portfolio_demo_reviewer</td>
+            <td>2026-09-01 12:39:14</td>
+          </tr>
+          <tr>
+            <td>VS106</td>
+            <td>VS</td>
+            <td>VSTESTCD</td>
+            <td>PULSE</td>
+            <td>vs_raw</td>
+            <td>PULSE</td>
+            <td>transpose_findings</td>
+            <td>[]</td>
+            <td>12</td>
+            <td>portfolio_demo_reviewer</td>
+            <td>2026-09-01 12:39:14</td>
+          </tr>
+        </table>
+      </div>
+      <h2>已知限制</h2>
+      <ul>
+        <li>仅覆盖 DM、AE、VS，不代表完整研究提交包。</li>
+        <li>不生成 Define-XML、aCRF、ADaM 或 TLF。</li>
+        <li>未部署 CDISC CORE。</li>
+        <li>没有电子签名、权限、审计追踪验证和法规申报级系统认证。</li>
+        <li>所有结果仍需合格的临床数据标准专家审核。</li>
+      </ul>
+    </main>
+  </body>
+</html>
+</html>

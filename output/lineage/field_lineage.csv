@@ -1,0 +1,50 @@
+mapping_id,target_domain,target_variable,target_value,source_dataset,source_variables,transform_id,transform_parameters,records_created,reviewer,approved_at
+AE001,AE,STUDYID,,ae_raw,STUDY,direct_map,[],8,portfolio_demo_reviewer,2026-09-01T12:39:14Z
+AE002,AE,DOMAIN,,ae_raw,,assign_constant,"{""value"":""AE""}",8,portfolio_demo_reviewer,2026-09-01T12:39:14Z
+AE003,AE,USUBJID,,ae_raw,STUDY | PATNUM,derive_usubjid,"{""separator"":""-""}",8,portfolio_demo_reviewer,2026-09-01T12:39:14Z
+AE004,AE,AESEQ,,ae_raw,,derive_sequence,"{""record_variables"":[""STUDYID"",""USUBJID"",""AESTDTC"",""AETERM"",""AEDECOD"","".SOURCE_ROW""]}",8,portfolio_demo_reviewer,2026-09-01T12:39:14Z
+AE005,AE,AETERM,,ae_raw,IT.AETERM,direct_map,[],8,portfolio_demo_reviewer,2026-09-01T12:39:14Z
+AE006,AE,AEDECOD,,ae_raw,AEDECOD,direct_map,[],8,portfolio_demo_reviewer,2026-09-01T12:39:14Z
+AE007,AE,AEBODSYS,,ae_raw,AEBODSYS,custom_transform,"{""name"":""uppercase""}",8,portfolio_demo_reviewer,2026-09-01T12:39:14Z
+AE008,AE,AESEV,,ae_raw,IT.AESEV,map_controlled_term,"{""terms"":{""Mild Adverse Event"":""MILD"",""Moderate Adverse Event"":""MODERATE"",""Severe Adverse Event"":""SEVERE""}}",8,portfolio_demo_reviewer,2026-09-01T12:39:14Z
+AE009,AE,AESER,,ae_raw,IT.AESER,map_controlled_term,"{""terms"":{""Yes"":""Y"",""No"":""N""}}",8,portfolio_demo_reviewer,2026-09-01T12:39:14Z
+AE010,AE,AEREL,,ae_raw,IT.AEREL,map_controlled_term,"{""terms"":{""Probably Related"":""PROBABLE"",""Possibly Related"":""POSSIBLE"",""Unlikely Related"":""UNLIKELY"",""Not Related"":""NOT RELATED""}}",8,portfolio_demo_reviewer,2026-09-01T12:39:14Z
+AE011,AE,AEOUT,,ae_raw,AEOUTCOME,map_controlled_term,"{""terms"":{""Recovered/Resolved"":""RECOVERED/RESOLVED"",""Recovering/Resolving"":""RECOVERING/RESOLVING"",""Not Recovered/not Resolved"":""NOT RECOVERED/NOT RESOLVED"",""Fatal"":""FATAL"",""Unknown"":""UNKNOWN""}}",8,portfolio_demo_reviewer,2026-09-01T12:39:14Z
+AE012,AE,AESTDTC,,ae_raw,IT.AESTDAT,to_iso8601_date,"{""formats"":[""m/d/y"",""dd-mmm-yyyy"",""y-m-d""]}",8,portfolio_demo_reviewer,2026-09-01T12:39:14Z
+AE013,AE,AEENDTC,,ae_raw,IT.AEENDAT,to_iso8601_date,"{""formats"":[""m/d/y"",""dd-mmm-yyyy"",""y-m-d""]}",8,portfolio_demo_reviewer,2026-09-01T12:39:14Z
+AE014,AE,AESHOSP,,ae_raw,IT.AESHOSP,map_controlled_term,"{""terms"":{""Yes"":""Y"",""No"":""N""}}",8,portfolio_demo_reviewer,2026-09-01T12:39:14Z
+AE015,AE,AEENRF,,ae_raw,IT.AEENDAT,custom_transform,"{""name"":""ongoing_if_missing""}",8,portfolio_demo_reviewer,2026-09-01T12:39:14Z
+AE016,AE,AESTDY,,ae_raw,IT.AESTDAT,derive_study_day,"{""target_date"":""AESTDTC"",""reference_date"":""RFSTDTC""}",8,portfolio_demo_reviewer,2026-09-01T12:39:14Z
+AE017,AE,AEENDY,,ae_raw,IT.AEENDAT,derive_study_day,"{""target_date"":""AEENDTC"",""reference_date"":""RFSTDTC""}",8,portfolio_demo_reviewer,2026-09-01T12:39:14Z
+DM001,DM,STUDYID,,dm_raw,STUDY,direct_map,[],6,portfolio_demo_reviewer,2026-09-01T12:39:14Z
+DM002,DM,DOMAIN,,dm_raw,,assign_constant,"{""value"":""DM""}",6,portfolio_demo_reviewer,2026-09-01T12:39:14Z
+DM003,DM,USUBJID,,dm_raw,STUDY | PATNUM,derive_usubjid,"{""separator"":""-""}",6,portfolio_demo_reviewer,2026-09-01T12:39:14Z
+DM004,DM,SUBJID,,dm_raw,PATNUM,direct_map,[],6,portfolio_demo_reviewer,2026-09-01T12:39:14Z
+DM005,DM,RFSTDTC,,dm_raw,FIRST_DOSE_DT,to_iso8601_date,"{""formats"":[""m/d/y"",""dd-mmm-yyyy"",""y-m-d""]}",6,portfolio_demo_reviewer,2026-09-01T12:39:14Z
+DM006,DM,RFICDTC,,dm_raw,IC_DT,to_iso8601_date,"{""formats"":[""m/d/y"",""dd-mmm-yyyy"",""y-m-d""]}",6,portfolio_demo_reviewer,2026-09-01T12:39:14Z
+DM007,DM,AGE,,dm_raw,IT.AGE,direct_map,[],6,portfolio_demo_reviewer,2026-09-01T12:39:14Z
+DM008,DM,AGEU,,dm_raw,,assign_constant,"{""value"":""YEARS""}",6,portfolio_demo_reviewer,2026-09-01T12:39:14Z
+DM009,DM,SEX,,dm_raw,IT.SEX,map_controlled_term,"{""terms"":{""Female"":""F"",""Male"":""M"",""Unknown"":""U""}}",6,portfolio_demo_reviewer,2026-09-01T12:39:14Z
+DM010,DM,ETHNIC,,dm_raw,IT.ETHNIC,map_controlled_term,"{""terms"":{""Hispanic or Latino"":""HISPANIC OR LATINO"",""Not Hispanic or Latino"":""NOT HISPANIC OR LATINO"",""Unknown"":""UNKNOWN"",""Not Reported"":""NOT REPORTED""}}",6,portfolio_demo_reviewer,2026-09-01T12:39:14Z
+DM011,DM,RACE,,dm_raw,IT.RACE,map_controlled_term,"{""terms"":{""White"":""WHITE"",""Asian"":""ASIAN"",""Black or African American"":""BLACK OR AFRICAN AMERICAN"",""American Indian or Alaska Native"":""AMERICAN INDIAN OR ALASKA NATIVE"",""Multiple"":""MULTIPLE"",""Unknown"":""UNKNOWN""}}",6,portfolio_demo_reviewer,2026-09-01T12:39:14Z
+DM012,DM,COUNTRY,,dm_raw,COUNTRY,direct_map,[],6,portfolio_demo_reviewer,2026-09-01T12:39:14Z
+DM013,DM,ARMCD,,dm_raw,PLANNED_ARMCD,direct_map,[],6,portfolio_demo_reviewer,2026-09-01T12:39:14Z
+DM014,DM,ARM,,dm_raw,PLANNED_ARM,direct_map,[],6,portfolio_demo_reviewer,2026-09-01T12:39:14Z
+DM015,DM,ACTARMCD,,dm_raw,ACTUAL_ARMCD,direct_map,[],6,portfolio_demo_reviewer,2026-09-01T12:39:14Z
+DM016,DM,ACTARM,,dm_raw,ACTUAL_ARM,direct_map,[],6,portfolio_demo_reviewer,2026-09-01T12:39:14Z
+DM017,DM,SITEID,,dm_raw,PATNUM,custom_transform,"{""name"":""extract_siteid""}",6,portfolio_demo_reviewer,2026-09-01T12:39:14Z
+VS001,VS,STUDYID,,vs_raw,STUDY,direct_map,[],12,portfolio_demo_reviewer,2026-09-01T12:39:14Z
+VS002,VS,DOMAIN,,vs_raw,,assign_constant,"{""value"":""VS""}",12,portfolio_demo_reviewer,2026-09-01T12:39:14Z
+VS003,VS,USUBJID,,vs_raw,STUDY | PATNUM,derive_usubjid,"{""separator"":""-""}",12,portfolio_demo_reviewer,2026-09-01T12:39:14Z
+VS004,VS,VSSEQ,,vs_raw,,derive_sequence,"{""record_variables"":[""STUDYID"",""USUBJID"",""VSDTC"",""VSTESTCD"",""VSPOS"",""VISITNUM"","".SOURCE_ROW""]}",60,portfolio_demo_reviewer,2026-09-01T12:39:14Z
+VS005,VS,VSDTC,,vs_raw,VTLD,to_iso8601_date,"{""formats"":[""dd-mmm-yyyy"",""m/d/y"",""y-m-d""]}",12,portfolio_demo_reviewer,2026-09-01T12:39:14Z
+VS006,VS,VSPOS,,vs_raw,SUBPOS,custom_transform,"{""name"":""uppercase""}",12,portfolio_demo_reviewer,2026-09-01T12:39:14Z
+VS007,VS,VISIT,,vs_raw,INSTANCE,direct_map,[],12,portfolio_demo_reviewer,2026-09-01T12:39:14Z
+VS008,VS,VISITNUM,,vs_raw,INSTANCE,derive_visitnum,"{""terms"":{""Screening 1"":-1,""Week 2"":2}}",12,portfolio_demo_reviewer,2026-09-01T12:39:14Z
+VS009,VS,VSDY,,vs_raw,VTLD,derive_study_day,"{""target_date"":""VSDTC"",""reference_date"":""RFSTDTC""}",60,portfolio_demo_reviewer,2026-09-01T12:39:14Z
+VS101,VS,VSTESTCD,HEIGHT,vs_raw,IT.HEIGHT_VSORRES,transpose_findings,[],6,portfolio_demo_reviewer,2026-09-01T12:39:14Z
+VS102,VS,VSTESTCD,WEIGHT,vs_raw,IT.WEIGHT,transpose_findings,[],6,portfolio_demo_reviewer,2026-09-01T12:39:14Z
+VS103,VS,VSTESTCD,TEMP,vs_raw,IT.TEMP,transpose_findings,[],12,portfolio_demo_reviewer,2026-09-01T12:39:14Z
+VS104,VS,VSTESTCD,SYSBP,vs_raw,SYS_BP,transpose_findings,[],12,portfolio_demo_reviewer,2026-09-01T12:39:14Z
+VS105,VS,VSTESTCD,DIABP,vs_raw,DIA_BP,transpose_findings,[],12,portfolio_demo_reviewer,2026-09-01T12:39:14Z
+VS106,VS,VSTESTCD,PULSE,vs_raw,PULSE,transpose_findings,[],12,portfolio_demo_reviewer,2026-09-01T12:39:14Z

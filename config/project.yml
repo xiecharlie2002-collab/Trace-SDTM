@@ -1,0 +1,55 @@
+project:
+  name: TraceSDTM
+  version: 0.1.0
+  study_id: TRACE001
+  standard: SDTMIG
+  standard_version: '3.4'
+  generated_domains:
+    - DM
+    - AE
+    - VS
+paths:
+  raw_dir: data/raw
+  profile_dir: output/profile
+  recommendation_dir: output/recommendations
+  review_dir: output/review
+  specification_template: specs/mapping_template.yml
+  approved_specification: specs/approved_mapping.yml
+  metadata: specs/sdtm_metadata.yml
+  gold_mapping: specs/gold_mapping.csv
+  csv_dir: output/sdtm/csv
+  xpt_dir: output/sdtm/xpt
+  lineage_dir: output/lineage
+  local_validation_dir: output/validation/local
+  p21_validation_dir: output/validation/p21
+  report_dir: output/report
+  manifest_dir: output/manifests
+  log_dir: logs
+model:
+  timeout_seconds: 60
+  max_attempts: 3
+  temperature: 0
+  endpoint_suffix: /chat/completions
+  allowed_mapping_types:
+    - direct
+    - constant
+    - controlled_term
+    - date_conversion
+    - combine
+    - conditional
+    - transpose
+    - custom
+    - drop
+  allowed_transform_ids:
+    - direct_map
+    - assign_constant
+    - map_controlled_term
+    - to_iso8601_date
+    - combine_fields
+    - conditional_map
+    - transpose_findings
+    - derive_usubjid
+    - derive_sequence
+    - derive_study_day
+    - derive_visitnum
+    - custom_transform

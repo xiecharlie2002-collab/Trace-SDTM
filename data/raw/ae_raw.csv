@@ -1,0 +1,9 @@
+STUDY,PATNUM,FOLDER,FOLDERL,IT.AETERM,AEOUTCOME,AEDECOD,AEBODSYS,IT.AESEV,IT.AESER,IT.AESHOSP,IT.AEREL,IT.AESTDAT,IT.AEENDAT
+TRACE001,701-1001,AE,Adverse Events,Headache,Recovered/Resolved,HEADACHE,Nervous system disorders,Mild Adverse Event,No,No,Possibly Related,01/06/2025,01/07/2025
+TRACE001,701-1002,AE,Adverse Events,Nausea,Recovered/Resolved,NAUSEA,Gastrointestinal disorders,Moderate Adverse Event,No,No,Probably Related,01/06/2025,01/08/2025
+TRACE001,701-1002,AE,Adverse Events,Application site erythema,Not Recovered/not Resolved,APPLICATION SITE ERYTHEMA,General disorders and administration site conditions,Mild Adverse Event,No,No,Probably Related,01/09/2025,
+TRACE001,701-1003,AE,Adverse Events,Dizziness,Recovered/Resolved,DIZZINESS,Nervous system disorders,Mild Adverse Event,No,No,Unlikely Related,01/08/2025,01/08/2025
+TRACE001,702-1001,AE,Adverse Events,Fatigue,Recovering/Resolving,FATIGUE,General disorders and administration site conditions,Moderate Adverse Event,No,No,Possibly Related,01/10/2025,
+TRACE001,702-1002,AE,Adverse Events,Rash,Recovered/Resolved,RASH,Skin and subcutaneous tissue disorders,Severe Adverse Event,Yes,Yes,Probably Related,01/11/2025,01/15/2025
+TRACE001,702-1003,AE,Adverse Events,Headache,Recovered/Resolved,HEADACHE,Nervous system disorders,Mild Adverse Event,No,No,Not Related,01/09/2025,01/09/2025
+TRACE001,702-1003,AE,Adverse Events,Pyrexia,Recovered/Resolved,PYREXIA,General disorders and administration site conditions,Moderate Adverse Event,No,No,Possibly Related,01/12/2025,01/13/2025

@@ -1,0 +1,11 @@
+.Rproj.user/
+.Rhistory
+.RData
+.Ruserdata
+.Rlib/
+renv/library/
+renv/staging/
+logs/*.log
+output/tmp/
+~$*.xlsx
+~$*.xls

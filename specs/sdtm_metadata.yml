@@ -1,0 +1,75 @@
+standard: SDTMIG
+version: '3.4'
+domains:
+  DM:
+    label: Demographics
+    keys: [STUDYID, USUBJID]
+    expected_order: [STUDYID, DOMAIN, USUBJID, SUBJID, RFSTDTC, RFICDTC, SITEID, AGE, AGEU, SEX, RACE, ETHNIC, ARMCD, ARM, ACTARMCD, ACTARM, COUNTRY]
+    variables:
+      STUDYID: {label: Study Identifier, type: character, required: true}
+      DOMAIN: {label: Domain Abbreviation, type: character, required: true}
+      USUBJID: {label: Unique Subject Identifier, type: character, required: true}
+      SUBJID: {label: Subject Identifier for the Study, type: character, required: true}
+      RFSTDTC: {label: Subject Reference Start Date/Time, type: character, required: false, iso8601: true}
+      RFICDTC: {label: Date/Time of Informed Consent, type: character, required: false, iso8601: true}
+      SITEID: {label: Study Site Identifier, type: character, required: true}
+      AGE: {label: Age, type: numeric, required: false}
+      AGEU: {label: Age Units, type: character, required: false, controlled: [YEARS]}
+      SEX: {label: Sex, type: character, required: true, controlled: [F, M, U, UNDIFFERENTIATED]}
+      ETHNIC: {label: Ethnicity, type: character, required: false, controlled: [HISPANIC OR LATINO, NOT HISPANIC OR LATINO, NOT REPORTED, UNKNOWN]}
+      RACE: {label: Race, type: character, required: false, controlled: [AMERICAN INDIAN OR ALASKA NATIVE, ASIAN, BLACK OR AFRICAN AMERICAN, MULTIPLE, NATIVE HAWAIIAN OR OTHER PACIFIC ISLANDER, NOT REPORTED, UNKNOWN, WHITE]}
+      COUNTRY: {label: Country, type: character, required: false}
+      ARMCD: {label: Planned Arm Code, type: character, required: false}
+      ARM: {label: Description of Planned Arm, type: character, required: false}
+      ACTARMCD: {label: Actual Arm Code, type: character, required: false}
+      ACTARM: {label: Description of Actual Arm, type: character, required: false}
+  AE:
+    label: Adverse Events
+    keys: [STUDYID, USUBJID, AESEQ]
+    expected_order: [STUDYID, DOMAIN, USUBJID, AESEQ, AETERM, AEDECOD, AEBODSYS, AESEV, AESER, AEREL, AEOUT, AESHOSP, AESTDTC, AEENDTC, AESTDY, AEENDY, AEENRF]
+    variables:
+      STUDYID: {label: Study Identifier, type: character, required: true}
+      DOMAIN: {label: Domain Abbreviation, type: character, required: true}
+      USUBJID: {label: Unique Subject Identifier, type: character, required: true}
+      AESEQ: {label: Sequence Number, type: numeric, required: true}
+      AETERM: {label: Reported Term for the Adverse Event, type: character, required: true}
+      AEDECOD: {label: Dictionary-Derived Term, type: character, required: false}
+      AEBODSYS: {label: Body System or Organ Class, type: character, required: false}
+      AESEV: {label: Severity/Intensity, type: character, required: false, controlled: [MILD, MODERATE, SEVERE]}
+      AESER: {label: Serious Event, type: character, required: false, controlled: ['Y', 'N']}
+      AESHOSP: {label: Requires or Prolongs Hospitalization, type: character, required: false, controlled: ['Y', 'N']}
+      AEREL: {label: Causality, type: character, required: false}
+      AEOUT: {label: Outcome of Adverse Event, type: character, required: false, controlled: [RECOVERED/RESOLVED, RECOVERING/RESOLVING, NOT RECOVERED/NOT RESOLVED, RECOVERED/RESOLVED WITH SEQUELAE, FATAL, UNKNOWN]}
+      AESTDTC: {label: Start Date/Time of Adverse Event, type: character, required: false, iso8601: true}
+      AEENDTC: {label: End Date/Time of Adverse Event, type: character, required: false, iso8601: true}
+      AESTDY: {label: Study Day of Start of Adverse Event, type: numeric, required: false}
+      AEENDY: {label: Study Day of End of Adverse Event, type: numeric, required: false}
+      AEENRF: {label: End Relative to Reference Period, type: character, required: false, controlled: [ONGOING]}
+  VS:
+    label: Vital Signs
+    keys: [STUDYID, USUBJID, VSSEQ]
+    expected_order: [STUDYID, DOMAIN, USUBJID, VSSEQ, VSTESTCD, VSTEST, VSPOS, VSORRES, VSORRESU, VSSTRESC, VSSTRESN, VSSTRESU, VISITNUM, VISIT, VSDTC, VSDY]
+    variables:
+      STUDYID: {label: Study Identifier, type: character, required: true}
+      DOMAIN: {label: Domain Abbreviation, type: character, required: true}
+      USUBJID: {label: Unique Subject Identifier, type: character, required: true}
+      VSSEQ: {label: Sequence Number, type: numeric, required: true}
+      VSTESTCD: {label: Vital Signs Test Short Name, type: character, required: true}
+      VSTEST: {label: Vital Signs Test Name, type: character, required: true}
+      VSORRES: {label: Result or Finding in Original Units, type: character, required: true}
+      VSORRESU: {label: Original Units, type: character, required: false}
+      VSSTRESC: {label: Character Result/Finding in Std Format, type: character, required: false}
+      VSSTRESN: {label: Numeric Result/Finding in Standard Units, type: numeric, required: false}
+      VSSTRESU: {label: Standard Units, type: character, required: false}
+      VSPOS: {label: Vital Signs Position of Subject, type: character, required: false, controlled: [SITTING, STANDING, SUPINE]}
+      VSDTC: {label: Date/Time of Measurements, type: character, required: false, iso8601: true}
+      VSDY: {label: Study Day of Vital Signs, type: numeric, required: false}
+      VISIT: {label: Visit Name, type: character, required: false}
+      VISITNUM: {label: Visit Number, type: numeric, required: false}
+    test_pairs:
+      SYSBP: {test: Systolic Blood Pressure, unit: mmHg}
+      DIABP: {test: Diastolic Blood Pressure, unit: mmHg}
+      PULSE: {test: Pulse Rate, unit: beats/min}
+      HEIGHT: {test: Height, unit: cm}
+      WEIGHT: {test: Weight, unit: kg}
+      TEMP: {test: Temperature, unit: C}
