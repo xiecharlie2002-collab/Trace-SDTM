@@ -70,10 +70,25 @@ $env:TRACE_SDTM_MODEL = '<模型名称>'
 Rscript scripts/trace_sdtm.R recommend
 ```
 
-真实推荐仍需打开 `output/review/mapping_review.xlsx` 完成人工决策，再运行：
+建议同时设置独立实验编号。此时全部生成物写入
+`output/experiments/<实验编号>/`，不会覆盖基线输出：
+
+```powershell
+$env:TRACE_SDTM_EXPERIMENT_ID = 'deepseek-v4-flash-20260901'
+Rscript scripts/trace_sdtm.R recommend
+```
+
+真实推荐仍需打开对应实验目录中的 `review/mapping_review.xlsx` 完成人工决策，再运行：
 
 ```powershell
 $env:TRACE_SDTM_REVIEWER = '<审核者标识>'
+Rscript scripts/trace_sdtm.R approve
+```
+
+为了可重复评价，项目另提供 `review-gold`，可用专家金标准填写审核表。它只适用于本项目实验，不得表述为法规流程中的独立专家签字：
+
+```powershell
+Rscript scripts/trace_sdtm.R review-gold
 Rscript scripts/trace_sdtm.R approve
 ```
 
@@ -124,3 +139,4 @@ Rscript -e "renv::restore()"
 
 五分钟演示说明见 `docs/demo.md`。
 
+DeepSeek V4 Flash 的真实盲评方法、结果和错误分析见 `docs/deepseek_v4_flash_blind_experiment.md`。

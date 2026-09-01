@@ -1,0 +1,11 @@
+{
+  "status": "completed",
+  "provenance": "model",
+  "model": "deepseek-v4-flash",
+  "generated_at": "2026-09-01T13:25:56Z",
+  "recommendation_count": 40,
+  "batch_count": 5,
+  "batch_sizes": [8, 8, 8, 8, 8],
+  "response_sha256": "02c89d402f5e34dd5b696cd12ca495533041b7a4ad9559e68f84d2391fc26388",
+  "api_key_logged": false
+}

@@ -1,0 +1,12 @@
+{
+  "batch_index": 1,
+  "task_count": 4,
+  "candidate_count": 4,
+  "mapping_ids": ["DM001", "DM003", "DM004", "DM005"],
+  "model": "deepseek-v4-flash",
+  "prompt_design": "blind_source_only_v1",
+  "prompt_sha256": "20ad255e93922748cb04374b6908a0d840957b6eec228f2a92a9a49ba255a5ee",
+  "response_sha256": "4ad80f9e7a0feb86c57901120473e73c2dded30ae8d1d33c558862ed05e021b6",
+  "completed_at": "2026-09-01T13:49:42Z",
+  "api_key_logged": false
+}

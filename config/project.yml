@@ -28,6 +28,8 @@ paths:
 model:
   timeout_seconds: 60
   max_attempts: 3
+  batch_size: 4
+  max_completion_tokens: 8192
   temperature: 0
   endpoint_suffix: /chat/completions
   allowed_mapping_types:

@@ -1,0 +1,10 @@
+{
+  "reviewer_method": "gold_standard_comparison_v1",
+  "reviewed_at": "2026-09-01T14:06:15Z",
+  "total": 40,
+  "accepted": 11,
+  "modified": 29,
+  "rejected": 0,
+  "needs_information": 0,
+  "disclaimer": "本步骤用于作品集实验评价，不等同于法规流程中的独立临床标准专家签字。"
+}

@@ -1,0 +1,5 @@
+mapping_id,candidate_rank,source_dataset,source_variable,target_domain,target_variable,target_value,mapping_type,transform_id,transform_parameters,recommendation_score,reason,uncertainties,review_required,provenance
+DM001,1,dm_raw,STUDY,DM,STUDYID,,direct,direct_map,{},1,STUDY 直接映射为 SDTM DM 中的 STUDYID，无转换。,无,FALSE,model
+DM003,1,dm_raw,STUDY | PATNUM,DM,USUBJID,,combine,combine_fields,"{""fields"":[""STUDY"",""PATNUM""],""separator"":""-""}",0.95,USUBJID 通常由 STUDYID 和 Subject Identifier 组合而成，此处将 STUDY 与 PATNUM 拼接形成唯一标识。,PATNUM 可能已包含站点信息，拼接方式需确认；USUBJID 标准格式可能要求 STUDY-SITE-SUBJECT，但无 SITEID 字段，故直接拼接。,TRUE,model
+DM004,1,dm_raw,PATNUM,DM,SUBJID,,direct,direct_map,{},0.9,PATNUM 为受试者编号，映射为 DM.SUBJID。,若 PATNUM 为完整 USUBJID，则需映射到 USUBJID；但考虑到 DM003 已用 PATNUM 拼接 USUBJID，此处更适合作为 SUBJID。,FALSE,model
+DM005,1,dm_raw,FIRST_DOSE_DT,DM,RFSTDTC,,date_conversion,to_iso8601_date,"{""input_format"":""MM/DD/YYYY""}",1,首次给药日期转换为 ISO 8601 格式，作为参考开始日期 RFSTDTC。,日期格式假设为 MM/DD/YYYY，需确认。,FALSE,model

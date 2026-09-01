@@ -1,0 +1,13 @@
+{
+  "status": "completed",
+  "provenance": "model",
+  "model": "deepseek-v4-flash",
+  "prompt_design": "blind_source_only_v1",
+  "generated_at": "2026-09-01T14:03:23Z",
+  "recommendation_count": 61,
+  "batch_count": 10,
+  "batch_sizes": [4, 4, 4, 4, 4, 4, 4, 4, 4, 4],
+  "response_sha256": "31fd2ca0a4bce1a0af711d861f2268a8317295fadaeef45c53f1bba78f0305e2",
+  "batch_response_sha256": ["4ad80f9e7a0feb86c57901120473e73c2dded30ae8d1d33c558862ed05e021b6", "557244668b74252d6affe87ab3b265d150e371f4da8486c117619d56298bc0f0", "f18d764549d9e3d2e75fcd5fee510dd31f9c418e4eedff7a662e19dee36913c2", "f852c9eeaa15c028496eaabe07974a754e8bebf7170837868de9691e11da0870", "6ca70283de5b813d44f223203d6c247170e8172171e30ebe797aa221eb3efb4f", "db4cb8ec4dcc1f6087153194f7df937342a3c91af0b0f264f867e1a67ea5213f", "a90172b1330fee9c4d7f26362ee5add3b17f1c92be14f2bc59468bf506ec945d", "8b1478f4533290cb695dcb90ac1d6e6ab378a82db1ffaa15139e208a5446d258", "e630e769b15921f68e2e8ca8c032dcd38cc0da22dd19217ea4cde6bc56e9665f", "ff171f4a63663079b016dcc52741d0c7f0483f64eb3e87d0e7f84314d423f5ac"],
+  "api_key_logged": false
+}

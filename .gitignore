@@ -9,3 +9,4 @@ logs/*.log
 output/tmp/
 ~$*.xlsx
 ~$*.xls
+*.tmp

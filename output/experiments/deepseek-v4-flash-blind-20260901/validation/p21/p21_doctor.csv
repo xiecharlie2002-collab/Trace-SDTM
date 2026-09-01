@@ -1,0 +1,9 @@
+check,passed,observed,expected
+community_executable,TRUE,D:\Pinnacle\Pinnacle 21 Community.exe,file exists
+community_version,TRUE,4.2.0.5013,4.2.0.5013
+java,TRUE,D:\Pinnacle\resources\app.asar.unpacked\components\java64\bin\java.exe,file exists
+client_jar,TRUE,D:\Pinnacle\resources\app.asar.unpacked\components\lib\p21-client-1.0.9.jar,1.0.9
+engine_config,TRUE,D:\Pinnacle\resources\app.asar.unpacked\components\lib\configs/2508.1/SDTM-IG 3.4 (FDA).xml,FDA 2508.1 / SDTMIG 3.4
+controlled_terminology,TRUE,D:\Pinnacle\resources\app.asar.unpacked\components\lib\configs/data/CDISC/SDTM/2026-03-27/SDTM Terminology.odm.xml,2026-03-27
+xpt_directory,TRUE,D:/clinical_programming_10weeks/02_project/output/experiments/deepseek-v4-flash-blind-20260901/sdtm/xpt,"DM, AE and VS XPT files"
+output_directory_writable,TRUE,D:/clinical_programming_10weeks/02_project/output/experiments/deepseek-v4-flash-blind-20260901/validation/p21,writable

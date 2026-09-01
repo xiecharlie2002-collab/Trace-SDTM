@@ -2,8 +2,12 @@
   "status": "reference_seed",
   "provenance": "reference_seed",
   "model": null,
-  "generated_at": "2026-09-01T12:38:48Z",
+  "prompt_design": "reference_seed",
+  "generated_at": "2026-09-01T14:13:36Z",
   "recommendation_count": 40,
+  "batch_count": 0,
+  "batch_sizes": [],
   "response_sha256": null,
+  "batch_response_sha256": [],
   "api_key_logged": false
 }

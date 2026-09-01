@@ -1,0 +1,17 @@
+{
+  "started_at": "2026-09-01T14:06:39Z",
+  "finished_at": "2026-09-01T14:06:54Z",
+  "exit_status": 1,
+  "execution_status": "completed_with_findings",
+  "process_completed": true,
+  "report_exists": true,
+  "community_version": "4.2.0.5013",
+  "client_version": "1.0.9",
+  "engine_name": "FDA 2508.1",
+  "standard": "SDTMIG 3.4",
+  "controlled_terminology_version": "2026-03-27",
+  "input_sha256": ["68ebe3ad64a670e6d3eda72be944cd02a8656954176cae825c39b5212736842c", "c0916d7f9644be51036bb2ddacb1b7f51e2e6cacc7529428a40ebad6faeb3caf", "d57d08906992a8330ef7931cb0360634ee377f0628ec961d36cba86a0d455a0e"],
+  "report_sha256": "d8cb13f8dabb3cad6bcee8761fe2b728a73da63beb439c4ab10b5d628c6757bd",
+  "command_arguments": ["-Xms256m", "-Xmx2048m", "-jar", "D:\\Pinnacle\\resources\\app.asar.unpacked\\components\\lib\\p21-client-1.0.9.jar", "--standard=SDTM", "--standard.version=3.4", "--engine.version=2508.1", "--filter=FDA", "--config=D:\\Pinnacle\\resources\\app.asar.unpacked\\components\\lib\\configs", "--source.sdtm=D:/clinical_programming_10weeks/02_project/output/experiments/deepseek-v4-flash-blind-20260901/sdtm/xpt", "--cdisc.ct.sdtm.version=2026-03-27", "--report=D:/clinical_programming_10weeks/02_project/output/experiments/deepseek-v4-flash-blind-20260901/validation/p21/p21_report.xlsx", "--report.type=Excel", "--report.cutoff=100"],
+  "secrets_logged": false
+}

@@ -14,6 +14,7 @@ print_trace_help <- function() {
     "  profile",
     "  recommend              调用真实 OpenAI 兼容接口",
     "  recommend --seed       生成明确标记的离线参考种子",
+    "  review-gold            仅用于实验评价：按金标准填写审核表",
     "  approve                从审核工作簿锁定规格",
     "  build",
     "  validate-local",
@@ -41,6 +42,7 @@ trace_main <- function(args = commandArgs(trailingOnly = TRUE)) {
       profile_sources(config)
       if ("--seed" %in% args) seed_recommendations(config) else call_mapping_model(config)
     },
+    `review-gold` = review_against_gold(config),
     approve = approve_mapping(config),
     build = build_sdtm(config),
     `validate-local` = validate_local(config),
@@ -59,4 +61,3 @@ trace_main <- function(args = commandArgs(trailingOnly = TRUE)) {
   )
   invisible(TRUE)
 }
-

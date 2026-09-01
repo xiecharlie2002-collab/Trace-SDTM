@@ -1,0 +1,7 @@
+mapping_id,candidate_rank,source_dataset,source_variable,target_domain,target_variable,target_value,mapping_type,transform_id,transform_parameters,recommendation_score,reason,uncertainties,review_required,provenance
+AE003,1,ae_raw,STUDY | PATNUM,AE,USUBJID,,combine,combine_fields,"{""fields"":[""STUDY"",""PATNUM""],""separator"":""-""}",90,Combine study identifier and subject identifier to create unique subject identifier for AE domain.,Assumed separator hyphen; may need confirmation from study specs.,TRUE,model
+AE003,2,ae_raw,STUDY | PATNUM,DM,USUBJID,,combine,combine_fields,"{""fields"":[""STUDY"",""PATNUM""],""separator"":""-""}",80,Alternative to map combined identifier to DM.USUBJID for subject-level data.,Same as rank 1 but domain choice differs.,TRUE,model
+AE003,3,ae_raw,STUDY | PATNUM,AE,STUDYID,,direct,direct_map,"{""source_variable"":""STUDY""}",50,"Direct mapping of study identifier, but does not use PATNUM.",Incomplete use of source variables; likely not intended.,TRUE,model
+AE005,1,ae_raw,IT.AETERM,AE,AETERM,,direct,direct_map,"{""source_variable"":""IT.AETERM""}",95,Reported adverse event term maps directly to AETERM.,None.,FALSE,model
+AE006,1,ae_raw,AEDECOD,AE,AEDECOD,,direct,direct_map,"{""source_variable"":""AEDECOD""}",95,Coded adverse event term maps directly to AEDECOD.,None.,FALSE,model
+AE007,1,ae_raw,AEBODSYS,AE,AEBODSYS,,direct,direct_map,"{""source_variable"":""AEBODSYS""}",95,Adverse event body system maps directly to AEBODSYS.,None.,FALSE,model

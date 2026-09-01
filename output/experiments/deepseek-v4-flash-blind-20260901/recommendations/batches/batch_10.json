@@ -1,0 +1,12 @@
+{
+  "batch_index": 10,
+  "task_count": 4,
+  "candidate_count": 12,
+  "mapping_ids": ["VS103", "VS104", "VS105", "VS106"],
+  "model": "deepseek-v4-flash",
+  "prompt_design": "blind_source_only_v1",
+  "prompt_sha256": "e9c11a3c79f1098da74db334c2271d2bc35028bc87e11e81e60d69e665a4e224",
+  "response_sha256": "ff171f4a63663079b016dcc52741d0c7f0483f64eb3e87d0e7f84314d423f5ac",
+  "completed_at": "2026-09-01T14:01:17Z",
+  "api_key_logged": false
+}
