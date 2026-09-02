@@ -1,0 +1,10 @@
+{
+  "status": "provider_usage_limit",
+  "stage": "stage2_before_response",
+  "subagent_task": "/root/bench_intermediate_dm_20260902",
+  "response_frozen": false,
+  "count_as_model_error": false,
+  "retry_performed": false,
+  "available_again_at": "2026-09-07T15:55:00+08:00",
+  "message": "You've hit your usage limit. Try again at Sep 7th, 2026 3:55 PM."
+}

@@ -1,0 +1,4 @@
+source_dataset,file,derived,form_name,grain,keys
+dm_intermediate,dm_intermediate.csv,FALSE,Demographics,one_record_per_subject,STUDY | PATNUM
+ae_intermediate,ae_intermediate.csv,FALSE,Adverse Events,one_record_per_event,STUDY | PATNUM | AEID
+vs_intermediate,vs_intermediate.csv,FALSE,Vital Signs,one_record_per_subject_visit,STUDY | PATNUM | INSTANCE

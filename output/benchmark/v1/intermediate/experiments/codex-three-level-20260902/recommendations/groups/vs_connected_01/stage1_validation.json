@@ -1,0 +1,9 @@
+{
+  "validation_status": "passed",
+  "request_sha256": "dfd048b17949db4541210220373b6f75093c28cd71ef9660637f39fdc6159773",
+  "response_sha256": "f2b496109428503d39ecfb4e59926aab4b2262a59e0659eb59dcca405e241729",
+  "normalized_sha256": "dd89decafa4b51ea2335e6887902cddf69b7b096459a13980538c0da09f5c076",
+  "subagent_task": "/root/bench_intermediate_vs_20260902",
+  "validated_at": "2026-09-02T15:51:59Z",
+  "retry_performed": false
+}

@@ -1,0 +1,11 @@
+{
+  "generated_at": "2026-09-02T15:25:01Z",
+  "datasets": 3,
+  "fields": 42,
+  "fields_by_domain": {
+    "AE": 16,
+    "DM": 14,
+    "VS": 12
+  },
+  "dictionary_sha256": "ce21cca3c019a627a74a1722046249e0abd15f146b5c054aafb6f9d5f23287c3"
+}

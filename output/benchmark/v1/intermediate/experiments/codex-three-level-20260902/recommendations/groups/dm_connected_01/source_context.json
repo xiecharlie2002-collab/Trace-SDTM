@@ -1,0 +1,466 @@
+[
+  {
+    "concept_id": "DM_CORE",
+    "target_domain": "DM",
+    "form_name": "Demographics",
+    "expected_cardinality": "one_record_to_one_record",
+    "required": true,
+    "depends_on": [],
+    "source_refs": [
+      {
+        "dataset": "dm_intermediate",
+        "variable": "STUDY",
+        "role": "study_identifier"
+      },
+      {
+        "dataset": "dm_intermediate",
+        "variable": "PATNUM",
+        "role": "subject_identifier"
+      }
+    ],
+    "source_catalog": {
+      "dm_intermediate": {
+        "file": "dm_intermediate.csv",
+        "form_name": "Demographics",
+        "grain": "one_record_per_subject",
+        "keys": ["STUDY", "PATNUM"]
+      }
+    },
+    "field_profiles": [
+      {
+        "declared_source_key": "dm_intermediate.STUDY",
+        "role": "study_identifier",
+        "resolution": "direct",
+        "evidence": [
+          {
+            "source_dataset": "dm_intermediate",
+            "source_variable": "STUDY",
+            "label": "Study identifier",
+            "data_type": "character",
+            "example_values": "TRACE-MID",
+            "missing_rate": 0,
+            "unique_count": 1,
+            "form_name": "Demographics",
+            "grain": "one_record_per_subject",
+            "format_candidates": "",
+            "partial_tokens": "",
+            "record_count": 6
+          }
+        ]
+      },
+      {
+        "declared_source_key": "dm_intermediate.PATNUM",
+        "role": "subject_identifier",
+        "resolution": "direct",
+        "evidence": [
+          {
+            "source_dataset": "dm_intermediate",
+            "source_variable": "PATNUM",
+            "label": "Subject identifier",
+            "data_type": "character",
+            "example_values": "701-1001 | 701-1002 | 702-1003 | 702-1004 | 703-1005",
+            "missing_rate": 0,
+            "unique_count": 6,
+            "form_name": "Demographics",
+            "grain": "one_record_per_subject",
+            "format_candidates": "",
+            "partial_tokens": "",
+            "record_count": 6
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "concept_id": "DM_REFERENCE_START",
+    "target_domain": "DM",
+    "form_name": "Demographics",
+    "expected_cardinality": "one_record_to_one_record",
+    "required": true,
+    "depends_on": "DM_CORE",
+    "source_refs": [
+      {
+        "dataset": "dm_intermediate",
+        "variable": "FIRST_DOSE_DATE",
+        "role": "date"
+      },
+      {
+        "dataset": "dm_intermediate",
+        "variable": "FIRST_DOSE_TIME",
+        "role": "time"
+      }
+    ],
+    "source_catalog": {
+      "dm_intermediate": {
+        "file": "dm_intermediate.csv",
+        "form_name": "Demographics",
+        "grain": "one_record_per_subject",
+        "keys": ["STUDY", "PATNUM"]
+      }
+    },
+    "field_profiles": [
+      {
+        "declared_source_key": "dm_intermediate.FIRST_DOSE_DATE",
+        "role": "date",
+        "resolution": "direct",
+        "evidence": [
+          {
+            "source_dataset": "dm_intermediate",
+            "source_variable": "FIRST_DOSE_DATE",
+            "label": "FIRST DOSE DATE",
+            "data_type": "character",
+            "example_values": "05-Jan-2025 | 06-Jan-2025 | 07-Jan-2025 | 08-Jan-2025 | 09-Jan-2025",
+            "missing_rate": 0,
+            "unique_count": 6,
+            "form_name": "Demographics",
+            "grain": "one_record_per_subject",
+            "format_candidates": "dd-mmm-yyyy",
+            "partial_tokens": "",
+            "record_count": 6
+          }
+        ]
+      },
+      {
+        "declared_source_key": "dm_intermediate.FIRST_DOSE_TIME",
+        "role": "time",
+        "resolution": "direct",
+        "evidence": [
+          {
+            "source_dataset": "dm_intermediate",
+            "source_variable": "FIRST_DOSE_TIME",
+            "label": "FIRST DOSE TIME",
+            "data_type": "hms",
+            "example_values": "08:15:00 | 09:30:15 | 07:45:30 | 10:05:45 | 11:20:05",
+            "missing_rate": 0,
+            "unique_count": 6,
+            "form_name": "Demographics",
+            "grain": "one_record_per_subject",
+            "format_candidates": "H:M:S",
+            "partial_tokens": "",
+            "record_count": 6
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "concept_id": "DM_CONSENT",
+    "target_domain": "DM",
+    "form_name": "Demographics",
+    "expected_cardinality": "one_record_to_one_record",
+    "required": true,
+    "depends_on": "DM_CORE",
+    "source_refs": [
+      {
+        "dataset": "dm_intermediate",
+        "variable": "IC_DATE",
+        "role": "date"
+      }
+    ],
+    "source_catalog": {
+      "dm_intermediate": {
+        "file": "dm_intermediate.csv",
+        "form_name": "Demographics",
+        "grain": "one_record_per_subject",
+        "keys": ["STUDY", "PATNUM"]
+      }
+    },
+    "field_profiles": [
+      {
+        "declared_source_key": "dm_intermediate.IC_DATE",
+        "role": "date",
+        "resolution": "direct",
+        "evidence": [
+          {
+            "source_dataset": "dm_intermediate",
+            "source_variable": "IC_DATE",
+            "label": "IC DATE",
+            "data_type": "character",
+            "example_values": "20-Dec-2024 | 21-Dec-2024 | 23-Dec-2024 | 27-Dec-2024 | 30-Dec-2024",
+            "missing_rate": 0,
+            "unique_count": 6,
+            "form_name": "Demographics",
+            "grain": "one_record_per_subject",
+            "format_candidates": "dd-mmm-yyyy",
+            "partial_tokens": "",
+            "record_count": 6
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "concept_id": "DM_DEMOGRAPHICS",
+    "target_domain": "DM",
+    "form_name": "Demographics",
+    "expected_cardinality": "one_record_to_one_record",
+    "required": true,
+    "depends_on": "DM_CORE",
+    "source_refs": [
+      {
+        "dataset": "dm_intermediate",
+        "variable": "AGE",
+        "role": "age"
+      },
+      {
+        "dataset": "dm_intermediate",
+        "variable": "SEX",
+        "role": "sex"
+      },
+      {
+        "dataset": "dm_intermediate",
+        "variable": "ETHNIC",
+        "role": "ethnicity"
+      },
+      {
+        "dataset": "dm_intermediate",
+        "variable": "RACE",
+        "role": "race"
+      },
+      {
+        "dataset": "dm_intermediate",
+        "variable": "COUNTRY",
+        "role": "country"
+      }
+    ],
+    "source_catalog": {
+      "dm_intermediate": {
+        "file": "dm_intermediate.csv",
+        "form_name": "Demographics",
+        "grain": "one_record_per_subject",
+        "keys": ["STUDY", "PATNUM"]
+      }
+    },
+    "field_profiles": [
+      {
+        "declared_source_key": "dm_intermediate.AGE",
+        "role": "age",
+        "resolution": "direct",
+        "evidence": [
+          {
+            "source_dataset": "dm_intermediate",
+            "source_variable": "AGE",
+            "label": "AGE",
+            "data_type": "numeric",
+            "example_values": "34 | 52 | 41 | 66 | 29",
+            "missing_rate": 0,
+            "unique_count": 6,
+            "form_name": "Demographics",
+            "grain": "one_record_per_subject",
+            "format_candidates": "",
+            "partial_tokens": "",
+            "record_count": 6
+          }
+        ]
+      },
+      {
+        "declared_source_key": "dm_intermediate.SEX",
+        "role": "sex",
+        "resolution": "direct",
+        "evidence": [
+          {
+            "source_dataset": "dm_intermediate",
+            "source_variable": "SEX",
+            "label": "SEX",
+            "data_type": "character",
+            "example_values": "Female | Male | Unknown",
+            "missing_rate": 0,
+            "unique_count": 3,
+            "form_name": "Demographics",
+            "grain": "one_record_per_subject",
+            "format_candidates": "",
+            "partial_tokens": "Unk",
+            "record_count": 6
+          }
+        ]
+      },
+      {
+        "declared_source_key": "dm_intermediate.ETHNIC",
+        "role": "ethnicity",
+        "resolution": "direct",
+        "evidence": [
+          {
+            "source_dataset": "dm_intermediate",
+            "source_variable": "ETHNIC",
+            "label": "ETHNIC",
+            "data_type": "character",
+            "example_values": "Not Hispanic or Latino | Hispanic or Latino | Not Reported | Unknown",
+            "missing_rate": 0,
+            "unique_count": 4,
+            "form_name": "Demographics",
+            "grain": "one_record_per_subject",
+            "format_candidates": "",
+            "partial_tokens": "Unk",
+            "record_count": 6
+          }
+        ]
+      },
+      {
+        "declared_source_key": "dm_intermediate.RACE",
+        "role": "race",
+        "resolution": "direct",
+        "evidence": [
+          {
+            "source_dataset": "dm_intermediate",
+            "source_variable": "RACE",
+            "label": "RACE",
+            "data_type": "character",
+            "example_values": "Asian | White | Black or African American | Multiple | American Indian or Alaska Native",
+            "missing_rate": 0,
+            "unique_count": 5,
+            "form_name": "Demographics",
+            "grain": "one_record_per_subject",
+            "format_candidates": "",
+            "partial_tokens": "",
+            "record_count": 6
+          }
+        ]
+      },
+      {
+        "declared_source_key": "dm_intermediate.COUNTRY",
+        "role": "country",
+        "resolution": "direct",
+        "evidence": [
+          {
+            "source_dataset": "dm_intermediate",
+            "source_variable": "COUNTRY",
+            "label": "Country",
+            "data_type": "character",
+            "example_values": "CHN | USA | GBR | CAN | AUS",
+            "missing_rate": 0,
+            "unique_count": 5,
+            "form_name": "Demographics",
+            "grain": "one_record_per_subject",
+            "format_candidates": "",
+            "partial_tokens": "",
+            "record_count": 6
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "concept_id": "DM_TREATMENT",
+    "target_domain": "DM",
+    "form_name": "Demographics",
+    "expected_cardinality": "one_record_to_one_record",
+    "required": true,
+    "depends_on": "DM_CORE",
+    "source_refs": [
+      {
+        "dataset": "dm_intermediate",
+        "variable": "PLANNED_ARMCD",
+        "role": "planned_arm_code"
+      },
+      {
+        "dataset": "dm_intermediate",
+        "variable": "PLANNED_ARM",
+        "role": "planned_arm"
+      },
+      {
+        "dataset": "dm_intermediate",
+        "variable": "ACTUAL_ARMCD",
+        "role": "actual_arm_code"
+      },
+      {
+        "dataset": "dm_intermediate",
+        "variable": "ACTUAL_ARM",
+        "role": "actual_arm"
+      }
+    ],
+    "source_catalog": {
+      "dm_intermediate": {
+        "file": "dm_intermediate.csv",
+        "form_name": "Demographics",
+        "grain": "one_record_per_subject",
+        "keys": ["STUDY", "PATNUM"]
+      }
+    },
+    "field_profiles": [
+      {
+        "declared_source_key": "dm_intermediate.PLANNED_ARMCD",
+        "role": "planned_arm_code",
+        "resolution": "direct",
+        "evidence": [
+          {
+            "source_dataset": "dm_intermediate",
+            "source_variable": "PLANNED_ARMCD",
+            "label": "Planned treatment arm code",
+            "data_type": "character",
+            "example_values": "TRTA | TRTB",
+            "missing_rate": 0,
+            "unique_count": 2,
+            "form_name": "Demographics",
+            "grain": "one_record_per_subject",
+            "format_candidates": "",
+            "partial_tokens": "",
+            "record_count": 6
+          }
+        ]
+      },
+      {
+        "declared_source_key": "dm_intermediate.PLANNED_ARM",
+        "role": "planned_arm",
+        "resolution": "direct",
+        "evidence": [
+          {
+            "source_dataset": "dm_intermediate",
+            "source_variable": "PLANNED_ARM",
+            "label": "Planned treatment arm",
+            "data_type": "character",
+            "example_values": "Treatment A | Treatment B",
+            "missing_rate": 0,
+            "unique_count": 2,
+            "form_name": "Demographics",
+            "grain": "one_record_per_subject",
+            "format_candidates": "",
+            "partial_tokens": "",
+            "record_count": 6
+          }
+        ]
+      },
+      {
+        "declared_source_key": "dm_intermediate.ACTUAL_ARMCD",
+        "role": "actual_arm_code",
+        "resolution": "direct",
+        "evidence": [
+          {
+            "source_dataset": "dm_intermediate",
+            "source_variable": "ACTUAL_ARMCD",
+            "label": "Actual treatment arm code",
+            "data_type": "character",
+            "example_values": "TRTA | TRTB",
+            "missing_rate": 0,
+            "unique_count": 2,
+            "form_name": "Demographics",
+            "grain": "one_record_per_subject",
+            "format_candidates": "",
+            "partial_tokens": "",
+            "record_count": 6
+          }
+        ]
+      },
+      {
+        "declared_source_key": "dm_intermediate.ACTUAL_ARM",
+        "role": "actual_arm",
+        "resolution": "direct",
+        "evidence": [
+          {
+            "source_dataset": "dm_intermediate",
+            "source_variable": "ACTUAL_ARM",
+            "label": "Actual treatment arm",
+            "data_type": "character",
+            "example_values": "Treatment A | Treatment B",
+            "missing_rate": 0,
+            "unique_count": 2,
+            "form_name": "Demographics",
+            "grain": "one_record_per_subject",
+            "format_candidates": "",
+            "partial_tokens": "",
+            "record_count": 6
+          }
+        ]
+      }
+    ]
+  }
+]

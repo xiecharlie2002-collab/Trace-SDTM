@@ -1,0 +1,81 @@
+{
+  "status": "completed",
+  "schema_version": "0.2",
+  "scenario": "basic",
+  "provenance": "codex_subagent",
+  "model": "same-codex-subagent-configuration",
+  "prompt_design": "concept_grouped_two_stage_registry_v02",
+  "generated_at": "2026-09-02T15:38:22Z",
+  "concept_count": 18,
+  "candidate_count": 18,
+  "group_runs": [
+    {
+      "group_id": "dm_connected_01",
+      "concept_ids": ["DM_STUDY_IDENTIFIER", "DM_DOMAIN_CONSTANT", "DM_UNIQUE_SUBJECT_IDENTIFIER", "DM_INFORMED_CONSENT", "DM_SEX_TERM", "DM_COUNTRY"],
+      "stage1": {
+        "validation_status": "passed",
+        "request_sha256": "b599dade3063e7c5bbcb743b664b624f0e723ee237a3e3ec0a332d5f1acdcb89",
+        "response_sha256": "a156a4471963670ba1913f41dd688d6ddeb8eae96a3ad0fa636068da445ad7af",
+        "normalized_sha256": "0e900abbb1ee8772d4f6defcf0470acb3c2b6d43b4e98bec50acb4f4db41a4ef",
+        "subagent_task": "/root/bench_basic_dm_20260902",
+        "validated_at": "2026-09-02T15:25:35Z",
+        "retry_performed": false
+      },
+      "stage2": {
+        "validation_status": "passed",
+        "request_sha256": "33c1a2339867f76c881e6cef6950a1c51b099cb089f54b5323096028ea4b5b11",
+        "response_sha256": "353c022ac88bc193492523a477c6120281ccd9c94d02c0aae710a4ebc7edcf26",
+        "normalized_sha256": "49f7b7a49c8330fc14d0335e553c161d14e754037111e9f8077fcc8a0aa9c164",
+        "subagent_task": "/root/bench_basic_dm_20260902",
+        "validated_at": "2026-09-02T15:38:12Z",
+        "retry_performed": false
+      }
+    },
+    {
+      "group_id": "ae_connected_01",
+      "concept_ids": ["AE_STUDY_IDENTIFIER", "AE_DOMAIN_CONSTANT", "AE_UNIQUE_SUBJECT_IDENTIFIER", "AE_REPORTED_TERM", "AE_SEVERITY", "AE_START_DATE"],
+      "stage1": {
+        "validation_status": "passed",
+        "request_sha256": "85a75cca62efd2a9c9998a2e0f80027c0db899f9749c3a98bc77cb23d42813d8",
+        "response_sha256": "33e29b7885e51cb73b561a2dddc425d21bfd3c206537616de9443f3306029878",
+        "normalized_sha256": "a2f70b0e39c440a33a6b2e2697fc004187a9071844ffce8a6ce651f8fb5642ee",
+        "subagent_task": "/root/bench_basic_ae_20260902",
+        "validated_at": "2026-09-02T15:25:35Z",
+        "retry_performed": false
+      },
+      "stage2": {
+        "validation_status": "passed",
+        "request_sha256": "356051f5d64ca9c4169e6ff75dc7b690c3cb1b7b5e195582be022cb6d4a60aaf",
+        "response_sha256": "ffaeaca7e64d8de0476623e22eae4ef28c12f473520dfe195f51401e5a12847f",
+        "normalized_sha256": "31427e570a731e96b3867457b9601aff1672f36814ca79e2ef42956d18c74ed6",
+        "subagent_task": "/root/bench_basic_ae_20260902",
+        "validated_at": "2026-09-02T15:38:12Z",
+        "retry_performed": false
+      }
+    },
+    {
+      "group_id": "vs_connected_01",
+      "concept_ids": ["VS_STUDY_IDENTIFIER", "VS_DOMAIN_CONSTANT", "VS_UNIQUE_SUBJECT_IDENTIFIER", "VS_TEST_CODE", "VS_ORIGINAL_RESULT", "VS_MEASUREMENT_DATE"],
+      "stage1": {
+        "validation_status": "passed",
+        "request_sha256": "8c1abf2d32d17d714b46b0ebdad3a5d0f9650e66753deb95d98947bd6cfd42a1",
+        "response_sha256": "2d0190a2ff199a4f835d8185234d7121fec827dcff5c415a4256d6f3107352ce",
+        "normalized_sha256": "bfca5746cb464e8ed99e015777110b18dc623c06646a2d912b7a4c1dac9c41c4",
+        "subagent_task": "/root/bench_basic_vs_20260902",
+        "validated_at": "2026-09-02T15:25:35Z",
+        "retry_performed": false
+      },
+      "stage2": {
+        "validation_status": "passed",
+        "request_sha256": "b43147298faa5115bc6d96756f10a23402de0b1d81b73cb1f06e6001b6d8dd64",
+        "response_sha256": "6043de32083c8eb48a558aea8c9643d7eb640f8b025eaea225c37fbc8122ef1c",
+        "normalized_sha256": "066255e73cc85c4d472df0691509b4cb7d5f48ad6aea8ed62df5a3eb2d03fee8",
+        "subagent_task": "/root/bench_basic_vs_20260902",
+        "validated_at": "2026-09-02T15:38:11Z",
+        "retry_performed": false
+      }
+    }
+  ],
+  "group_failures": [],
+  "api_key_logged": false
+}

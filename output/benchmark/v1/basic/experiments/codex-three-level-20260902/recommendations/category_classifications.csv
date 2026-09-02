@@ -1,0 +1,19 @@
+concept_id,categories,classification_score,evidence,uncertainties,status,group_id
+DM_STUDY_IDENTIFIER,direct_assignment,0.99,dm_basic.STUDY可直接赋值给STUDYID，来源粒度为每受试者一条记录。,,proposed,dm_connected_01
+DM_DOMAIN_CONSTANT,direct_assignment,0.99,DOMAIN为每条记录固定赋值的域缩写常量。,,proposed,dm_connected_01
+DM_UNIQUE_SUBJECT_IDENTIFIER,field_combination,0.99,项目政策明确规定USUBJID由dm_basic.STUDY与dm_basic.PATNUM按连字符组合。,,proposed,dm_connected_01
+DM_INFORMED_CONSENT,date_time_conversion,0.99,dm_basic.ICDATE为知情同意日期，项目政策已明确其来源格式为y-m-d，需转换为ISO 8601格式的RFICDTC。,,proposed,dm_connected_01
+DM_SEX_TERM,controlled_terminology,0.99,dm_basic.SEX的示例取值为Female和Male，需按SEX受控术语转换为F和M。,,proposed,dm_connected_01
+DM_COUNTRY,direct_assignment,0.98,dm_basic.COUNTRY提供国家代码，目标COUNTRY未指定额外受控术语转换，可保持语义直接赋值。,,proposed,dm_connected_01
+AE_STUDY_IDENTIFIER,direct_assignment,0.99,研究标识符直接来自 ae_basic.STUDY，来源与目标语义一致。,,proposed,ae_connected_01
+AE_DOMAIN_CONSTANT,direct_assignment,0.99,AE 域缩写为每条记录赋固定常量。,,proposed,ae_connected_01
+AE_UNIQUE_SUBJECT_IDENTIFIER,field_combination,0.99,项目政策明确规定由同一来源数据集中的 STUDY 与 PATNUM 按连字符组合生成唯一受试者标识符。,,proposed,ae_connected_01
+AE_REPORTED_TERM,direct_assignment,0.99,不良事件报告术语直接来自 ae_basic.AETERM，来源与目标语义一致。,,proposed,ae_connected_01
+AE_SEVERITY,controlled_terminology,0.98,来源值为 Mild Adverse Event、Moderate Adverse Event 和 Severe Adverse Event，需要映射至目标受控术语 MILD、MODERATE 和 SEVERE。,,proposed,ae_connected_01
+AE_START_DATE,date_time_conversion,0.99,开始日期来自 ae_basic.AESTDAT，项目政策已明确其输入格式为 y-m-d，需转换为 ISO 8601 日期。,,proposed,ae_connected_01
+VS_STUDY_IDENTIFIER,direct_assignment,0.99,研究标识符有单一直接来源字段vs_basic.STUDY，来源与目标语义一致。,,proposed,vs_connected_01
+VS_DOMAIN_CONSTANT,direct_assignment,0.99,域缩写为每条记录固定赋值的常量。,,proposed,vs_connected_01
+VS_UNIQUE_SUBJECT_IDENTIFIER,field_combination,0.99,项目政策明确规定使用STUDY和PATNUM并以连字符组合生成唯一受试者标识符。,,proposed,vs_connected_01
+VS_TEST_CODE,direct_assignment,0.97,检查代码有单一直接来源字段vs_basic.VSTESTCD，未要求术语转换。,,proposed,vs_connected_01
+VS_ORIGINAL_RESULT,direct_assignment,0.96,原始结果有单一直接来源字段vs_basic.VSORRES，不改变其临床语义。,,proposed,vs_connected_01
+VS_MEASUREMENT_DATE,date_time_conversion,0.99,测量日期来自vs_basic.VSDAT，项目政策已明确其输入格式为y-m-d，需要转换为ISO 8601日期。,,proposed,vs_connected_01

@@ -1,0 +1,51 @@
+{
+  "benchmark_id": "codex-three-level-20260902",
+  "scenario": "advanced",
+  "provider": "codex_subagent",
+  "protocol": "fresh_domain_agent_two_stage_single_run",
+  "blind_limit": "fork_turns=none and task restrictions are procedural, not operating-system isolation",
+  "concept_count": 21,
+  "group_count": 3,
+  "groups": [
+    {
+      "scenario": "advanced",
+      "group_id": "dm_connected_01",
+      "concept_ids": ["DM_CORE", "DM_REFERENCE_START", "DM_CONSENT", "DM_DEMOGRAPHICS", "DM_TREATMENT"],
+      "stage1_request_sha256": "3d81dcb5f10ebdd2e97c22eafd0f228195eb86f35fd8c02a99e9c58c919cc98f",
+      "registry_sha256": "47c67a018c9f0c1c30157bfe8fcce0edad96fa97626fc04c9d73488236dd8147",
+      "profile_sha256": "288b55128a67fcf6ea2a3a8beb99575cbf00d34106ae5f8543840873f5a41699",
+      "concept_specification_sha256": "635f1ca332d379e59bac0a8fa1ac10c510c72e004ee9026313c47c37ce18998d",
+      "policy_sha256": "8b7d35713f8033a8c16b820417350d9ba0cd83a0a437179a9627180a051df59a",
+      "gold_sha256": "29042b39824be83af7e37bdd06534eb4860efd4e007373a0449d1f093268f29d",
+      "code_commit": "31914744d736f4c45ffe32e5fc4873fc0f983ac3",
+      "prepared_at": "2026-09-02T15:25:07Z"
+    },
+    {
+      "scenario": "advanced",
+      "group_id": "ae_connected_01",
+      "concept_ids": ["AE_SOURCE_INTEGRATION", "AE_CORE", "AE_TERMS", "AE_SAFETY", "AE_REL_OUTCOME", "AE_START", "AE_END", "AE_SEQUENCE"],
+      "stage1_request_sha256": "63aeabf803668eeb11f504c6ee802d8ee8748f7e20b89a102edfc9286f9cdb71",
+      "registry_sha256": "47c67a018c9f0c1c30157bfe8fcce0edad96fa97626fc04c9d73488236dd8147",
+      "profile_sha256": "288b55128a67fcf6ea2a3a8beb99575cbf00d34106ae5f8543840873f5a41699",
+      "concept_specification_sha256": "635f1ca332d379e59bac0a8fa1ac10c510c72e004ee9026313c47c37ce18998d",
+      "policy_sha256": "8b7d35713f8033a8c16b820417350d9ba0cd83a0a437179a9627180a051df59a",
+      "gold_sha256": "29042b39824be83af7e37bdd06534eb4860efd4e007373a0449d1f093268f29d",
+      "code_commit": "31914744d736f4c45ffe32e5fc4873fc0f983ac3",
+      "prepared_at": "2026-09-02T15:25:08Z"
+    },
+    {
+      "scenario": "advanced",
+      "group_id": "vs_connected_01",
+      "concept_ids": ["VS_CORE", "VS_HEIGHT", "VS_WEIGHT", "VS_TEMP", "VS_SYSBP", "VS_DIABP", "VS_PULSE", "VS_POST_DERIVATIONS"],
+      "stage1_request_sha256": "1b6fdabb0acf27288bd698a6db53a2256802d941babe3c1aef204767cb2e8a83",
+      "registry_sha256": "47c67a018c9f0c1c30157bfe8fcce0edad96fa97626fc04c9d73488236dd8147",
+      "profile_sha256": "288b55128a67fcf6ea2a3a8beb99575cbf00d34106ae5f8543840873f5a41699",
+      "concept_specification_sha256": "635f1ca332d379e59bac0a8fa1ac10c510c72e004ee9026313c47c37ce18998d",
+      "policy_sha256": "8b7d35713f8033a8c16b820417350d9ba0cd83a0a437179a9627180a051df59a",
+      "gold_sha256": "29042b39824be83af7e37bdd06534eb4860efd4e007373a0449d1f093268f29d",
+      "code_commit": "31914744d736f4c45ffe32e5fc4873fc0f983ac3",
+      "prepared_at": "2026-09-02T15:25:08Z"
+    }
+  ],
+  "api_key_used": false
+}

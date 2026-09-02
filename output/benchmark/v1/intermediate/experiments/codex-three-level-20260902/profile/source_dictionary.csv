@@ -1,0 +1,43 @@
+source_domain,source_dataset,source_variable,label,data_type,example_values,missing_rate,unique_count,form_name,grain,keys,concept_roles,format_candidates,partial_tokens,record_count
+AE,ae_intermediate,AEBODSYS,Adverse event body system,character,Nervous system disorders | Gastrointestinal disorders | Skin and subcutaneous tissue disorders | General disorders an...,0,5,Adverse Events,one_record_per_event,STUDY | PATNUM | AEID,body_system,,,7
+AE,ae_intermediate,AEDECOD,Coded adverse event term,character,Headache | Nausea | Dizziness | Rash | Fatigue,0,7,Adverse Events,one_record_per_event,STUDY | PATNUM | AEID,coded_term,,,7
+AE,ae_intermediate,AEENDDAT,AEENDDAT,character,07-Jan-2025 | 09-Jan-2025 | 12-Jan-2025 | 11-Jan-2025 | 14-Jan-2025,0.2857142857142857,5,Adverse Events,one_record_per_event,STUDY | PATNUM | AEID,date,dd-mmm-yyyy,,7
+AE,ae_intermediate,AEENDTIM,AEENDTIM,hms,16:45:00 | 14:20:30 | 18:10:45 | 07:50:05 | 09:35:40,0.2857142857142857,5,Adverse Events,one_record_per_event,STUDY | PATNUM | AEID,time,H:M:S,,7
+AE,ae_intermediate,AEID,AEID,character,AE01 | AE02,0,2,Adverse Events,one_record_per_event,STUDY | PATNUM | AEID,,,,7
+AE,ae_intermediate,AEONGO,AEONGO,character,No | Yes,0,2,Adverse Events,one_record_per_event,STUDY | PATNUM | AEID,ongoing_indicator,,,7
+AE,ae_intermediate,AEOUTCOME,Adverse event outcome,character,Recovered/Resolved | Recovering/Resolving | Not Recovered/not Resolved,0,3,Adverse Events,one_record_per_event,STUDY | PATNUM | AEID,outcome,,,7
+AE,ae_intermediate,AEREL,AEREL,character,Possibly Related | Probably Related | Unlikely Related | Not Related,0,4,Adverse Events,one_record_per_event,STUDY | PATNUM | AEID,causality,,,7
+AE,ae_intermediate,AESER,AESER,character,No | Yes,0,2,Adverse Events,one_record_per_event,STUDY | PATNUM | AEID,serious_indicator,,,7
+AE,ae_intermediate,AESEV,AESEV,character,Mild Adverse Event | Moderate Adverse Event | Severe Adverse Event,0,3,Adverse Events,one_record_per_event,STUDY | PATNUM | AEID,severity,,,7
+AE,ae_intermediate,AESHOSP,AESHOSP,character,No | Yes,0,2,Adverse Events,one_record_per_event,STUDY | PATNUM | AEID,hospitalization_indicator,,,7
+AE,ae_intermediate,AESTDAT,AESTDAT,character,06-Jan-2025 | 08-Jan-2025 | 07-Jan-2025 | 09-Jan-2025 | 10-Jan-2025,0,6,Adverse Events,one_record_per_event,STUDY | PATNUM | AEID,date,dd-mmm-yyyy,,7
+AE,ae_intermediate,AESTTIM,AESTTIM,hms,10:30:00 | 12:15:30 | 09:05:15 | 08:00:00 | 13:40:20,0,7,Adverse Events,one_record_per_event,STUDY | PATNUM | AEID,time,H:M:S,,7
+AE,ae_intermediate,AETERM,AETERM,character,Headache | Nausea | Dizziness | Rash | Fatigue,0,7,Adverse Events,one_record_per_event,STUDY | PATNUM | AEID,reported_term,,,7
+AE,ae_intermediate,PATNUM,Subject identifier,character,701-1001 | 701-1002 | 702-1003 | 702-1004 | 703-1005,0,6,Adverse Events,one_record_per_event,STUDY | PATNUM | AEID,subject_identifier,,,7
+AE,ae_intermediate,STUDY,Study identifier,character,TRACE-MID,0,1,Adverse Events,one_record_per_event,STUDY | PATNUM | AEID,study_identifier,,,7
+DM,dm_intermediate,ACTUAL_ARM,Actual treatment arm,character,Treatment A | Treatment B,0,2,Demographics,one_record_per_subject,STUDY | PATNUM,actual_arm,,,6
+DM,dm_intermediate,ACTUAL_ARMCD,Actual treatment arm code,character,TRTA | TRTB,0,2,Demographics,one_record_per_subject,STUDY | PATNUM,actual_arm_code,,,6
+DM,dm_intermediate,AGE,AGE,numeric,34 | 52 | 41 | 66 | 29,0,6,Demographics,one_record_per_subject,STUDY | PATNUM,age,,,6
+DM,dm_intermediate,COUNTRY,Country,character,CHN | USA | GBR | CAN | AUS,0,5,Demographics,one_record_per_subject,STUDY | PATNUM,country,,,6
+DM,dm_intermediate,ETHNIC,ETHNIC,character,Not Hispanic or Latino | Hispanic or Latino | Not Reported | Unknown,0,4,Demographics,one_record_per_subject,STUDY | PATNUM,ethnicity,,Unk,6
+DM,dm_intermediate,FIRST_DOSE_DATE,FIRST DOSE DATE,character,05-Jan-2025 | 06-Jan-2025 | 07-Jan-2025 | 08-Jan-2025 | 09-Jan-2025,0,6,Demographics,one_record_per_subject,STUDY | PATNUM,date,dd-mmm-yyyy,,6
+DM,dm_intermediate,FIRST_DOSE_TIME,FIRST DOSE TIME,hms,08:15:00 | 09:30:15 | 07:45:30 | 10:05:45 | 11:20:05,0,6,Demographics,one_record_per_subject,STUDY | PATNUM,time,H:M:S,,6
+DM,dm_intermediate,IC_DATE,IC DATE,character,20-Dec-2024 | 21-Dec-2024 | 23-Dec-2024 | 27-Dec-2024 | 30-Dec-2024,0,6,Demographics,one_record_per_subject,STUDY | PATNUM,date,dd-mmm-yyyy,,6
+DM,dm_intermediate,PATNUM,Subject identifier,character,701-1001 | 701-1002 | 702-1003 | 702-1004 | 703-1005,0,6,Demographics,one_record_per_subject,STUDY | PATNUM,subject_identifier,,,6
+DM,dm_intermediate,PLANNED_ARM,Planned treatment arm,character,Treatment A | Treatment B,0,2,Demographics,one_record_per_subject,STUDY | PATNUM,planned_arm,,,6
+DM,dm_intermediate,PLANNED_ARMCD,Planned treatment arm code,character,TRTA | TRTB,0,2,Demographics,one_record_per_subject,STUDY | PATNUM,planned_arm_code,,,6
+DM,dm_intermediate,RACE,RACE,character,Asian | White | Black or African American | Multiple | American Indian or Alaska Native,0,5,Demographics,one_record_per_subject,STUDY | PATNUM,race,,,6
+DM,dm_intermediate,SEX,SEX,character,Female | Male | Unknown,0,3,Demographics,one_record_per_subject,STUDY | PATNUM,sex,,Unk,6
+DM,dm_intermediate,STUDY,Study identifier,character,TRACE-MID,0,1,Demographics,one_record_per_subject,STUDY | PATNUM,study_identifier,,,6
+VS,vs_intermediate,DIABP,DIABP,numeric,76 | 74 | 84 | 82 | 70,0,10,Vital Signs,one_record_per_subject_visit,STUDY | PATNUM | INSTANCE,result,,,12
+VS,vs_intermediate,HEIGHT,HEIGHT,numeric,165 | 178 | 160 | 172 | 168,0,6,Vital Signs,one_record_per_subject_visit,STUDY | PATNUM | INSTANCE,result,,,12
+VS,vs_intermediate,INSTANCE,Visit name,character,Screening 1 | Week 2,0,2,Vital Signs,one_record_per_subject_visit,STUDY | PATNUM | INSTANCE,visit,,,12
+VS,vs_intermediate,PATNUM,Subject identifier,character,701-1001 | 701-1002 | 702-1003 | 702-1004 | 703-1005,0,6,Vital Signs,one_record_per_subject_visit,STUDY | PATNUM | INSTANCE,subject_identifier,,,12
+VS,vs_intermediate,PULSE,Pulse rate,numeric,68 | 66 | 72 | 70 | 64,0,11,Vital Signs,one_record_per_subject_visit,STUDY | PATNUM | INSTANCE,result,,,12
+VS,vs_intermediate,STUDY,Study identifier,character,TRACE-MID,0,1,Vital Signs,one_record_per_subject_visit,STUDY | PATNUM | INSTANCE,study_identifier,,,12
+VS,vs_intermediate,SUBPOS,Body position,character,Sitting | Supine | Standing,0,3,Vital Signs,one_record_per_subject_visit,STUDY | PATNUM | INSTANCE,body_position,,,12
+VS,vs_intermediate,SYSBP,SYSBP,numeric,118 | 116 | 132 | 128 | 110,0,12,Vital Signs,one_record_per_subject_visit,STUDY | PATNUM | INSTANCE,result,,,12
+VS,vs_intermediate,TEMP,TEMP,numeric,36.6 | 36.8 | 37.0 | 36.9 | 36.5,0,8,Vital Signs,one_record_per_subject_visit,STUDY | PATNUM | INSTANCE,result,,,12
+VS,vs_intermediate,VSDAT,VSDAT,character,03-Jan-2025 | 19-Jan-2025 | 04-Jan-2025 | 20-Jan-2025 | 05-Jan-2025,0,12,Vital Signs,one_record_per_subject_visit,STUDY | PATNUM | INSTANCE,date,dd-mmm-yyyy,,12
+VS,vs_intermediate,VSTIM,VSTIM,hms,08:00:00 | 08:10:30 | 09:00:15 | 09:05:45 | 07:30:20,0,12,Vital Signs,one_record_per_subject_visit,STUDY | PATNUM | INSTANCE,time,H:M:S,,12
+VS,vs_intermediate,WEIGHT,WEIGHT,numeric,62.4 | 62.1 | 81.2 | 80.6 | 55.8,0,12,Vital Signs,one_record_per_subject_visit,STUDY | PATNUM | INSTANCE,result,,,12

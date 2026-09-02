@@ -1,0 +1,74 @@
+[
+  {
+    "concept_id": "VS_CORE",
+    "categories": ["direct_assignment", "controlled_terminology", "date_time_conversion", "field_combination"],
+    "classification_score": 0.99,
+    "evidence": "STUDY、PATNUM和INSTANCE支持不改变语义的字段赋值，DOMAIN可使用固定常量。; USUBJID由已批准的STUDY和PATNUM按规定分隔符组合。; VSDAT和VSTIM的格式已获批准，可转换并组合为ISO 8601日期时间。; SUBPOS需依据目标变量VSPOS的受控术语转换为批准取值。",
+    "uncertainties": "",
+    "status": "proposed",
+    "group_id": "vs_connected_01"
+  },
+  {
+    "concept_id": "VS_HEIGHT",
+    "categories": "record_transposition",
+    "classification_score": 0.99,
+    "evidence": "HEIGHT是横向生命体征检查字段，项目政策已规定对应的检查代码HEIGHT、检查名称Height和原始单位cm；转置类别内部生成检查标识、原始结果和原始单位。",
+    "uncertainties": "",
+    "status": "proposed",
+    "group_id": "vs_connected_01"
+  },
+  {
+    "concept_id": "VS_WEIGHT",
+    "categories": "record_transposition",
+    "classification_score": 0.99,
+    "evidence": "WEIGHT是横向生命体征检查字段，项目政策已规定对应的检查代码WEIGHT、检查名称Weight和原始单位kg；转置类别内部生成检查标识、原始结果和原始单位。",
+    "uncertainties": "",
+    "status": "proposed",
+    "group_id": "vs_connected_01"
+  },
+  {
+    "concept_id": "VS_TEMP",
+    "categories": "record_transposition",
+    "classification_score": 0.99,
+    "evidence": "TEMP是横向生命体征检查字段，项目政策已规定对应的检查代码TEMP、检查名称Temperature和原始单位C；转置类别内部生成检查标识、原始结果和原始单位。",
+    "uncertainties": "",
+    "status": "proposed",
+    "group_id": "vs_connected_01"
+  },
+  {
+    "concept_id": "VS_SYSBP",
+    "categories": "record_transposition",
+    "classification_score": 0.99,
+    "evidence": "SYSBP是横向生命体征检查字段，项目政策已规定对应的检查代码SYSBP、检查名称Systolic Blood Pressure和原始单位mmHg；转置类别内部生成检查标识、原始结果和原始单位。",
+    "uncertainties": "",
+    "status": "proposed",
+    "group_id": "vs_connected_01"
+  },
+  {
+    "concept_id": "VS_DIABP",
+    "categories": "record_transposition",
+    "classification_score": 0.99,
+    "evidence": "DIABP是横向生命体征检查字段，项目政策已规定对应的检查代码DIABP、检查名称Diastolic Blood Pressure和原始单位mmHg；转置类别内部生成检查标识、原始结果和原始单位。",
+    "uncertainties": "",
+    "status": "proposed",
+    "group_id": "vs_connected_01"
+  },
+  {
+    "concept_id": "VS_PULSE",
+    "categories": "record_transposition",
+    "classification_score": 0.99,
+    "evidence": "PULSE是横向生命体征检查字段，项目政策已规定对应的检查代码PULSE、检查名称Pulse Rate和原始单位beats/min；转置类别内部生成检查标识、原始结果和原始单位。",
+    "uncertainties": "",
+    "status": "proposed",
+    "group_id": "vs_connected_01"
+  },
+  {
+    "concept_id": "VS_POST_DERIVATIONS",
+    "categories": ["source_integration", "temporal_derivation"],
+    "classification_score": 0.99,
+    "evidence": "研究日派生需要按已声明的STUDYID和USUBJID键整合DM提供的每受试者一条RFSTDTC参考记录，连接键和基数关系均已明确。; 已批准的VS序号规则支持生成VSSEQ，且时间派生类别覆盖研究日和访视编号。",
+    "uncertainties": "",
+    "status": "proposed",
+    "group_id": "vs_connected_01"
+  }
+]

@@ -1,0 +1,465 @@
+[
+  {
+    "concept_id": "VS_CORE",
+    "target_domain": "VS",
+    "form_name": "Vital Signs",
+    "expected_cardinality": "one_record_to_many_findings",
+    "required": true,
+    "depends_on": "DM_REFERENCE_START",
+    "source_refs": [
+      {
+        "dataset": "vs_intermediate",
+        "variable": "STUDY",
+        "role": "study_identifier"
+      },
+      {
+        "dataset": "vs_intermediate",
+        "variable": "PATNUM",
+        "role": "subject_identifier"
+      },
+      {
+        "dataset": "vs_intermediate",
+        "variable": "INSTANCE",
+        "role": "visit"
+      },
+      {
+        "dataset": "vs_intermediate",
+        "variable": "VSDAT",
+        "role": "date"
+      },
+      {
+        "dataset": "vs_intermediate",
+        "variable": "VSTIM",
+        "role": "time"
+      },
+      {
+        "dataset": "vs_intermediate",
+        "variable": "SUBPOS",
+        "role": "body_position"
+      }
+    ],
+    "source_catalog": {
+      "vs_intermediate": {
+        "file": "vs_intermediate.csv",
+        "form_name": "Vital Signs",
+        "grain": "one_record_per_subject_visit",
+        "keys": ["STUDY", "PATNUM", "INSTANCE"]
+      }
+    },
+    "field_profiles": [
+      {
+        "declared_source_key": "vs_intermediate.STUDY",
+        "role": "study_identifier",
+        "resolution": "direct",
+        "evidence": [
+          {
+            "source_dataset": "vs_intermediate",
+            "source_variable": "STUDY",
+            "label": "Study identifier",
+            "data_type": "character",
+            "example_values": "TRACE-MID",
+            "missing_rate": 0,
+            "unique_count": 1,
+            "form_name": "Vital Signs",
+            "grain": "one_record_per_subject_visit",
+            "format_candidates": "",
+            "partial_tokens": "",
+            "record_count": 12
+          }
+        ]
+      },
+      {
+        "declared_source_key": "vs_intermediate.PATNUM",
+        "role": "subject_identifier",
+        "resolution": "direct",
+        "evidence": [
+          {
+            "source_dataset": "vs_intermediate",
+            "source_variable": "PATNUM",
+            "label": "Subject identifier",
+            "data_type": "character",
+            "example_values": "701-1001 | 701-1002 | 702-1003 | 702-1004 | 703-1005",
+            "missing_rate": 0,
+            "unique_count": 6,
+            "form_name": "Vital Signs",
+            "grain": "one_record_per_subject_visit",
+            "format_candidates": "",
+            "partial_tokens": "",
+            "record_count": 12
+          }
+        ]
+      },
+      {
+        "declared_source_key": "vs_intermediate.INSTANCE",
+        "role": "visit",
+        "resolution": "direct",
+        "evidence": [
+          {
+            "source_dataset": "vs_intermediate",
+            "source_variable": "INSTANCE",
+            "label": "Visit name",
+            "data_type": "character",
+            "example_values": "Screening 1 | Week 2",
+            "missing_rate": 0,
+            "unique_count": 2,
+            "form_name": "Vital Signs",
+            "grain": "one_record_per_subject_visit",
+            "format_candidates": "",
+            "partial_tokens": "",
+            "record_count": 12
+          }
+        ]
+      },
+      {
+        "declared_source_key": "vs_intermediate.VSDAT",
+        "role": "date",
+        "resolution": "direct",
+        "evidence": [
+          {
+            "source_dataset": "vs_intermediate",
+            "source_variable": "VSDAT",
+            "label": "VSDAT",
+            "data_type": "character",
+            "example_values": "03-Jan-2025 | 19-Jan-2025 | 04-Jan-2025 | 20-Jan-2025 | 05-Jan-2025",
+            "missing_rate": 0,
+            "unique_count": 12,
+            "form_name": "Vital Signs",
+            "grain": "one_record_per_subject_visit",
+            "format_candidates": "dd-mmm-yyyy",
+            "partial_tokens": "",
+            "record_count": 12
+          }
+        ]
+      },
+      {
+        "declared_source_key": "vs_intermediate.VSTIM",
+        "role": "time",
+        "resolution": "direct",
+        "evidence": [
+          {
+            "source_dataset": "vs_intermediate",
+            "source_variable": "VSTIM",
+            "label": "VSTIM",
+            "data_type": "hms",
+            "example_values": "08:00:00 | 08:10:30 | 09:00:15 | 09:05:45 | 07:30:20",
+            "missing_rate": 0,
+            "unique_count": 12,
+            "form_name": "Vital Signs",
+            "grain": "one_record_per_subject_visit",
+            "format_candidates": "H:M:S",
+            "partial_tokens": "",
+            "record_count": 12
+          }
+        ]
+      },
+      {
+        "declared_source_key": "vs_intermediate.SUBPOS",
+        "role": "body_position",
+        "resolution": "direct",
+        "evidence": [
+          {
+            "source_dataset": "vs_intermediate",
+            "source_variable": "SUBPOS",
+            "label": "Body position",
+            "data_type": "character",
+            "example_values": "Sitting | Supine | Standing",
+            "missing_rate": 0,
+            "unique_count": 3,
+            "form_name": "Vital Signs",
+            "grain": "one_record_per_subject_visit",
+            "format_candidates": "",
+            "partial_tokens": "",
+            "record_count": 12
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "concept_id": "VS_HEIGHT",
+    "target_domain": "VS",
+    "form_name": "Vital Signs",
+    "expected_cardinality": "one_observed_value_to_one_record",
+    "required": true,
+    "depends_on": "VS_CORE",
+    "source_refs": [
+      {
+        "dataset": "vs_intermediate",
+        "variable": "HEIGHT",
+        "role": "result"
+      }
+    ],
+    "source_catalog": {
+      "vs_intermediate": {
+        "file": "vs_intermediate.csv",
+        "form_name": "Vital Signs",
+        "grain": "one_record_per_subject_visit",
+        "keys": ["STUDY", "PATNUM", "INSTANCE"]
+      }
+    },
+    "field_profiles": [
+      {
+        "declared_source_key": "vs_intermediate.HEIGHT",
+        "role": "result",
+        "resolution": "direct",
+        "evidence": [
+          {
+            "source_dataset": "vs_intermediate",
+            "source_variable": "HEIGHT",
+            "label": "HEIGHT",
+            "data_type": "numeric",
+            "example_values": "165 | 178 | 160 | 172 | 168",
+            "missing_rate": 0,
+            "unique_count": 6,
+            "form_name": "Vital Signs",
+            "grain": "one_record_per_subject_visit",
+            "format_candidates": "",
+            "partial_tokens": "",
+            "record_count": 12
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "concept_id": "VS_WEIGHT",
+    "target_domain": "VS",
+    "form_name": "Vital Signs",
+    "expected_cardinality": "one_observed_value_to_one_record",
+    "required": true,
+    "depends_on": "VS_CORE",
+    "source_refs": [
+      {
+        "dataset": "vs_intermediate",
+        "variable": "WEIGHT",
+        "role": "result"
+      }
+    ],
+    "source_catalog": {
+      "vs_intermediate": {
+        "file": "vs_intermediate.csv",
+        "form_name": "Vital Signs",
+        "grain": "one_record_per_subject_visit",
+        "keys": ["STUDY", "PATNUM", "INSTANCE"]
+      }
+    },
+    "field_profiles": [
+      {
+        "declared_source_key": "vs_intermediate.WEIGHT",
+        "role": "result",
+        "resolution": "direct",
+        "evidence": [
+          {
+            "source_dataset": "vs_intermediate",
+            "source_variable": "WEIGHT",
+            "label": "WEIGHT",
+            "data_type": "numeric",
+            "example_values": "62.4 | 62.1 | 81.2 | 80.6 | 55.8",
+            "missing_rate": 0,
+            "unique_count": 12,
+            "form_name": "Vital Signs",
+            "grain": "one_record_per_subject_visit",
+            "format_candidates": "",
+            "partial_tokens": "",
+            "record_count": 12
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "concept_id": "VS_TEMP",
+    "target_domain": "VS",
+    "form_name": "Vital Signs",
+    "expected_cardinality": "one_observed_value_to_one_record",
+    "required": true,
+    "depends_on": "VS_CORE",
+    "source_refs": [
+      {
+        "dataset": "vs_intermediate",
+        "variable": "TEMP",
+        "role": "result"
+      }
+    ],
+    "source_catalog": {
+      "vs_intermediate": {
+        "file": "vs_intermediate.csv",
+        "form_name": "Vital Signs",
+        "grain": "one_record_per_subject_visit",
+        "keys": ["STUDY", "PATNUM", "INSTANCE"]
+      }
+    },
+    "field_profiles": [
+      {
+        "declared_source_key": "vs_intermediate.TEMP",
+        "role": "result",
+        "resolution": "direct",
+        "evidence": [
+          {
+            "source_dataset": "vs_intermediate",
+            "source_variable": "TEMP",
+            "label": "TEMP",
+            "data_type": "numeric",
+            "example_values": "36.6 | 36.8 | 37.0 | 36.9 | 36.5",
+            "missing_rate": 0,
+            "unique_count": 8,
+            "form_name": "Vital Signs",
+            "grain": "one_record_per_subject_visit",
+            "format_candidates": "",
+            "partial_tokens": "",
+            "record_count": 12
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "concept_id": "VS_SYSBP",
+    "target_domain": "VS",
+    "form_name": "Vital Signs",
+    "expected_cardinality": "one_observed_value_to_one_record",
+    "required": true,
+    "depends_on": "VS_CORE",
+    "source_refs": [
+      {
+        "dataset": "vs_intermediate",
+        "variable": "SYSBP",
+        "role": "result"
+      }
+    ],
+    "source_catalog": {
+      "vs_intermediate": {
+        "file": "vs_intermediate.csv",
+        "form_name": "Vital Signs",
+        "grain": "one_record_per_subject_visit",
+        "keys": ["STUDY", "PATNUM", "INSTANCE"]
+      }
+    },
+    "field_profiles": [
+      {
+        "declared_source_key": "vs_intermediate.SYSBP",
+        "role": "result",
+        "resolution": "direct",
+        "evidence": [
+          {
+            "source_dataset": "vs_intermediate",
+            "source_variable": "SYSBP",
+            "label": "SYSBP",
+            "data_type": "numeric",
+            "example_values": "118 | 116 | 132 | 128 | 110",
+            "missing_rate": 0,
+            "unique_count": 12,
+            "form_name": "Vital Signs",
+            "grain": "one_record_per_subject_visit",
+            "format_candidates": "",
+            "partial_tokens": "",
+            "record_count": 12
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "concept_id": "VS_DIABP",
+    "target_domain": "VS",
+    "form_name": "Vital Signs",
+    "expected_cardinality": "one_observed_value_to_one_record",
+    "required": true,
+    "depends_on": "VS_CORE",
+    "source_refs": [
+      {
+        "dataset": "vs_intermediate",
+        "variable": "DIABP",
+        "role": "result"
+      }
+    ],
+    "source_catalog": {
+      "vs_intermediate": {
+        "file": "vs_intermediate.csv",
+        "form_name": "Vital Signs",
+        "grain": "one_record_per_subject_visit",
+        "keys": ["STUDY", "PATNUM", "INSTANCE"]
+      }
+    },
+    "field_profiles": [
+      {
+        "declared_source_key": "vs_intermediate.DIABP",
+        "role": "result",
+        "resolution": "direct",
+        "evidence": [
+          {
+            "source_dataset": "vs_intermediate",
+            "source_variable": "DIABP",
+            "label": "DIABP",
+            "data_type": "numeric",
+            "example_values": "76 | 74 | 84 | 82 | 70",
+            "missing_rate": 0,
+            "unique_count": 10,
+            "form_name": "Vital Signs",
+            "grain": "one_record_per_subject_visit",
+            "format_candidates": "",
+            "partial_tokens": "",
+            "record_count": 12
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "concept_id": "VS_PULSE",
+    "target_domain": "VS",
+    "form_name": "Vital Signs",
+    "expected_cardinality": "one_observed_value_to_one_record",
+    "required": true,
+    "depends_on": "VS_CORE",
+    "source_refs": [
+      {
+        "dataset": "vs_intermediate",
+        "variable": "PULSE",
+        "role": "result"
+      }
+    ],
+    "source_catalog": {
+      "vs_intermediate": {
+        "file": "vs_intermediate.csv",
+        "form_name": "Vital Signs",
+        "grain": "one_record_per_subject_visit",
+        "keys": ["STUDY", "PATNUM", "INSTANCE"]
+      }
+    },
+    "field_profiles": [
+      {
+        "declared_source_key": "vs_intermediate.PULSE",
+        "role": "result",
+        "resolution": "direct",
+        "evidence": [
+          {
+            "source_dataset": "vs_intermediate",
+            "source_variable": "PULSE",
+            "label": "Pulse rate",
+            "data_type": "numeric",
+            "example_values": "68 | 66 | 72 | 70 | 64",
+            "missing_rate": 0,
+            "unique_count": 11,
+            "form_name": "Vital Signs",
+            "grain": "one_record_per_subject_visit",
+            "format_candidates": "",
+            "partial_tokens": "",
+            "record_count": 12
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "concept_id": "VS_POST_DERIVATIONS",
+    "target_domain": "VS",
+    "form_name": "Vital Signs",
+    "expected_cardinality": "domain_post_derivation",
+    "required": true,
+    "depends_on": ["VS_HEIGHT", "VS_WEIGHT", "VS_TEMP", "VS_SYSBP", "VS_DIABP", "VS_PULSE"],
+    "source_refs": [],
+    "source_catalog": {},
+    "field_profiles": []
+  }
+]

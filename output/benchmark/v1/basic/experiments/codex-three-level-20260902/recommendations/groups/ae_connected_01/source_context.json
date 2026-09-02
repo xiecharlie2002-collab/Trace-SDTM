@@ -1,0 +1,269 @@
+[
+  {
+    "concept_id": "AE_STUDY_IDENTIFIER",
+    "target_domain": "AE",
+    "form_name": "Adverse Events",
+    "expected_cardinality": "one_record_to_one_record",
+    "required": true,
+    "depends_on": [],
+    "source_refs": [
+      {
+        "dataset": "ae_basic",
+        "variable": "STUDY",
+        "role": "study_identifier"
+      }
+    ],
+    "source_catalog": {
+      "ae_basic": {
+        "file": "ae_raw.csv",
+        "form_name": "Adverse Events",
+        "grain": "one_record_per_event",
+        "keys": ["STUDY", "PATNUM", "AEID"]
+      }
+    },
+    "field_profiles": [
+      {
+        "declared_source_key": "ae_basic.STUDY",
+        "role": "study_identifier",
+        "resolution": "direct",
+        "evidence": [
+          {
+            "source_dataset": "ae_basic",
+            "source_variable": "STUDY",
+            "label": "Study identifier",
+            "data_type": "character",
+            "example_values": "TRACEB01",
+            "missing_rate": 0,
+            "unique_count": 1,
+            "form_name": "Adverse Events",
+            "grain": "one_record_per_event",
+            "format_candidates": "",
+            "partial_tokens": "",
+            "record_count": 4
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "concept_id": "AE_DOMAIN_CONSTANT",
+    "target_domain": "AE",
+    "form_name": "Adverse Events",
+    "expected_cardinality": "one_constant_per_record",
+    "required": true,
+    "depends_on": [],
+    "source_refs": [],
+    "source_catalog": {},
+    "field_profiles": []
+  },
+  {
+    "concept_id": "AE_UNIQUE_SUBJECT_IDENTIFIER",
+    "target_domain": "AE",
+    "form_name": "Adverse Events",
+    "expected_cardinality": "one_record_to_one_record",
+    "required": true,
+    "depends_on": [],
+    "source_refs": [
+      {
+        "dataset": "ae_basic",
+        "variable": "STUDY",
+        "role": "study_identifier"
+      },
+      {
+        "dataset": "ae_basic",
+        "variable": "PATNUM",
+        "role": "subject_identifier"
+      }
+    ],
+    "source_catalog": {
+      "ae_basic": {
+        "file": "ae_raw.csv",
+        "form_name": "Adverse Events",
+        "grain": "one_record_per_event",
+        "keys": ["STUDY", "PATNUM", "AEID"]
+      }
+    },
+    "field_profiles": [
+      {
+        "declared_source_key": "ae_basic.STUDY",
+        "role": "study_identifier",
+        "resolution": "direct",
+        "evidence": [
+          {
+            "source_dataset": "ae_basic",
+            "source_variable": "STUDY",
+            "label": "Study identifier",
+            "data_type": "character",
+            "example_values": "TRACEB01",
+            "missing_rate": 0,
+            "unique_count": 1,
+            "form_name": "Adverse Events",
+            "grain": "one_record_per_event",
+            "format_candidates": "",
+            "partial_tokens": "",
+            "record_count": 4
+          }
+        ]
+      },
+      {
+        "declared_source_key": "ae_basic.PATNUM",
+        "role": "subject_identifier",
+        "resolution": "direct",
+        "evidence": [
+          {
+            "source_dataset": "ae_basic",
+            "source_variable": "PATNUM",
+            "label": "Subject identifier",
+            "data_type": "character",
+            "example_values": "101-001 | 101-002 | 102-001 | 102-002",
+            "missing_rate": 0,
+            "unique_count": 4,
+            "form_name": "Adverse Events",
+            "grain": "one_record_per_event",
+            "format_candidates": "",
+            "partial_tokens": "",
+            "record_count": 4
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "concept_id": "AE_REPORTED_TERM",
+    "target_domain": "AE",
+    "form_name": "Adverse Events",
+    "expected_cardinality": "one_record_to_one_record",
+    "required": true,
+    "depends_on": [],
+    "source_refs": [
+      {
+        "dataset": "ae_basic",
+        "variable": "AETERM",
+        "role": "reported_term"
+      }
+    ],
+    "source_catalog": {
+      "ae_basic": {
+        "file": "ae_raw.csv",
+        "form_name": "Adverse Events",
+        "grain": "one_record_per_event",
+        "keys": ["STUDY", "PATNUM", "AEID"]
+      }
+    },
+    "field_profiles": [
+      {
+        "declared_source_key": "ae_basic.AETERM",
+        "role": "reported_term",
+        "resolution": "direct",
+        "evidence": [
+          {
+            "source_dataset": "ae_basic",
+            "source_variable": "AETERM",
+            "label": "AETERM",
+            "data_type": "character",
+            "example_values": "Headache | Nausea | Dizziness | Rash",
+            "missing_rate": 0,
+            "unique_count": 4,
+            "form_name": "Adverse Events",
+            "grain": "one_record_per_event",
+            "format_candidates": "",
+            "partial_tokens": "",
+            "record_count": 4
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "concept_id": "AE_SEVERITY",
+    "target_domain": "AE",
+    "form_name": "Adverse Events",
+    "expected_cardinality": "one_record_to_one_record",
+    "required": true,
+    "depends_on": [],
+    "source_refs": [
+      {
+        "dataset": "ae_basic",
+        "variable": "AESEV",
+        "role": "severity"
+      }
+    ],
+    "source_catalog": {
+      "ae_basic": {
+        "file": "ae_raw.csv",
+        "form_name": "Adverse Events",
+        "grain": "one_record_per_event",
+        "keys": ["STUDY", "PATNUM", "AEID"]
+      }
+    },
+    "field_profiles": [
+      {
+        "declared_source_key": "ae_basic.AESEV",
+        "role": "severity",
+        "resolution": "direct",
+        "evidence": [
+          {
+            "source_dataset": "ae_basic",
+            "source_variable": "AESEV",
+            "label": "AESEV",
+            "data_type": "character",
+            "example_values": "Mild Adverse Event | Moderate Adverse Event | Severe Adverse Event",
+            "missing_rate": 0,
+            "unique_count": 3,
+            "form_name": "Adverse Events",
+            "grain": "one_record_per_event",
+            "format_candidates": "",
+            "partial_tokens": "",
+            "record_count": 4
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "concept_id": "AE_START_DATE",
+    "target_domain": "AE",
+    "form_name": "Adverse Events",
+    "expected_cardinality": "one_record_to_one_record",
+    "required": true,
+    "depends_on": [],
+    "source_refs": [
+      {
+        "dataset": "ae_basic",
+        "variable": "AESTDAT",
+        "role": "start_date"
+      }
+    ],
+    "source_catalog": {
+      "ae_basic": {
+        "file": "ae_raw.csv",
+        "form_name": "Adverse Events",
+        "grain": "one_record_per_event",
+        "keys": ["STUDY", "PATNUM", "AEID"]
+      }
+    },
+    "field_profiles": [
+      {
+        "declared_source_key": "ae_basic.AESTDAT",
+        "role": "start_date",
+        "resolution": "direct",
+        "evidence": [
+          {
+            "source_dataset": "ae_basic",
+            "source_variable": "AESTDAT",
+            "label": "AESTDAT",
+            "data_type": "Date",
+            "example_values": "2025-01-06 | 2025-01-07 | 2025-01-08 | 2025-01-09",
+            "missing_rate": 0,
+            "unique_count": 4,
+            "form_name": "Adverse Events",
+            "grain": "one_record_per_event",
+            "format_candidates": "y-m-d",
+            "partial_tokens": "",
+            "record_count": 4
+          }
+        ]
+      }
+    ]
+  }
+]

@@ -1,0 +1,56 @@
+[
+  {
+    "concept_id": "VS_STUDY_IDENTIFIER",
+    "categories": "direct_assignment",
+    "classification_score": 0.99,
+    "evidence": "研究标识符有单一直接来源字段vs_basic.STUDY，来源与目标语义一致。",
+    "uncertainties": "",
+    "status": "proposed",
+    "group_id": "vs_connected_01"
+  },
+  {
+    "concept_id": "VS_DOMAIN_CONSTANT",
+    "categories": "direct_assignment",
+    "classification_score": 0.99,
+    "evidence": "域缩写为每条记录固定赋值的常量。",
+    "uncertainties": "",
+    "status": "proposed",
+    "group_id": "vs_connected_01"
+  },
+  {
+    "concept_id": "VS_UNIQUE_SUBJECT_IDENTIFIER",
+    "categories": "field_combination",
+    "classification_score": 0.99,
+    "evidence": "项目政策明确规定使用STUDY和PATNUM并以连字符组合生成唯一受试者标识符。",
+    "uncertainties": "",
+    "status": "proposed",
+    "group_id": "vs_connected_01"
+  },
+  {
+    "concept_id": "VS_TEST_CODE",
+    "categories": "direct_assignment",
+    "classification_score": 0.97,
+    "evidence": "检查代码有单一直接来源字段vs_basic.VSTESTCD，未要求术语转换。",
+    "uncertainties": "",
+    "status": "proposed",
+    "group_id": "vs_connected_01"
+  },
+  {
+    "concept_id": "VS_ORIGINAL_RESULT",
+    "categories": "direct_assignment",
+    "classification_score": 0.96,
+    "evidence": "原始结果有单一直接来源字段vs_basic.VSORRES，不改变其临床语义。",
+    "uncertainties": "",
+    "status": "proposed",
+    "group_id": "vs_connected_01"
+  },
+  {
+    "concept_id": "VS_MEASUREMENT_DATE",
+    "categories": "date_time_conversion",
+    "classification_score": 0.99,
+    "evidence": "测量日期来自vs_basic.VSDAT，项目政策已明确其输入格式为y-m-d，需要转换为ISO 8601日期。",
+    "uncertainties": "",
+    "status": "proposed",
+    "group_id": "vs_connected_01"
+  }
+]
