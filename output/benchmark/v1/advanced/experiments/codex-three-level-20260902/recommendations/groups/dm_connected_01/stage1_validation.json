@@ -1,0 +1,9 @@
+{
+  "validation_status": "passed",
+  "request_sha256": "3d81dcb5f10ebdd2e97c22eafd0f228195eb86f35fd8c02a99e9c58c919cc98f",
+  "response_sha256": "a70a16257bd8811bdac73a6d35e6725658b87f11b608b16a12a629853da2b0f9",
+  "normalized_sha256": "bafd75f750320c75d2a7ff59ef0a057076c744291dbb477907d07bc7e1aef8a2",
+  "subagent_task": "/root/bench_advanced_dm_fresh",
+  "validated_at": "2026-09-02T16:19:00Z",
+  "retry_performed": false
+}

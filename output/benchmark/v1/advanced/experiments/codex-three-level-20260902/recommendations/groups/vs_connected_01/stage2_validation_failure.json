@@ -1,0 +1,9 @@
+{
+  "validation_status": "failed",
+  "failure_reason": "VS_HEIGHT/transpose_findings 引用了概念外来源：HEIGHT, HEIGHTU",
+  "request_sha256": "065ffc57057d61349e67da81e5d59bff4c0b21f29dcfbcfa3216744b70d7da08",
+  "response_sha256": "d0e2e246be762e3446f8d4c80c55fce2555f1c9d326fcaec2371da2da6be19a6",
+  "subagent_task": "/root/bench_advanced_vs_fresh",
+  "validated_at": "2026-09-02T16:31:02Z",
+  "retry_performed": false
+}

@@ -1,0 +1,9 @@
+{
+  "validation_status": "failed",
+  "failure_reason": "VS_POST_DERIVATIONS/merge_sources 引用了概念外来源：VS, DM",
+  "request_sha256": "b23076ba6a3e16a70b279f6eec8d595be831a26792397a4ab94ef034a52cb297",
+  "response_sha256": "25b12440dfe97b8b5d921b832456c330acafe1f92c712afaa2f4dbdf16b7f806",
+  "subagent_task": "/root/bench_intermediate_vs_stage2_new",
+  "validated_at": "2026-09-02T16:18:49Z",
+  "retry_performed": false
+}

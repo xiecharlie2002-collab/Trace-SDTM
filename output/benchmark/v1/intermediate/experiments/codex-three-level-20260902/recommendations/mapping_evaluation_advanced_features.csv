@@ -1,0 +1,12 @@
+concept_id,target_domain,gold_categories,function_chain_correct,target_set_complete,complete_plan_correct
+DM_REFERENCE_START,DM,date_time_conversion,TRUE,TRUE,TRUE
+DM_CONSENT,DM,date_time_conversion,TRUE,TRUE,FALSE
+AE_START,AE,date_time_conversion | temporal_derivation,FALSE,FALSE,FALSE
+AE_END,AE,date_time_conversion | conditional_derivation | temporal_derivation,FALSE,FALSE,FALSE
+VS_CORE,VS,direct_assignment | field_combination | date_time_conversion | controlled_terminology | temporal_derivation,FALSE,FALSE,FALSE
+VS_HEIGHT,VS,record_transposition,FALSE,FALSE,FALSE
+VS_WEIGHT,VS,record_transposition,FALSE,FALSE,FALSE
+VS_TEMP,VS,record_transposition,FALSE,FALSE,FALSE
+VS_SYSBP,VS,record_transposition,FALSE,FALSE,FALSE
+VS_DIABP,VS,record_transposition,FALSE,FALSE,FALSE
+VS_PULSE,VS,record_transposition,FALSE,FALSE,FALSE

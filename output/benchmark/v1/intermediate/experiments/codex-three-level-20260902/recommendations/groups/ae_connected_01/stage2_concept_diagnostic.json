@@ -1,0 +1,43 @@
+{
+  "valid_candidates": [],
+  "failures": [
+    {
+      "concept_id": "AE_CORE",
+      "candidate_rank": 1,
+      "error": "AE_CORE 的推荐状态无效。"
+    },
+    {
+      "concept_id": "AE_TERMS",
+      "candidate_rank": 1,
+      "error": "AE_TERMS 的推荐状态无效。"
+    },
+    {
+      "concept_id": "AE_SAFETY",
+      "candidate_rank": 1,
+      "error": "AE_SAFETY 的推荐状态无效。"
+    },
+    {
+      "concept_id": "AE_REL_OUTCOME",
+      "candidate_rank": 1,
+      "error": "AE_REL_OUTCOME 的推荐状态无效。"
+    },
+    {
+      "concept_id": "AE_START",
+      "candidate_rank": 1,
+      "error": "AE_START 的推荐状态无效。"
+    },
+    {
+      "concept_id": "AE_END",
+      "candidate_rank": 1,
+      "error": "AE_END 的推荐状态无效。"
+    },
+    {
+      "concept_id": "AE_SEQUENCE",
+      "candidate_rank": 1,
+      "error": "AE_SEQUENCE 的推荐状态无效。"
+    }
+  ],
+  "valid_top_concepts": [],
+  "missing_top_concepts": ["AE_CORE", "AE_TERMS", "AE_SAFETY", "AE_REL_OUTCOME", "AE_START", "AE_END", "AE_SEQUENCE"],
+  "diagnostic_only": true
+}

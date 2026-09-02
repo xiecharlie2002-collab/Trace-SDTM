@@ -59,9 +59,9 @@ pooled <- level_metrics |>
   dplyr::group_by(metric) |>
   dplyr::summarise(
     scenario = "all", level = "全部", numerator = sum(numerator), denominator = sum(denominator),
-    denominator_type = "三个层级合并", proportion = numerator / denominator,
-    macro_level_mean = mean(proportion), .groups = "drop"
-  )
+    denominator_type = "三个层级合并", macro_level_mean = mean(proportion), .groups = "drop"
+  ) |>
+  dplyr::mutate(proportion = numerator / denominator)
 metrics_all <- dplyr::bind_rows(level_metrics, pooled)
 
 formal_all <- purrr::imap_dfr(results, function(result, scenario) {
@@ -100,19 +100,30 @@ for (scenario in scenarios) {
   if (!dir.exists(group_root)) next
   for (group_id in list.dirs(group_root, recursive = FALSE, full.names = FALSE)) {
     group_path <- file.path(group_root, group_id)
-    diagnostic <- optional_json(file.path(group_path, "stage2_concept_diagnostic.json"), list())
+    scenario_name <- scenario
+    level_label <- level_labels[[scenario_name]]
+    diagnostic_path <- file.path(group_path, "stage2_concept_diagnostic.json")
+    diagnostic <- if (file.exists(diagnostic_path)) {
+      jsonlite::read_json(diagnostic_path, simplifyVector = FALSE)
+    } else {
+      list()
+    }
     valid <- diagnostic$valid_candidates %||% list()
     if (length(valid)) {
       table <- candidate_table_v02(valid)
       evaluated <- candidate_evaluation_rows_v02(table, specification, gold, registry)
       diagnostic_rows[[length(diagnostic_rows) + 1L]] <- dplyr::mutate(
-        evaluated, scenario = scenario, level = level_labels[[scenario]], group_id = group_id, .before = 1L
+        evaluated,
+        scenario = .env$scenario_name,
+        level = .env$level_label,
+        group_id = .env$group_id,
+        .before = 1L
       )
     }
     failures <- diagnostic$failures %||% list()
     if (length(failures)) {
       failure_rows[[length(failure_rows) + 1L]] <- purrr::map_dfr(failures, function(x) tibble::tibble(
-        scenario = scenario, level = level_labels[[scenario]], group_id = group_id,
+        scenario = scenario_name, level = level_label, group_id = group_id,
         concept_id = as.character(x$concept_id %||% ""),
         error_type = "structure_error", description = as.character(x$error %||% "")
       ))
@@ -200,6 +211,19 @@ advanced_comparison <- tibble::tibble(
   )
 )
 
+delivery_disclosure <- tibble::tribble(
+  ~scenario, ~group_id, ~stage1_delivery, ~stage2_delivery, ~same_agent_for_two_stages, ~protocol_note,
+  "basic", "dm_connected_01", "完整冻结请求", "完整冻结请求", TRUE, "原始两阶段盲评。",
+  "basic", "ae_connected_01", "完整冻结请求", "完整冻结请求", TRUE, "原始两阶段盲评。",
+  "basic", "vs_connected_01", "完整冻结请求", "完整冻结请求", TRUE, "原始两阶段盲评。",
+  "intermediate", "dm_connected_01", "完整冻结请求", "由全新替代代理接收完整冻结请求", FALSE, "原代理受额度限制中断；用户明确要求以全新代理继续。",
+  "intermediate", "ae_connected_01", "完整冻结请求", "由全新替代代理接收压缩后的冻结上下文", FALSE, "原第一阶段已冻结；用户明确要求以全新代理继续。",
+  "intermediate", "vs_connected_01", "完整冻结请求", "由全新替代代理接收压缩后的冻结上下文", FALSE, "原第一阶段已冻结；用户明确要求以全新代理继续。",
+  "advanced", "dm_connected_01", "全新代理接收压缩后的冻结上下文", "同一代理接收压缩后的冻结上下文", TRUE, "未读取仓库、未联网、未接触金标准。",
+  "advanced", "ae_connected_01", "全新代理接收压缩后的冻结上下文", "同一代理接收压缩后的冻结上下文", TRUE, "未读取仓库、未联网、未接触金标准。",
+  "advanced", "vs_connected_01", "全新代理接收压缩后的冻结上下文", "同一代理接收压缩后的冻结上下文", TRUE, "未读取仓库、未联网、未接触金标准。"
+)
+
 report_root <- ensure_dir(trace_path("output", "benchmark", "v1", "reports", experiment_id))
 write_csv(metrics_all, file.path(report_root, "metrics_by_level.csv"))
 write_csv(formal_all, file.path(report_root, "formal_concept_results.csv"))
@@ -212,6 +236,7 @@ write_csv(diagnostic_summary, file.path(report_root, "diagnostic_summary.csv"))
 write_csv(validation_failures, file.path(report_root, "validation_failures.csv"))
 write_csv(error_taxonomy, file.path(report_root, "error_taxonomy.csv"))
 write_csv(advanced_comparison, file.path(report_root, "advanced_before_after.csv"))
+write_csv(delivery_disclosure, file.path(report_root, "delivery_protocol_disclosure.csv"))
 
 table_tag <- function(data) {
   if (!nrow(data)) return(htmltools::tags$p("无可用结果。"))
@@ -244,6 +269,9 @@ html <- htmltools::tags$html(
     htmltools::tags$h2("按难度"), table_tag(by_difficulty),
     htmltools::tags$h2("修改程度"), table_tag(modification),
     htmltools::tags$h2("逐概念诊断口径"), table_tag(diagnostic_summary),
+    htmltools::tags$h2("代理交付协议披露"),
+    htmltools::tags$p("中等层剩余第二阶段按用户要求改由全新代理完成；压缩上下文与生成器保存的完整冻结请求并非逐字相同，因此不能把相应请求校验值解释为实际传输文本的校验值。"),
+    table_tag(delivery_disclosure),
     htmltools::tags$h2("高级层修复前后"), table_tag(advanced_comparison),
     htmltools::tags$h2("错误分类"), table_tag(error_taxonomy),
     htmltools::tags$p("完整明细、校验失败和原始冻结响应与本报告一同保存。")
@@ -256,5 +284,6 @@ writeLines(c(
   sprintf("实验编号：`%s`。", experiment_id),
   "",
   "本目录包含分层、按域、按难度、修改程度、正式口径、逐概念诊断口径及高级层修复前后对照。",
+  "中等层剩余第二阶段按用户要求改由全新代理完成；部分任务采用压缩后的冻结上下文，具体见 `delivery_protocol_disclosure.csv`。",
   "这是单次按域聚集实验，不用于估计长期稳定性。"
 ), file.path(report_root, "README.md"), useBytes = TRUE)

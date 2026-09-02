@@ -1,0 +1,10 @@
+scenario,level,target_domain,complete_correct,target_complete,total
+advanced,高级,AE,5,8,8
+advanced,高级,DM,3,5,5
+advanced,高级,VS,0,0,8
+basic,基础,AE,5,6,6
+basic,基础,DM,5,6,6
+basic,基础,VS,5,6,6
+intermediate,中等,AE,0,0,7
+intermediate,中等,DM,4,5,5
+intermediate,中等,VS,0,0,8

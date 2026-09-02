@@ -1,0 +1,74 @@
+[
+  {
+    "concept_id": "AE_SOURCE_INTEGRATION",
+    "categories": "source_integration",
+    "classification_score": 0.99,
+    "evidence": "两个来源以声明的三键执行严格一对一左连接，并输出受控中间数据集。",
+    "uncertainties": "无重大不确定性。",
+    "status": "proposed",
+    "group_id": "ae_connected_01"
+  },
+  {
+    "concept_id": "AE_CORE",
+    "categories": ["direct_assignment", "field_combination"],
+    "classification_score": 0.96,
+    "evidence": "研究标识和域常量可直接赋值，受试者唯一标识由普通标识字段组合并受既有身份关系约束。",
+    "uncertainties": "受试者唯一标识的具体分隔规则留待函数选择阶段确认。",
+    "status": "proposed",
+    "group_id": "ae_connected_01"
+  },
+  {
+    "concept_id": "AE_TERMS",
+    "categories": "direct_assignment",
+    "classification_score": 0.97,
+    "evidence": "来源术语已经编码，且要求保持语义不变，无需再次执行术语映射或字符规范化。",
+    "uncertainties": "假定来源编码值已经符合提交所用医学词典版本。",
+    "status": "proposed",
+    "group_id": "ae_connected_01"
+  },
+  {
+    "concept_id": "AE_SAFETY",
+    "categories": "controlled_terminology",
+    "classification_score": 0.99,
+    "evidence": "严重程度及严重事件相关标志均有批准术语表，需按规定值和大小写标准化。",
+    "uncertainties": "无重大不确定性。",
+    "status": "proposed",
+    "group_id": "ae_connected_01"
+  },
+  {
+    "concept_id": "AE_REL_OUTCOME",
+    "categories": "controlled_terminology",
+    "classification_score": 0.99,
+    "evidence": "因果关系和结局均来自明确的批准术语集合，适用受控术语映射。",
+    "uncertainties": "无重大不确定性。",
+    "status": "proposed",
+    "group_id": "ae_connected_01"
+  },
+  {
+    "concept_id": "AE_START",
+    "categories": ["date_time_conversion", "temporal_derivation"],
+    "classification_score": 0.99,
+    "evidence": "不完整日期须在不填补未知部分的前提下转换并与可选时间组合；仅日期完整时计算研究日。",
+    "uncertainties": "时间缺失时保留日期所能表达的最大已知精度。",
+    "status": "proposed",
+    "group_id": "ae_connected_01"
+  },
+  {
+    "concept_id": "AE_END",
+    "categories": ["date_time_conversion", "conditional_derivation", "temporal_derivation"],
+    "classification_score": 0.98,
+    "evidence": "结束日期须保留不完整精度并与可选时间组合，持续状态依据是否仍在进行进行条件派生，研究日仅在日期完整时计算。",
+    "uncertainties": "持续状态对应提交值的具体映射留待函数选择阶段确认。",
+    "status": "proposed",
+    "group_id": "ae_connected_01"
+  },
+  {
+    "concept_id": "AE_SEQUENCE",
+    "categories": "temporal_derivation",
+    "classification_score": 0.99,
+    "evidence": "无原始序号来源，需按声明的稳定排序字段生成域内记录序号。",
+    "uncertainties": "同一排序键完全相同时依赖来源行标识保持确定性。",
+    "status": "proposed",
+    "group_id": "ae_connected_01"
+  }
+]

@@ -1,0 +1,71 @@
+{
+  "status": "completed_with_rejections",
+  "schema_version": "0.2",
+  "scenario": "advanced",
+  "provenance": "codex_subagent",
+  "model": "same-codex-subagent-configuration",
+  "prompt_design": "concept_grouped_two_stage_registry_v02",
+  "generated_at": "2026-09-02T16:31:06Z",
+  "concept_count": 13,
+  "candidate_count": 13,
+  "group_runs": [
+    {
+      "group_id": "dm_connected_01",
+      "concept_ids": ["DM_CORE", "DM_REFERENCE_START", "DM_CONSENT", "DM_DEMOGRAPHICS", "DM_TREATMENT"],
+      "stage1": {
+        "validation_status": "passed",
+        "request_sha256": "3d81dcb5f10ebdd2e97c22eafd0f228195eb86f35fd8c02a99e9c58c919cc98f",
+        "response_sha256": "a70a16257bd8811bdac73a6d35e6725658b87f11b608b16a12a629853da2b0f9",
+        "normalized_sha256": "bafd75f750320c75d2a7ff59ef0a057076c744291dbb477907d07bc7e1aef8a2",
+        "subagent_task": "/root/bench_advanced_dm_fresh",
+        "validated_at": "2026-09-02T16:19:00Z",
+        "retry_performed": false
+      },
+      "stage2": {
+        "validation_status": "passed",
+        "request_sha256": "c44487936c786618984407dd30dd642e6ab6982aa7a3e73471d83f28e2658ece",
+        "response_sha256": "d919f1971ebd5b79be72876c5f5a2ff3155673b43e5ab13c8cc8e41bc67782b1",
+        "normalized_sha256": "349b083c555d83a09dc92b21405f682d40885174a58166188b93585c96dbd645",
+        "subagent_task": "/root/bench_advanced_dm_fresh",
+        "validated_at": "2026-09-02T16:24:07Z",
+        "retry_performed": false
+      }
+    },
+    {
+      "group_id": "ae_connected_01",
+      "concept_ids": ["AE_SOURCE_INTEGRATION", "AE_CORE", "AE_TERMS", "AE_SAFETY", "AE_REL_OUTCOME", "AE_START", "AE_END", "AE_SEQUENCE"],
+      "stage1": {
+        "validation_status": "passed",
+        "request_sha256": "63aeabf803668eeb11f504c6ee802d8ee8748f7e20b89a102edfc9286f9cdb71",
+        "response_sha256": "f24f5bf31cf8c282ec56adef94c1c6832251dc0e67079f5759be2032633cb619",
+        "normalized_sha256": "39ad095f2d75edd1d166a6e5d27d05365c24bf03214139559f7feae284fbefd8",
+        "subagent_task": "/root/bench_advanced_ae_fresh",
+        "validated_at": "2026-09-02T16:20:04Z",
+        "retry_performed": false
+      },
+      "stage2": {
+        "validation_status": "passed",
+        "request_sha256": "ffd310736156d7fc656672094f1b13815519725627f324bb4bb48af24e70ae30",
+        "response_sha256": "43c554ff0c1b0925d5887b3b4379b6c9a9923f60bff2691a10088bee5f12d16b",
+        "normalized_sha256": "0662811a4e650414e67cf2ef81867076af04749434c0d72a216da40c99f2cbe5",
+        "subagent_task": "/root/bench_advanced_ae_fresh",
+        "validated_at": "2026-09-02T16:25:49Z",
+        "retry_performed": false
+      }
+    }
+  ],
+  "group_failures": [
+    {
+      "validation_status": "failed",
+      "failure_reason": "VS_HEIGHT/transpose_findings 引用了概念外来源：HEIGHT, HEIGHTU",
+      "request_sha256": "065ffc57057d61349e67da81e5d59bff4c0b21f29dcfbcfa3216744b70d7da08",
+      "response_sha256": "d0e2e246be762e3446f8d4c80c55fce2555f1c9d326fcaec2371da2da6be19a6",
+      "subagent_task": "/root/bench_advanced_vs_fresh",
+      "validated_at": "2026-09-02T16:31:02Z",
+      "retry_performed": false,
+      "group_id": "vs_connected_01",
+      "concept_ids": ["VS_CORE", "VS_HEIGHT", "VS_WEIGHT", "VS_TEMP", "VS_SYSBP", "VS_DIABP", "VS_PULSE", "VS_POST_DERIVATIONS"]
+    }
+  ],
+  "api_key_logged": false
+}

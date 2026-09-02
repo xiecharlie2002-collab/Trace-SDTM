@@ -1,0 +1,10 @@
+scenario,level,modification_grade,concepts
+advanced,高级,major,8
+advanced,高级,minor,4
+advanced,高级,moderate,1
+advanced,高级,none,8
+basic,基础,minor,3
+basic,基础,none,15
+intermediate,中等,major,15
+intermediate,中等,minor,1
+intermediate,中等,none,4

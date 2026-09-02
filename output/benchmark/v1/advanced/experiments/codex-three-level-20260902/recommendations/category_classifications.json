@@ -1,0 +1,233 @@
+[
+  {
+    "concept_id": "DM_CORE",
+    "categories": [
+      "direct_assignment",
+      "field_combination"
+    ],
+    "classification_score": 0.98,
+    "evidence": "研究标识和受试者标识可保持原语义；项目政策还要求以分隔符连接标识并从受试者标识中提取站点段。",
+    "uncertainties": "若实际受试者标识缺少规定分隔符，则无法可靠提取站点段，需要补充规则。",
+    "status": "proposed",
+    "group_id": "dm_connected_01"
+  },
+  {
+    "concept_id": "DM_REFERENCE_START",
+    "categories": "source_integration",
+    "classification_score": 0.99,
+    "evidence": "参考开始时点必须按研究和受试者跨两个暴露来源比较，并选择最早的完整给药日期时间；指定能力已封装日期时间处理与最早值选择。",
+    "uncertainties": "不可解析的日期或时间将使转换停止。",
+    "status": "proposed",
+    "group_id": "dm_connected_01"
+  },
+  {
+    "concept_id": "DM_CONSENT",
+    "categories": "date_time_conversion",
+    "classification_score": 0.99,
+    "evidence": "来源为完整日期，需要在不填补的前提下转换为标准日期表示。",
+    "uncertainties": "不可解析的来源日期不能通过填补处理。",
+    "status": "proposed",
+    "group_id": "dm_connected_01"
+  },
+  {
+    "concept_id": "DM_DEMOGRAPHICS",
+    "categories": [
+      "direct_assignment",
+      "controlled_terminology"
+    ],
+    "classification_score": 0.98,
+    "evidence": "年龄保持原数值语义且年龄单位为固定值；性别、民族、种族和国家需要映射到受控术语。",
+    "uncertainties": "未提供来源值超出所列取值范围时的映射规则。",
+    "status": "proposed",
+    "group_id": "dm_connected_01"
+  },
+  {
+    "concept_id": "DM_TREATMENT",
+    "categories": "direct_assignment",
+    "classification_score": 1,
+    "evidence": "计划和实际治疗组的代码及名称均为字符型，且明确要求保持目标语义不变。",
+    "uncertainties": "无。",
+    "status": "proposed",
+    "group_id": "dm_connected_01"
+  },
+  {
+    "concept_id": "AE_SOURCE_INTEGRATION",
+    "categories": "source_integration",
+    "classification_score": 0.99,
+    "evidence": "两个来源以声明的三键执行严格一对一左连接，并输出受控中间数据集。",
+    "uncertainties": "无重大不确定性。",
+    "status": "proposed",
+    "group_id": "ae_connected_01"
+  },
+  {
+    "concept_id": "AE_CORE",
+    "categories": [
+      "direct_assignment",
+      "field_combination"
+    ],
+    "classification_score": 0.96,
+    "evidence": "研究标识和域常量可直接赋值，受试者唯一标识由普通标识字段组合并受既有身份关系约束。",
+    "uncertainties": "受试者唯一标识的具体分隔规则留待函数选择阶段确认。",
+    "status": "proposed",
+    "group_id": "ae_connected_01"
+  },
+  {
+    "concept_id": "AE_TERMS",
+    "categories": "direct_assignment",
+    "classification_score": 0.97,
+    "evidence": "来源术语已经编码，且要求保持语义不变，无需再次执行术语映射或字符规范化。",
+    "uncertainties": "假定来源编码值已经符合提交所用医学词典版本。",
+    "status": "proposed",
+    "group_id": "ae_connected_01"
+  },
+  {
+    "concept_id": "AE_SAFETY",
+    "categories": "controlled_terminology",
+    "classification_score": 0.99,
+    "evidence": "严重程度及严重事件相关标志均有批准术语表，需按规定值和大小写标准化。",
+    "uncertainties": "无重大不确定性。",
+    "status": "proposed",
+    "group_id": "ae_connected_01"
+  },
+  {
+    "concept_id": "AE_REL_OUTCOME",
+    "categories": "controlled_terminology",
+    "classification_score": 0.99,
+    "evidence": "因果关系和结局均来自明确的批准术语集合，适用受控术语映射。",
+    "uncertainties": "无重大不确定性。",
+    "status": "proposed",
+    "group_id": "ae_connected_01"
+  },
+  {
+    "concept_id": "AE_START",
+    "categories": [
+      "date_time_conversion",
+      "temporal_derivation"
+    ],
+    "classification_score": 0.99,
+    "evidence": "不完整日期须在不填补未知部分的前提下转换并与可选时间组合；仅日期完整时计算研究日。",
+    "uncertainties": "时间缺失时保留日期所能表达的最大已知精度。",
+    "status": "proposed",
+    "group_id": "ae_connected_01"
+  },
+  {
+    "concept_id": "AE_END",
+    "categories": [
+      "date_time_conversion",
+      "conditional_derivation",
+      "temporal_derivation"
+    ],
+    "classification_score": 0.98,
+    "evidence": "结束日期须保留不完整精度并与可选时间组合，持续状态依据是否仍在进行进行条件派生，研究日仅在日期完整时计算。",
+    "uncertainties": "持续状态对应提交值的具体映射留待函数选择阶段确认。",
+    "status": "proposed",
+    "group_id": "ae_connected_01"
+  },
+  {
+    "concept_id": "AE_SEQUENCE",
+    "categories": "temporal_derivation",
+    "classification_score": 0.99,
+    "evidence": "无原始序号来源，需按声明的稳定排序字段生成域内记录序号。",
+    "uncertainties": "同一排序键完全相同时依赖来源行标识保持确定性。",
+    "status": "proposed",
+    "group_id": "ae_connected_01"
+  },
+  {
+    "concept_id": "VS_CORE",
+    "categories": [
+      "direct_assignment",
+      "controlled_terminology",
+      "date_time_conversion",
+      "field_combination"
+    ],
+    "classification_score": 0.98,
+    "evidence": "研究标识和访视名称可直接赋值；访视编号及体位需按登记映射和术语表标准化；完整日期与时间由日期时间转换内部组合；受试者标识由研究号和受试者号连接生成。单一来源数据集不构成来源整合。",
+    "uncertainties": "未说明受试者号是否需要保留前导零，暂按原字符值参与连接。",
+    "status": "proposed",
+    "group_id": "vs_connected_01"
+  },
+  {
+    "concept_id": "VS_HEIGHT",
+    "categories": [
+      "record_transposition",
+      "unit_conversion"
+    ],
+    "classification_score": 1,
+    "evidence": "身高字段需由横向结构转为一条检查记录；检查元数据、原始结果和原始单位由转置生成，随后必须调用版本化单位集合转换至厘米，包括同单位身份标准化。",
+    "uncertainties": "无；未知单位应按政策停止处理。",
+    "status": "proposed",
+    "group_id": "vs_connected_01"
+  },
+  {
+    "concept_id": "VS_WEIGHT",
+    "categories": [
+      "record_transposition",
+      "unit_conversion"
+    ],
+    "classification_score": 1,
+    "evidence": "体重字段需先转置为检查记录，再通过指定版本的单位集合标准化至千克；数值解析、单位别名、换算或身份标准化及舍入均属于单位转换。",
+    "uncertainties": "无；未知单位应按政策停止处理。",
+    "status": "proposed",
+    "group_id": "vs_connected_01"
+  },
+  {
+    "concept_id": "VS_TEMP",
+    "categories": [
+      "record_transposition",
+      "unit_conversion"
+    ],
+    "classification_score": 1,
+    "evidence": "体温字段需先转置为检查记录，再通过指定版本的单位集合标准化至摄氏度；单位转换涵盖偏移型换算及同单位身份标准化。",
+    "uncertainties": "无；未知单位应按政策停止处理。",
+    "status": "proposed",
+    "group_id": "vs_connected_01"
+  },
+  {
+    "concept_id": "VS_SYSBP",
+    "categories": [
+      "record_transposition",
+      "unit_conversion"
+    ],
+    "classification_score": 1,
+    "evidence": "收缩压字段需先转置为检查记录；即使原始单位与标准单位相同，也必须调用版本化单位集合执行身份标准化。",
+    "uncertainties": "无；未知单位应按政策停止处理。",
+    "status": "proposed",
+    "group_id": "vs_connected_01"
+  },
+  {
+    "concept_id": "VS_DIABP",
+    "categories": [
+      "record_transposition",
+      "unit_conversion"
+    ],
+    "classification_score": 1,
+    "evidence": "舒张压字段需先转置为检查记录；原始单位与标准单位相同时仍须通过版本化单位集合完成身份标准化。",
+    "uncertainties": "无；未知单位应按政策停止处理。",
+    "status": "proposed",
+    "group_id": "vs_connected_01"
+  },
+  {
+    "concept_id": "VS_PULSE",
+    "categories": [
+      "record_transposition",
+      "unit_conversion"
+    ],
+    "classification_score": 1,
+    "evidence": "脉搏字段需先转置为检查记录；原始单位与标准单位相同时仍必须执行带版本追溯的身份标准化。",
+    "uncertainties": "无；未知单位应按政策停止处理。",
+    "status": "proposed",
+    "group_id": "vs_connected_01"
+  },
+  {
+    "concept_id": "VS_POST_DERIVATIONS",
+    "categories": [
+      "conditional_derivation",
+      "temporal_derivation"
+    ],
+    "classification_score": 0.99,
+    "evidence": "稳定序号依赖规定排序键生成，基线选择还需按访视、给药前状态、时间完整性和有效性实施条件判断；研究日及相对参考日期选择给药前最后记录均属于时间派生。参考日期已由上游提供，因此不增加来源整合。",
+    "uncertainties": "“有效记录”的具体缺失或无效判定规则未展开，但不影响转换类别判断。",
+    "status": "proposed",
+    "group_id": "vs_connected_01"
+  }
+]

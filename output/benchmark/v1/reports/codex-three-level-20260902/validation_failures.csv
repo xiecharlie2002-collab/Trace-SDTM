@@ -1,0 +1,15 @@
+scenario,level,group_id,concept_id,error_type,description
+intermediate,中等,ae_connected_01,AE_CORE,structure_error,AE_CORE 的推荐状态无效。
+intermediate,中等,ae_connected_01,AE_TERMS,structure_error,AE_TERMS 的推荐状态无效。
+intermediate,中等,ae_connected_01,AE_SAFETY,structure_error,AE_SAFETY 的推荐状态无效。
+intermediate,中等,ae_connected_01,AE_REL_OUTCOME,structure_error,AE_REL_OUTCOME 的推荐状态无效。
+intermediate,中等,ae_connected_01,AE_START,structure_error,AE_START 的推荐状态无效。
+intermediate,中等,ae_connected_01,AE_END,structure_error,AE_END 的推荐状态无效。
+intermediate,中等,ae_connected_01,AE_SEQUENCE,structure_error,AE_SEQUENCE 的推荐状态无效。
+intermediate,中等,vs_connected_01,VS_POST_DERIVATIONS,structure_error,"VS_POST_DERIVATIONS/merge_sources 引用了概念外来源：VS, DM"
+advanced,高级,vs_connected_01,VS_HEIGHT,structure_error,"VS_HEIGHT/transpose_findings 引用了概念外来源：HEIGHT, HEIGHTU"
+advanced,高级,vs_connected_01,VS_WEIGHT,structure_error,"VS_WEIGHT/transpose_findings 引用了概念外来源：WEIGHT, WEIGHTU"
+advanced,高级,vs_connected_01,VS_TEMP,structure_error,"VS_TEMP/transpose_findings 引用了概念外来源：TEMP, TEMPU"
+advanced,高级,vs_connected_01,VS_SYSBP,structure_error,"VS_SYSBP/transpose_findings 引用了概念外来源：SYS_BP, SYS_BPU"
+advanced,高级,vs_connected_01,VS_DIABP,structure_error,"VS_DIABP/transpose_findings 引用了概念外来源：DIA_BP, DIA_BPU"
+advanced,高级,vs_connected_01,VS_PULSE,structure_error,"VS_PULSE/transpose_findings 引用了概念外来源：PULSE, PULSEU"

@@ -1,0 +1,9 @@
+{
+  "validation_status": "failed",
+  "failure_reason": "AE_CORE 的推荐状态无效。",
+  "request_sha256": "1054904467c0faa6fe1eb1b0cb5ca7fc1e3d0dc1a0b744b44d219e057d5c891e",
+  "response_sha256": "1c51d1344fe4ee0da0a75820909833bf45e59e33beb2775cf516bf4e5e91d439",
+  "subagent_task": "/root/bench_intermediate_ae_stage2_new",
+  "validated_at": "2026-09-02T16:14:53Z",
+  "retry_performed": false
+}
