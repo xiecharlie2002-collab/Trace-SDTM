@@ -1,0 +1,9 @@
+{
+  "validation_status": "failed",
+  "failure_reason": "AE_SOURCE_INTEGRATION 包含未知目标变量：ae_merged",
+  "request_sha256": "d29c4e625c9b56bc55e0dbffc0b60a3b5db817d08fca65a3035969fe64e8260b",
+  "response_sha256": "2035ea1ea6799407e655d1650c7d02523589679051efba459d50f2fae475f509",
+  "subagent_task": "/root/map_ae_contextfix_final",
+  "validated_at": "2026-09-02T13:20:45Z",
+  "retry_performed": false
+}

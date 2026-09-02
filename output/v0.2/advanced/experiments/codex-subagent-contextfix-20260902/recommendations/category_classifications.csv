@@ -1,0 +1,22 @@
+concept_id,categories,classification_score,evidence,uncertainties,status,group_id
+DM_CORE,direct_assignment | field_combination,0.94,研究标识符和研究内受试者标识符均有一对一直接来源；唯一受试者标识符需要组合已声明的标识字段。,唯一受试者标识符的具体组合约定未提供，但不影响转换类别判断。,proposed,dm_connected_01
+DM_REFERENCE_START,source_integration | field_combination | date_time_conversion | conditional_derivation,0.72,参考开始日期时间来自两个暴露数据集，需要整合候选来源、组合日期与时间、转换为 ISO 8601，并从每名受试者的多条暴露记录中派生一个结果。,ex_a_raw.EXSTDAT 的日期格式候选为月日年或日月年，存在歧义。; 未明确规定两个暴露来源及多条记录之间的参考开始日期时间选择规则。,needs_information,dm_connected_01
+DM_CONSENT,date_time_conversion,0.77,知情同意日期有直接来源，但目标变量要求 ISO 8601 日期时间表示。,dm_subject.IC_DT 的日期格式候选为月日年或日月年，来源元数据仍标记为有歧义。,needs_information,dm_connected_01
+DM_DEMOGRAPHICS,direct_assignment | character_normalization | controlled_terminology,0.95,年龄和国家可保持语义直接赋值；性别、族裔和种族来源值需要规范大小写并转换或验证为目标受控术语，年龄单位可赋受控常量 YEARS。,,proposed,dm_connected_01
+DM_TREATMENT,direct_assignment,0.99,计划治疗组代码与描述、实际治疗组代码与描述均有语义一致的一对一直接来源。,,proposed,dm_connected_01
+AE_SOURCE_INTEGRATION,source_integration,0.99,两个来源数据集均为每个不良事件一条记录，并提供了完整且一致的研究、受试者和事件连接键，需要先进行来源整合。,,proposed,ae_connected_01
+AE_CORE,direct_assignment | field_combination,0.94,研究标识可由已有来源字段直接赋值，域标识可作常量赋值；唯一受试者标识需要基于已提供的研究和受试者标识字段形成。,唯一受试者标识的具体组成规则应在后续函数选择阶段依据研究标准确认。,proposed,ae_connected_01
+AE_TERMS,direct_assignment,0.99,报告术语、编码术语和身体系统均有语义对应且粒度一致的现成来源字段。,,proposed,ae_connected_01
+AE_SAFETY,controlled_terminology,0.99,严重程度来源值需要映射为规定的严重程度术语，严重事件和住院指示值需要映射为目标域规定的受控取值。,,proposed,ae_connected_01
+AE_REL_OUTCOME,direct_assignment | controlled_terminology | character_normalization,0.97,因果关系有语义对应的来源字段；结局来源值与目标受控术语语义一致，但需要按目标术语表验证并统一大小写。,,proposed,ae_connected_01
+AE_START,date_time_conversion | field_combination | temporal_derivation,0.99,开始日期格式及部分日期标记已明确，开始时间格式也已识别，需要组合日期与时间并转换为 ISO 8601，随后结合参考开始日期派生研究日。,,proposed,ae_connected_01
+AE_END,date_time_conversion | field_combination | conditional_derivation | temporal_derivation,0.99,结束日期格式、部分日期标记和时间格式均已明确，需要组合并转换为 ISO 8601；持续状态需要用于派生相对参考期结束状态，结束研究日依赖参考开始日期派生。,,proposed,ae_connected_01
+AE_SEQUENCE,temporal_derivation,0.99,该概念明确属于域记录生成后的序号派生，并已给出形成序号所依赖的核心字段、术语和开始时间概念。,,proposed,ae_connected_01
+VS_CORE,source_integration | direct_assignment | field_combination | date_time_conversion | character_normalization | controlled_terminology | record_transposition | temporal_derivation,0.86,研究标识、受试者标识和访视来自直接来源字段。; 日期和时间字段需要组合并转换为 ISO 8601。; 体位取值需要大小写规范化并按受控术语验证。; 原始记录粒度为每名受试者每次访视一条记录，目标基数为一条原始记录展开为多条生命体征记录。; 研究日派生依赖 DM_REFERENCE_START。,未提供 DM_REFERENCE_START 的来源数据集、连接键及基数关系，无法确认跨来源整合和研究日派生。,needs_information,vs_connected_01
+VS_HEIGHT,direct_assignment | controlled_terminology | record_transposition | unit_conversion,0.97,身高结果和原始单位均有直接来源字段。; 身高字段需要生成纵向生命体征检查记录，并配置检查名称及短名称的受控术语。; 原始单位同时包含 in 和 cm，需要生成统一的标准结果及标准单位。,尚未指定受控术语表和版本化单位换算表。,proposed,vs_connected_01
+VS_WEIGHT,direct_assignment | controlled_terminology | record_transposition | unit_conversion,0.97,体重结果和原始单位均有直接来源字段。; 体重字段需要生成纵向生命体征检查记录，并配置检查名称及短名称的受控术语。; 原始单位同时包含 lb 和 kg，需要生成统一的标准结果及标准单位。,尚未指定受控术语表和版本化单位换算表。,proposed,vs_connected_01
+VS_TEMP,direct_assignment | controlled_terminology | record_transposition | unit_conversion,0.97,体温结果和原始单位均有直接来源字段。; 体温字段需要生成纵向生命体征检查记录，并配置检查名称及短名称的受控术语。; 原始单位同时包含 F 和 C，需要生成统一的标准结果及标准单位。,尚未指定受控术语表和版本化单位换算表。,proposed,vs_connected_01
+VS_SYSBP,direct_assignment | controlled_terminology | record_transposition,0.96,收缩压结果和原始单位均有直接来源字段。; 收缩压字段需要生成纵向生命体征检查记录，并配置检查名称、短名称和单位的受控术语。; 原始单位仅出现可识别的 mmHg，未显示跨单位换算需求。,尚未指定受控术语表。,proposed,vs_connected_01
+VS_DIABP,direct_assignment | controlled_terminology | record_transposition,0.96,舒张压结果和原始单位均有直接来源字段。; 舒张压字段需要生成纵向生命体征检查记录，并配置检查名称、短名称和单位的受控术语。; 原始单位仅出现可识别的 mmHg，未显示跨单位换算需求。,尚未指定受控术语表。,proposed,vs_connected_01
+VS_PULSE,direct_assignment | controlled_terminology | record_transposition,0.96,脉率结果和原始单位均有直接来源字段。; 脉率字段需要生成纵向生命体征检查记录，并配置检查名称、短名称和单位的受控术语。; 原始单位仅出现可识别的 beats/min，未显示跨单位换算需求。,尚未指定受控术语表。,proposed,vs_connected_01
+VS_POST_DERIVATIONS,temporal_derivation,0.9,该概念没有直接来源字段，且在全部生命体征检查记录形成后执行。; 域级后处理涉及序号、研究日、访视编号和基线标志等派生。,尚未提供记录排序规则、访视编号规则和基线判定规则。,needs_information,vs_connected_01

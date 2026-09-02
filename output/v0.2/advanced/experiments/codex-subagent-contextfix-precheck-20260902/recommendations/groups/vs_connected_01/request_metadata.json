@@ -1,0 +1,13 @@
+{
+  "experiment_id": "codex-subagent-contextfix-20260902",
+  "group_id": "vs_connected_01",
+  "scenario": "advanced",
+  "stage": "classification",
+  "prompt_sha256": "5074f2f739557de0ecd6282e6256f34648f2a0dde1f18612268b1d01e5da76fd",
+  "profile_sha256": "5c5602b7267f429b9aa52e908020fdce0d11dfd7f5105048cd173442be13352b",
+  "specification_sha256": "635f1ca332d379e59bac0a8fa1ac10c510c72e004ee9026313c47c37ce18998d",
+  "registry_sha256": "56dae2ca586821b98ee427931b5bc122c873e73cf4340c7c615900febeb2d4a0",
+  "code_commit": "c9ced60492043b27c2eba706ca37b985f6a567cf",
+  "prepared_at": "2026-09-02T12:05:49Z",
+  "gold_loaded": false
+}

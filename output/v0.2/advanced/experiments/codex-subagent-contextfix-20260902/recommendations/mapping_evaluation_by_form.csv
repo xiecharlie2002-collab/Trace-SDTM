@@ -1,0 +1,4 @@
+target_domain,form_name,complete_plan_correct,total
+DM,Demographics,2,4
+DM,Exposure A + Exposure B,0,1
+VS,Vital Signs,3,8

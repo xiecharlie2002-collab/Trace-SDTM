@@ -1,0 +1,12 @@
+{
+  "experiment_id": "codex-subagent-contextfix-20260902",
+  "design": "single_paired_blind_contextfix",
+  "provider": "codex_subagent",
+  "denominator_concepts": 21,
+  "stage1_valid_concepts": 21,
+  "stage2_valid_candidate_concepts": 13,
+  "code_commit": "1ea2e3190bdc6ad3673231484cdada638e06fd43",
+  "subagent_isolation": "procedural_only_fork_turns_none_no_tools_no_files_no_network",
+  "stage2_transport": "DM single message; AE and VS deterministic character chunks reconstructed before response; full canonical request stored in each group",
+  "created_at": "2026-09-02T13:25:08Z"
+}

@@ -1,0 +1,193 @@
+[
+  {
+    "concept_id": "DM_CORE",
+    "candidate_rank": 1,
+    "target_domain": "DM",
+    "categories": [
+      "direct_assignment",
+      "field_combination"
+    ],
+    "steps": [],
+    "recommendation_score": 0.32,
+    "reason": "直接来源足以支持 STUDYID、SUBJID 和固定值 DOMAIN，但无法在不猜测的情况下完成该核心概念的全部目标变量。",
+    "uncertainties": "USUBJID 的批准组合格式及分隔符未提供。; SITEID 没有已声明的直接来源或经批准的抽取规则。",
+    "status": "needs_information",
+    "review_required": true,
+    "provenance": "codex_subagent",
+    "group_id": "dm_connected_01"
+  },
+  {
+    "concept_id": "DM_REFERENCE_START",
+    "candidate_rank": 1,
+    "target_domain": "DM",
+    "categories": [
+      "source_integration",
+      "field_combination",
+      "date_time_conversion",
+      "conditional_derivation"
+    ],
+    "steps": [],
+    "recommendation_score": 0.18,
+    "reason": "RFSTDTC 所需的日期解释和跨来源记录选择规则尚未确定，不能选择满足前置条件的登记函数。",
+    "uncertainties": "ex_a_raw.EXSTDAT 的月日年与日月年格式存在歧义。; 尚未确认应从两个暴露来源中选择最早还是最晚日期时间。; derive_reference_datetime 所需的受试者键未包含在该概念的 source_refs 中。",
+    "status": "needs_information",
+    "review_required": true,
+    "provenance": "codex_subagent",
+    "group_id": "dm_connected_01"
+  },
+  {
+    "concept_id": "DM_CONSENT",
+    "candidate_rank": 1,
+    "target_domain": "DM",
+    "categories": "date_time_conversion",
+    "steps": [],
+    "recommendation_score": 0.24,
+    "reason": "RFICDTC 需要明确的日期格式后才能使用登记的 ISO 8601 日期转换函数。",
+    "uncertainties": "dm_subject.IC_DT 的来源元数据仍将格式标记为月日年或日月年，未满足无歧义日期格式前置条件。",
+    "status": "needs_information",
+    "review_required": true,
+    "provenance": "codex_subagent",
+    "group_id": "dm_connected_01"
+  },
+  {
+    "concept_id": "DM_DEMOGRAPHICS",
+    "candidate_rank": 1,
+    "target_domain": "DM",
+    "categories": [
+      "direct_assignment",
+      "character_normalization",
+      "controlled_terminology"
+    ],
+    "steps": [
+      {
+        "transform_id": "assign_no_ct",
+        "source_keys": [
+          "dm_subject.AGE"
+        ],
+        "target_variables": [
+          "AGE"
+        ],
+        "parameters": {}
+      },
+      {
+        "transform_id": "hardcode_ct",
+        "source_keys": [],
+        "target_variables": [
+          "AGEU"
+        ],
+        "parameters": {
+          "value": "YEARS",
+          "codelist_id": "AGEU"
+        }
+      },
+      {
+        "transform_id": "assign_ct",
+        "source_keys": [
+          "dm_subject.SEX"
+        ],
+        "target_variables": [
+          "SEX"
+        ],
+        "parameters": {
+          "codelist_id": "SEX"
+        }
+      },
+      {
+        "transform_id": "assign_ct",
+        "source_keys": [
+          "dm_subject.ETHNIC"
+        ],
+        "target_variables": [
+          "ETHNIC"
+        ],
+        "parameters": {
+          "codelist_id": "ETHNIC"
+        }
+      },
+      {
+        "transform_id": "assign_ct",
+        "source_keys": [
+          "dm_subject.RACE"
+        ],
+        "target_variables": [
+          "RACE"
+        ],
+        "parameters": {
+          "codelist_id": "RACE"
+        }
+      },
+      {
+        "transform_id": "assign_no_ct",
+        "source_keys": [
+          "dm_subject.COUNTRY"
+        ],
+        "target_variables": [
+          "COUNTRY"
+        ],
+        "parameters": {}
+      }
+    ],
+    "recommendation_score": 0.99,
+    "reason": "年龄和国家保持来源语义直接赋值，年龄单位使用登记术语常量，性别、族裔和种族使用现有受控术语表完成映射。",
+    "uncertainties": "",
+    "status": "proposed",
+    "review_required": true,
+    "provenance": "codex_subagent",
+    "group_id": "dm_connected_01"
+  },
+  {
+    "concept_id": "DM_TREATMENT",
+    "candidate_rank": 1,
+    "target_domain": "DM",
+    "categories": "direct_assignment",
+    "steps": [
+      {
+        "transform_id": "assign_no_ct",
+        "source_keys": [
+          "dm_subject.PLANNED_ARMCD"
+        ],
+        "target_variables": [
+          "ARMCD"
+        ],
+        "parameters": {}
+      },
+      {
+        "transform_id": "assign_no_ct",
+        "source_keys": [
+          "dm_subject.PLANNED_ARM"
+        ],
+        "target_variables": [
+          "ARM"
+        ],
+        "parameters": {}
+      },
+      {
+        "transform_id": "assign_no_ct",
+        "source_keys": [
+          "dm_subject.ACTUAL_ARMCD"
+        ],
+        "target_variables": [
+          "ACTARMCD"
+        ],
+        "parameters": {}
+      },
+      {
+        "transform_id": "assign_no_ct",
+        "source_keys": [
+          "dm_subject.ACTUAL_ARM"
+        ],
+        "target_variables": [
+          "ACTARM"
+        ],
+        "parameters": {}
+      }
+    ],
+    "recommendation_score": 0.99,
+    "reason": "计划和实际治疗组的代码与描述均有语义一致的一对一来源，可使用非受控术语直接赋值。",
+    "uncertainties": "",
+    "status": "proposed",
+    "review_required": true,
+    "provenance": "codex_subagent",
+    "group_id": "dm_connected_01"
+  }
+]

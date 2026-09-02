@@ -1,0 +1,14 @@
+concept_id,candidate_rank,target_domain,form_name,complexity,gold_categories,proposed_categories,category_chain_correct,function_chain_correct,source_chain_correct,target_set_complete,missing_targets,extra_targets,parameter_values_correct,complete_plan_correct,parameter_schema_valid,recommendation_score,status,provenance,group_id
+DM_CORE,1,DM,Demographics,complex,direct_assignment | field_combination,,FALSE,FALSE,FALSE,FALSE,STUDYID | DOMAIN | USUBJID | SUBJID | SITEID,,FALSE,FALSE,TRUE,0.32,needs_information,codex_subagent,dm_connected_01
+DM_REFERENCE_START,1,DM,Exposure A + Exposure B,complex,source_integration,,FALSE,FALSE,FALSE,FALSE,RFSTDTC,,FALSE,FALSE,TRUE,0.18,needs_information,codex_subagent,dm_connected_01
+DM_CONSENT,1,DM,Demographics,simple,date_time_conversion,,FALSE,FALSE,FALSE,FALSE,RFICDTC,,FALSE,FALSE,TRUE,0.24,needs_information,codex_subagent,dm_connected_01
+DM_DEMOGRAPHICS,1,DM,Demographics,complex,direct_assignment | controlled_terminology,direct_assignment | controlled_terminology,TRUE,TRUE,TRUE,TRUE,,,TRUE,TRUE,TRUE,0.99,proposed,codex_subagent,dm_connected_01
+DM_TREATMENT,1,DM,Demographics,complex,direct_assignment,direct_assignment,TRUE,TRUE,TRUE,TRUE,,,TRUE,TRUE,TRUE,0.99,proposed,codex_subagent,dm_connected_01
+VS_CORE,1,VS,Vital Signs,complex,direct_assignment | field_combination | date_time_conversion | controlled_terminology | temporal_derivation,,FALSE,FALSE,FALSE,FALSE,STUDYID | DOMAIN | USUBJID | VISIT | VSDTC | VSPOS | VISITNUM,,FALSE,FALSE,TRUE,0.42,needs_information,codex_subagent,vs_connected_01
+VS_HEIGHT,1,VS,Vital Signs,complex,record_transposition | unit_conversion,record_transposition | unit_conversion,TRUE,TRUE,TRUE,TRUE,,,TRUE,TRUE,TRUE,0.98,proposed,codex_subagent,vs_connected_01
+VS_WEIGHT,1,VS,Vital Signs,complex,record_transposition | unit_conversion,record_transposition | unit_conversion,TRUE,TRUE,TRUE,TRUE,,,TRUE,TRUE,TRUE,0.98,proposed,codex_subagent,vs_connected_01
+VS_TEMP,1,VS,Vital Signs,complex,record_transposition | unit_conversion,record_transposition | unit_conversion,TRUE,TRUE,TRUE,TRUE,,,TRUE,TRUE,TRUE,0.98,proposed,codex_subagent,vs_connected_01
+VS_SYSBP,1,VS,Vital Signs,complex,record_transposition | unit_conversion,direct_assignment | record_transposition,FALSE,FALSE,FALSE,TRUE,,,FALSE,FALSE,TRUE,0.95,proposed,codex_subagent,vs_connected_01
+VS_DIABP,1,VS,Vital Signs,complex,record_transposition | unit_conversion,direct_assignment | record_transposition,FALSE,FALSE,FALSE,TRUE,,,FALSE,FALSE,TRUE,0.95,proposed,codex_subagent,vs_connected_01
+VS_PULSE,1,VS,Vital Signs,complex,record_transposition | unit_conversion,direct_assignment | record_transposition,FALSE,FALSE,FALSE,TRUE,,,FALSE,FALSE,TRUE,0.95,proposed,codex_subagent,vs_connected_01
+VS_POST_DERIVATIONS,1,VS,Vital Signs,moderate,temporal_derivation,,FALSE,FALSE,FALSE,FALSE,VSSEQ | VSDY | VSBLFL,,FALSE,FALSE,TRUE,0.38,needs_information,codex_subagent,vs_connected_01

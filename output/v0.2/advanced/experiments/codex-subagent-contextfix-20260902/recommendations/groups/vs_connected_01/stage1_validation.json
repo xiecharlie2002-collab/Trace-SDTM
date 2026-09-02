@@ -1,0 +1,11 @@
+{
+  "validation_status": "passed",
+  "request_sha256": "ee8565b967bb94de568d08a1a09c6c4066dc343dad0834542e856f85943990fd",
+  "response_sha256": "d2389222b200fc93242dbe6f66421eb548c637c89b7b62f466e68d24f6cc5d95",
+  "normalized_sha256": "62fb45a5a4eae7594a6ed80f7d1f10bc305ff9c8d169d154a9f7d13e7d040f95",
+  "repeat_parse_sha256": "62fb45a5a4eae7594a6ed80f7d1f10bc305ff9c8d169d154a9f7d13e7d040f95",
+  "stage2_request_sha256": "5fc8aa123380b4d9bfceae44da909dac0eadd454e1a21eb566dd16003f3eda5e",
+  "subagent_task": "/root/map_vs_contextfix_final",
+  "validated_at": "2026-09-02T12:31:22Z",
+  "retry_performed": false
+}
