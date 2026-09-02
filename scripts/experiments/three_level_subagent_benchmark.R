@@ -31,7 +31,17 @@ benchmark_config <- function(scenario, experiment_id) {
 benchmark_groups <- function(config) {
   dictionary_path <- trace_path(config$paths$profile_dir, "source_dictionary.csv")
   if (!file.exists(dictionary_path)) profile_sources(config)
-  dictionary <- readr::read_csv(dictionary_path, show_col_types = FALSE)
+  # 画像生成时空字符串是契约的一部分。默认 CSV 读取会把它们改成 NA，
+  # 进而令冻结请求在重建时由 "" 变成 null，造成虚假的校验失败。
+  dictionary <- readr::read_csv(dictionary_path, show_col_types = FALSE) |>
+    dplyr::mutate(dplyr::across(
+      dplyr::any_of(c(
+        "source_domain", "source_dataset", "source_variable", "label", "data_type",
+        "example_values", "form_name", "grain", "keys", "concept_roles",
+        "format_candidates", "partial_tokens"
+      )),
+      ~ tidyr::replace_na(as.character(.x), "")
+    ))
   recommendation_groups(load_mapping_template(config), dictionary, config)
 }
 
