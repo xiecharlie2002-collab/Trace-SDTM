@@ -144,13 +144,60 @@ error_taxonomy <- formal_all |>
 
 old_root <- trace_path("output", "v0.2", "advanced", "experiments", "codex-subagent-contextfix-20260902", "recommendations")
 old_summary <- optional_json(file.path(old_root, "mapping_evaluation_summary.json"), list(status = "not_available"))
+
+rescore_old_advanced <- function() {
+  candidate_path <- file.path(old_root, "candidate_plans.csv")
+  classification_path <- file.path(old_root, "category_classifications.csv")
+  if (!file.exists(candidate_path) || !file.exists(classification_path)) {
+    return(list(category_exact = NA_integer_, target_complete = NA_integer_, complete_top1 = NA_integer_))
+  }
+  config <- results$advanced$config
+  specification <- load_mapping_template(config)
+  gold <- load_gold_specification(config)
+  registry <- load_transform_registry(config)
+  candidates <- readr::read_csv(candidate_path, show_col_types = FALSE)
+  classifications <- readr::read_csv(classification_path, show_col_types = FALSE)
+  candidate_detail <- candidate_evaluation_rows_v02(candidates, specification, gold, registry) |>
+    dplyr::filter(candidate_rank == 1L)
+  gold_categories <- purrr::map_dfr(specification$concepts, function(concept) tibble::tibble(
+    concept_id = concept$concept_id,
+    gold_categories = paste(
+      plan_signature_v02(gold_plan_steps(gold$plans[[concept$concept_id]]), registry)$categories,
+      collapse = " | "
+    )
+  ))
+  classification_detail <- dplyr::left_join(gold_categories, classifications, by = "concept_id")
+  list(
+    category_exact = sum(
+      !is.na(classification_detail$categories) &
+        classification_detail$categories == classification_detail$gold_categories
+    ),
+    target_complete = sum(candidate_detail$target_set_complete, na.rm = TRUE),
+    complete_top1 = sum(candidate_detail$complete_plan_correct, na.rm = TRUE)
+  )
+}
+
+old_rescored <- rescore_old_advanced()
 advanced_comparison <- tibble::tibble(
-  phase = c("修复前原始评价", "修复后三级基准高级层"),
-  category_exact = c(old_summary$stage1_category_correct %||% NA_integer_, results$advanced$summary$stage1_category_correct %||% NA_integer_),
-  target_complete = c(old_summary$target_set_complete %||% NA_integer_, results$advanced$summary$target_set_complete %||% NA_integer_),
-  complete_top1 = c(old_summary$complete_plan_top1_correct %||% NA_integer_, results$advanced$summary$complete_plan_top1_correct %||% NA_integer_),
+  phase = c("修复前原始评价", "修复前冻结结果按当前评价器复算", "修复后三级基准高级层"),
+  category_exact = c(
+    old_summary$stage1_category_correct %||% NA_integer_, old_rescored$category_exact,
+    results$advanced$summary$stage1_category_correct %||% NA_integer_
+  ),
+  target_complete = c(
+    old_summary$target_set_complete %||% NA_integer_, old_rescored$target_complete,
+    results$advanced$summary$target_set_complete %||% NA_integer_
+  ),
+  complete_top1 = c(
+    old_summary$complete_plan_top1_correct %||% NA_integer_, old_rescored$complete_top1,
+    results$advanced$summary$complete_plan_top1_correct %||% NA_integer_
+  ),
   denominator = 21L,
-  note = c("按旧提示词、旧政策和旧评价器保留的历史结果。", "按修复后的提示词、政策和评价器得到；两者不是长期稳定性估计。")
+  note = c(
+    "按旧提示词、旧政策和旧评价器保留的历史结果。",
+    "冻结旧响应，仅用当前金标准和当前计分逻辑复算；缺失候选仍计入21项分母。",
+    "按修复后的提示词、政策和评价器得到；提示词与政策已变化，不能把差异解释为长期稳定性。"
+  )
 )
 
 report_root <- ensure_dir(trace_path("output", "benchmark", "v1", "reports", experiment_id))
