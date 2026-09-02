@@ -12,7 +12,7 @@ source_catalog:
   ex_b_raw: {file: ex_b_raw.csv, form_name: Exposure B, grain: many_records_per_subject, keys: [STUDY, PATNUM]}
   ae_main: {file: ae_main.csv, form_name: Adverse Events, grain: one_record_per_event, keys: [STUDY, PATNUM, AEID]}
   sae_detail: {file: sae_detail.csv, form_name: Serious Adverse Event Details, grain: one_record_per_event, keys: [STUDY, PATNUM, AEID]}
-  ae_merged: {derived: true, form_name: Adverse Events + Serious Adverse Event Details, grain: one_record_per_event, keys: [STUDY, PATNUM, AEID]}
+  ae_merged: {derived: true, profile_parents: [ae_main, sae_detail], form_name: Adverse Events + Serious Adverse Event Details, grain: one_record_per_event, keys: [STUDY, PATNUM, AEID]}
   vs_mixed: {file: vs_mixed.csv, form_name: Vital Signs, grain: one_record_per_subject_visit, keys: [STUDY, PATNUM, INSTANCE]}
 domain_sources:
   DM: dm_subject

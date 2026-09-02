@@ -363,13 +363,51 @@ gold_plan_steps <- function(plan) {
   plan$steps %||% plan
 }
 
-concept_context <- function(concept, specification, dictionary) {
-  keys <- vapply(concept_source_refs(concept), source_ref_key, character(1))
-  source_rows <- if (length(keys)) {
-    dplyr::filter(dictionary, paste0(source_dataset, ".", source_variable) %in% keys)
-  } else {
-    dictionary[0, , drop = FALSE]
+profile_evidence_columns <- function(dictionary) {
+  intersect(
+    c(
+      "source_dataset", "source_variable", "label", "data_type", "example_values",
+      "missing_rate", "unique_count", "form_name", "grain", "format_candidates",
+      "partial_tokens", "record_count"
+    ),
+    names(dictionary)
+  )
+}
+
+source_profile_context <- function(ref, specification, dictionary) {
+  declared_key <- source_ref_key(ref)
+  ref_variable <- as.character(ref$variable)
+  direct <- dplyr::filter(
+    dictionary,
+    paste0(.data$source_dataset, ".", .data$source_variable) == .env$declared_key
+  )
+  resolution <- "direct"
+  evidence <- direct
+  if (!nrow(evidence)) {
+    catalog <- specification$source_catalog[[ref$dataset]] %||% list()
+    parents <- unname(unlist(catalog$profile_parents %||% character(), use.names = FALSE))
+    if (isTRUE(catalog$derived) && length(parents)) {
+      evidence <- dplyr::filter(
+        dictionary,
+        .data$source_dataset %in% .env$parents,
+        .data$source_variable == .env$ref_variable
+      )
+      resolution <- if (nrow(evidence)) "derived_candidates" else "unavailable"
+    } else {
+      resolution <- "unavailable"
+    }
   }
+  evidence <- dplyr::select(evidence, dplyr::all_of(profile_evidence_columns(dictionary)))
+  list(
+    declared_source_key = declared_key,
+    role = as.character(ref$role %||% ""),
+    resolution = resolution,
+    evidence = as.data.frame(evidence)
+  )
+}
+
+concept_context <- function(concept, specification, dictionary) {
+  source_refs <- concept_source_refs(concept)
   datasets <- unique(vapply(concept_source_refs(concept), function(ref) as.character(ref$dataset), character(1)))
   list(
     concept_id = concept$concept_id,
@@ -380,7 +418,7 @@ concept_context <- function(concept, specification, dictionary) {
     depends_on = unname(unlist(concept$depends_on %||% character())),
     source_refs = concept$source_refs %||% list(),
     source_catalog = specification$source_catalog[intersect(datasets, names(specification$source_catalog))],
-    field_profiles = as.data.frame(source_rows)
+    field_profiles = lapply(source_refs, source_profile_context, specification = specification, dictionary = dictionary)
   )
 }
 
@@ -416,16 +454,56 @@ category_catalog_for_model <- function(registry) {
 
 classification_prompt_v02 <- function(group, metadata, registry, config = load_project_config()) {
   target_meta <- metadata$domains[[group$target_domain]]$variables
-  paste(
+  prompt <- paste(
     "你是临床数据标准映射助手。第一阶段只判断每个临床概念需要的转换类别链，不选择具体函数。",
     "不得发明来源字段、数据集或连接键，不得生成程序、公式、正则表达式或自由条件。",
     "若日期格式有歧义、连接键不足、基数关系不明确或单位不能识别，status 必须为 needs_information。",
     "返回 JSON 对象，顶层键 classifications。每个概念恰好一条记录，字段为 concept_id、categories、classification_score、evidence、uncertainties、status。",
-    "categories 是按执行顺序排列的类别编号数组；classification_score 必须在 0 到 1 之间；status 只能是 proposed 或 needs_information。",
+    "status 只能逐字使用 proposed 或 needs_information：信息足够时使用 proposed，信息不足时使用 needs_information；不得使用 ready、classified、success 或其他近义词。",
+    "categories 必须是按执行顺序排列的类别标识符字符串数组，只能逐字使用类别目录中的 category 值；不得使用数字、中文名称或自行缩写。",
+    "categories 对应的 stage_order 必须非递减，并在输出前自行核对。正确示例：{\"concept_id\":\"EXAMPLE\",\"categories\":[\"direct_assignment\",\"temporal_derivation\"],\"classification_score\":0.9,\"evidence\":[\"有直接来源并需要研究日派生。\"],\"uncertainties\":[],\"status\":\"proposed\"}。",
     "转换类别目录：", registry_json(category_catalog_for_model(registry)),
     "目标域专业上下文：", registry_json(list(domain = group$target_domain, variables = target_meta)),
     "临床概念及来源上下文：", registry_json(group$context),
     sep = "\n"
+  )
+  assert_blind_prompt(prompt)
+}
+
+assert_blind_prompt <- function(prompt) {
+  forbidden <- c(
+    "advanced_gold.yml", "basic_gold.yml", "gold_specification", "mapping_evaluation",
+    "expert_review_summary", "concept_review_audit", "final_steps_audit"
+  )
+  lowered_prompt <- tolower(prompt)
+  present <- forbidden[vapply(forbidden, function(value) grepl(tolower(value), lowered_prompt, fixed = TRUE), logical(1))]
+  if (length(present)) trace_abort(sprintf("盲评提示词包含禁止内容：%s", paste(present, collapse = ", ")))
+  prompt
+}
+
+model_resource_catalog <- function(config = load_project_config()) {
+  terminology <- load_controlled_terminology(config)
+  conversions <- load_unit_conversions(config)
+  conversion_sets <- lapply(conversions$sets %||% list(), function(entries) {
+    lapply(entries, function(entry) list(
+      test_code = entry$test_code,
+      from_unit = entry$from_unit,
+      to_unit = entry$to_unit,
+      round_digits = entry$round_digits
+    ))
+  })
+  list(
+    codelists = terminology$codelists %||% list(),
+    visit_maps = terminology$visit_maps %||% list(),
+    unit_conversion_sets = conversion_sets,
+    unit_aliases = conversions$unit_aliases %||% list(),
+    internal_fields = list(
+      list(
+        field = ".SOURCE_ROW",
+        available_from_stage = "source_preparation",
+        purpose = "确定性记录排序和序号派生的最终稳定并列判定字段"
+      )
+    )
   )
 }
 
@@ -456,7 +534,7 @@ function_cards_for_model <- function(registry, categories) {
 
 selection_prompt_v02 <- function(group, classifications, metadata, registry, config = load_project_config()) {
   categories <- unique(unlist(lapply(classifications, `[[`, "categories"), use.names = FALSE))
-  paste(
+  prompt <- paste(
     "你是临床数据标准映射助手。第二阶段在第一阶段选定的类别内，选择登记过的函数和严格参数。",
     "每个概念返回一到三个完整候选方案；候选必须覆盖该临床概念所需的全部目标变量，步骤按执行顺序排列。",
     "只能使用下方函数卡中的 transform_id。参数名、类型和枚举必须严格符合 parameter_schema，additionalProperties 为 false。",
@@ -467,10 +545,12 @@ selection_prompt_v02 <- function(group, classifications, metadata, registry, con
     "每个 step 必须含 transform_id、source_keys、target_variables、parameters。candidate_rank 为 1 到 3，分值为 0 到 1。",
     "第一阶段分类：", registry_json(classifications),
     "本次唯一可见的函数卡：", registry_json(function_cards_for_model(registry, categories)),
+    "可用受控资源目录：", registry_json(model_resource_catalog(config)),
     "目标域专业上下文：", registry_json(list(domain = group$target_domain, variables = metadata$domains[[group$target_domain]]$variables)),
     "临床概念及来源上下文：", registry_json(group$context),
     sep = "\n"
   )
+  assert_blind_prompt(prompt)
 }
 
 parse_classifications_v02 <- function(records, group, registry) {
@@ -740,6 +820,7 @@ call_mapping_model <- function(config = load_project_config()) {
       run = file.path(group_path, "run_metadata.json")
     )
     write_json(group$context, file.path(group_path, "source_context.json"))
+    writeLines(enc2utf8(stage1_prompt), file.path(group_path, "stage1_request.txt"), useBytes = TRUE)
     resume <- identical(tolower(Sys.getenv("TRACE_SDTM_RESUME", unset = "false")), "true")
     if (resume && all(vapply(cache_paths, file.exists, logical(1)))) {
       cached_run <- jsonlite::read_json(cache_paths$run, simplifyVector = TRUE)
@@ -787,6 +868,7 @@ call_mapping_model <- function(config = load_project_config()) {
     all_classifications <- c(all_classifications, classifications)
     trace_info("正在进行 %s 的第二阶段函数选择。", group$group_id)
     stage2_prompt <- selection_prompt_v02(group, classifications, metadata, registry, config)
+    writeLines(enc2utf8(stage2_prompt), file.path(group_path, "stage2_request.txt"), useBytes = TRUE)
     stage2_result <- tryCatch({
       stage2 <- request_json_v02(
         stage2_prompt, endpoint, api_key, model, config, paste0(group$group_id, " 第二阶段"),

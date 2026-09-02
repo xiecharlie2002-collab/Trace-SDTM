@@ -25,6 +25,74 @@ test_that("第二阶段只看到第一阶段类别内函数的完整函数卡", 
   expect_false("assign_no_ct" %in% vapply(cards, `[[`, character(1), "transform_id"))
 })
 
+test_that("高级场景为直接来源和派生来源提供字段画像证据", {
+  config <- load_project_config("advanced")
+  profile_sources(config)
+  dictionary <- readr::read_csv(trace_path(config$paths$profile_dir, "source_dictionary.csv"), show_col_types = FALSE)
+  specification <- load_mapping_template(config)
+  contexts <- lapply(specification$concepts, concept_context, specification = specification, dictionary = dictionary)
+  names(contexts) <- vapply(specification$concepts, `[[`, character(1), "concept_id")
+
+  for (context in contexts) {
+    expect_length(context$field_profiles, length(context$source_refs))
+    if (length(context$source_refs)) {
+      expect_false(any(vapply(context$field_profiles, function(x) identical(x$resolution, "unavailable"), logical(1))))
+      expect_true(all(vapply(context$field_profiles, function(x) nrow(x$evidence) >= 1L, logical(1))))
+    }
+  }
+
+  ae_start <- as.character(registry_json(contexts$AE_START$field_profiles))
+  expect_match(ae_start, "dd-mmm-yyyy", fixed = TRUE)
+  expect_match(ae_start, "UNK-JAN-2025", fixed = TRUE)
+  expect_match(ae_start, "UNK-UNK-2025", fixed = TRUE)
+  expect_match(ae_start, "derived_candidates", fixed = TRUE)
+
+  vs_profiles <- as.character(registry_json(c(
+    contexts$VS_HEIGHT$field_profiles,
+    contexts$VS_WEIGHT$field_profiles,
+    contexts$VS_TEMP$field_profiles
+  )))
+  expect_match(vs_profiles, "in | cm", fixed = TRUE)
+  expect_match(vs_profiles, "lb | kg", fixed = TRUE)
+  expect_match(vs_profiles, "F | C", fixed = TRUE)
+})
+
+test_that("提示词使用字符串类别并只提供裁剪后的受控资源", {
+  config <- load_project_config("advanced")
+  profile_sources(config)
+  dictionary <- readr::read_csv(trace_path(config$paths$profile_dir, "source_dictionary.csv"), show_col_types = FALSE)
+  specification <- load_mapping_template(config)
+  registry <- load_transform_registry(config)
+  metadata <- load_metadata(config)
+  groups <- recommendation_groups(specification, dictionary, config)
+  group <- groups$vs_connected_01
+  stage1 <- classification_prompt_v02(group, metadata, registry, config)
+  expect_false(grepl("类别编号数组", stage1, fixed = TRUE))
+  expect_match(stage1, "类别标识符字符串数组", fixed = TRUE)
+  expect_match(stage1, "stage_order 必须非递减", fixed = TRUE)
+  expect_match(stage1, "status 只能逐字使用 proposed 或 needs_information", fixed = TRUE)
+  expect_match(stage1, "不得使用 ready、classified、success", fixed = TRUE)
+  expect_match(stage1, "direct_assignment", fixed = TRUE)
+
+  classifications <- lapply(group$concepts, function(concept) list(
+    concept_id = concept$concept_id,
+    categories = if (concept$concept_id == "VS_POST_DERIVATIONS") "temporal_derivation" else "direct_assignment",
+    classification_score = 1,
+    evidence = "test",
+    uncertainties = "",
+    status = "proposed",
+    group_id = group$group_id
+  ))
+  stage2 <- selection_prompt_v02(group, classifications, metadata, registry, config)
+  expect_match(stage2, "trace_visits_v1", fixed = TRUE)
+  expect_match(stage2, "vs_standard_v1", fixed = TRUE)
+  expect_match(stage2, ".SOURCE_ROW", fixed = TRUE)
+  resources <- as.character(registry_json(model_resource_catalog(config)))
+  expect_false(grepl("multiplier", resources, fixed = TRUE))
+  expect_false(grepl("offset", resources, fixed = TRUE))
+  expect_error(assert_blind_prompt("advanced_gold.yml"), "禁止内容")
+})
+
 test_that("参考种子生成七张审核工作表并覆盖高级来源字段", {
   config <- load_project_config("advanced")
   recommendations <- seed_recommendations(config)
