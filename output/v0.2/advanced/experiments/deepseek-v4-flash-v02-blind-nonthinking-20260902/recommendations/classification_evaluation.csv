@@ -1,0 +1,22 @@
+concept_id,gold_categories,categories,classification_score,evidence,uncertainties,status,group_id,classification_correct
+DM_CORE,direct_assignment | field_combination,,,,,,,FALSE
+DM_REFERENCE_START,source_integration,,,,,,,FALSE
+DM_CONSENT,date_time_conversion,,,,,,,FALSE
+DM_DEMOGRAPHICS,direct_assignment | controlled_terminology,,,,,,,FALSE
+DM_TREATMENT,direct_assignment,,,,,,,FALSE
+AE_SOURCE_INTEGRATION,source_integration,source_integration,1,"Concept explicitly merges ae_main and sae_detail datasets using STUDY, PATNUM, AEID as join keys.",,proposed,ae_connected_01,TRUE
+AE_CORE,direct_assignment | field_combination,direct_assignment,0.9,Maps STUDYID and USUBJID from STUDY and PATNUM after source integration; no semantic transformation.,Requires DM_CORE for USUBJID derivation; may need conditional derivation if subject identifier mapping is not direct.,proposed,ae_connected_01,FALSE
+AE_TERMS,direct_assignment | character_normalization,direct_assignment | controlled_terminology,0.8,AETERM is direct assignment; AEDECOD and AEBODSYS may require controlled terminology mapping to standard dictionaries.,Mapping to MedDRA not specified; may need external dictionary lookup.,proposed,ae_connected_01,FALSE
+AE_SAFETY,controlled_terminology,controlled_terminology,0.9,"AESEV, AESER, AESHOSP need mapping to controlled terminology (e.g., MILD/MODERATE/SEVERE, Y/N).",Source values for AESEV and AESER not specified; may require conditional derivation if mapping is not direct.,proposed,ae_connected_01,TRUE
+AE_REL_OUTCOME,controlled_terminology,controlled_terminology,0.9,"AEREL and AEOUTCOME need mapping to standard controlled terminology (e.g., AEOUT to RECOVERED/RESOLVED etc.).",Source values for AEREL and AEOUTCOME not specified; may require conditional derivation.,proposed,ae_connected_01,TRUE
+AE_START,date_time_conversion | temporal_derivation,date_time_conversion | temporal_derivation,0.9,AESTDAT and AESTTIM need conversion to ISO 8601; AESTDY derived from reference start date.,Date format not specified; may need needs_information if ambiguous.,proposed,ae_connected_01,TRUE
+AE_END,date_time_conversion | conditional_derivation | temporal_derivation,date_time_conversion | conditional_derivation | temporal_derivation,0.9,"AEENDDAT and AEENDTIM need conversion; AEONGO indicates ongoing, requiring conditional derivation for AEENRF and possibly AEENDTC.",Date format not specified; ongoing handling may require conditional logic.,proposed,ae_connected_01,TRUE
+AE_SEQUENCE,temporal_derivation,temporal_derivation,1,AESEQ is a sequence number derived after sorting by subject and start date.,,proposed,ae_connected_01,TRUE
+VS_CORE,direct_assignment | field_combination | date_time_conversion | controlled_terminology | temporal_derivation,,,,,,,FALSE
+VS_HEIGHT,record_transposition | unit_conversion,,,,,,,FALSE
+VS_WEIGHT,record_transposition | unit_conversion,,,,,,,FALSE
+VS_TEMP,record_transposition | unit_conversion,,,,,,,FALSE
+VS_SYSBP,record_transposition | unit_conversion,,,,,,,FALSE
+VS_DIABP,record_transposition | unit_conversion,,,,,,,FALSE
+VS_PULSE,record_transposition | unit_conversion,,,,,,,FALSE
+VS_POST_DERIVATIONS,temporal_derivation,,,,,,,FALSE

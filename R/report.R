@@ -153,9 +153,17 @@ generate_report <- function(config = load_project_config()) {
   partial_dates <- read_optional_csv(trace_path(config$paths$lineage_dir, "partial_date_notes.csv"))
   final_steps <- read_optional_csv(trace_path(config$paths$review_dir, "final_steps_audit.csv"))
   review <- read_optional_csv(trace_path(config$paths$review_dir, "concept_review_audit.csv"))
+  review_summary <- read_optional_json(trace_path(config$paths$review_dir, "expert_review_summary.json"), list())
   local_issues <- read_optional_csv(trace_path(config$paths$local_validation_dir, "local_issues.csv"))
   p21_issues <- read_optional_csv(trace_path(config$paths$p21_validation_dir, "p21_issues.csv"))
   model_run <- read_optional_json(trace_path(config$paths$recommendation_dir, "model_run.json"), list(status = "not_run", provenance = "not_run"))
+  group_failures <- model_run$group_failures %||% data.frame()
+  if (is.list(group_failures) && !is.data.frame(group_failures) && length(group_failures)) {
+    group_failures <- purrr::map_dfr(group_failures, function(x) tibble::tibble(
+      group_id = x$group_id %||% "", stage = x$stage %||% "", error = x$error %||% "",
+      concept_ids = paste(unlist(x$concept_ids %||% character()), collapse = " | "), recorded_at = x$recorded_at %||% ""
+    ))
+  }
   build_run <- read_optional_json(trace_path(config$paths$manifest_dir, "build_manifest.json"), list())
   p21_run <- read_optional_json(trace_path(config$paths$p21_validation_dir, "p21_run.json"), list(exit_status = NA, engine_name = "not_run"))
   registry <- load_transform_registry(config)
@@ -197,6 +205,10 @@ generate_report <- function(config = load_project_config()) {
       htmltools::tags$div(class = "grid",
         metric_card("原始字段", nrow(dictionary)),
         metric_card("临床概念", evaluation$evaluated_concepts %||% 0L),
+        metric_card("有效候选概念", evaluation$concepts_with_candidate %||% 0L,
+                    if (identical(evaluation$concepts_with_candidate, evaluation$evaluated_concepts)) "good" else "warning"),
+        metric_card("拒绝的推荐组", evaluation$rejected_groups %||% 0L,
+                    if ((evaluation$rejected_groups %||% 0L) == 0L) "good" else "warning"),
         metric_card("登记函数", length(registry$transforms)),
         metric_card("本地错误", local_errors, if (local_errors == 0L) "good" else "warning"),
         metric_card("Pinnacle 21 域内问题", generated_defects, if (generated_defects == 0L) "good" else "warning"),
@@ -227,9 +239,14 @@ generate_report <- function(config = load_project_config()) {
       )),
       htmltools::tags$h2("两阶段推荐评价"),
       html_table(summary_table),
+      htmltools::tags$h3("严格校验拒绝"), html_table(group_failures, 20L),
       htmltools::tags$h3("类别判断"), html_table(classifications, 60L),
       htmltools::tags$h3("候选函数链"), html_table(mapping_detail, 80L),
       htmltools::tags$h2("审核决定和锁定函数链"),
+      html_table(if (length(review_summary)) data.frame(
+        metric = names(review_summary), value = vapply(review_summary, function(x) paste(x, collapse = ", "), character(1)),
+        stringsAsFactors = FALSE
+      ) else data.frame(), 20L),
       html_table(review, 60L), html_table(final_steps, 100L),
       htmltools::tags$h2("转换函数注册表"), html_table(catalog, 80L),
       htmltools::tags$h2("高级数据处理证据"),

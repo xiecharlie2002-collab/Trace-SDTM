@@ -1,0 +1,44 @@
+{
+  "classifications": [
+    {
+      "concept_id": "DM_CORE",
+      "categories": [1, 2],
+      "classification_score": 0.9,
+      "evidence": "Requires combining STUDY and PATNUM from dm_subject to form USUBJID and SUBJID; direct assignment for STUDYID and DOMAIN.",
+      "uncertainties": "None",
+      "status": "proposed"
+    },
+    {
+      "concept_id": "DM_REFERENCE_START",
+      "categories": [1, 2, 3, 4],
+      "classification_score": 0.8,
+      "evidence": "Multiple source datasets (ex_a_raw, ex_b_raw) need integration; date and time fields need combination and ISO conversion; earliest date/time selection may require conditional logic.",
+      "uncertainties": "Ambiguity in determining earliest date/time; potential missing time fields; need for conditional derivation.",
+      "status": "needs_information"
+    },
+    {
+      "concept_id": "DM_CONSENT",
+      "categories": [2, 3],
+      "classification_score": 0.9,
+      "evidence": "Direct assignment from IC_DT to RFICDTC with date conversion to ISO 8601.",
+      "uncertainties": "None",
+      "status": "proposed"
+    },
+    {
+      "concept_id": "DM_DEMOGRAPHICS",
+      "categories": [2, 3],
+      "classification_score": 0.9,
+      "evidence": "Direct assignment for AGE, SEX, ETHNIC, RACE, COUNTRY; controlled terminology mapping for SEX, ETHNIC, RACE.",
+      "uncertainties": "Potential need for unit conversion for AGE if units not YEARS.",
+      "status": "proposed"
+    },
+    {
+      "concept_id": "DM_TREATMENT",
+      "categories": [2, 3],
+      "classification_score": 0.9,
+      "evidence": "Direct assignment for planned and actual arm codes and descriptions; controlled terminology mapping for ARMCD and ACTARMCD.",
+      "uncertainties": "None",
+      "status": "proposed"
+    }
+  ]
+}

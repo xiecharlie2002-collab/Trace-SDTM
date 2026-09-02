@@ -57,6 +57,22 @@ test_that("超范围分值、未知函数和信息不足方案被拒绝", {
   expect_error(validate_candidate_plan_v02(base, classification, concept, specification, metadata, registry, "dm", "model"), "不能附带")
 })
 
+test_that("审核比较忽略字符向量与 JSON 列表的表示差异", {
+  vector_step <- list(list(
+    transform_id = "assign_no_ct",
+    source_keys = "ae_merged.AETERM",
+    target_variables = "AETERM",
+    parameters = list()
+  ))
+  list_step <- list(list(
+    transform_id = "assign_no_ct",
+    source_keys = list("ae_merged.AETERM"),
+    target_variables = list("AETERM"),
+    parameters = list()
+  ))
+  expect_identical(canonical_steps_v02(vector_step), canonical_steps_v02(list_step))
+})
+
 test_that("实验产物按场景隔离且密钥不会进入提示词", {
   config <- load_project_config("advanced")
   routed <- apply_experiment_paths(config, "deepseek-test")

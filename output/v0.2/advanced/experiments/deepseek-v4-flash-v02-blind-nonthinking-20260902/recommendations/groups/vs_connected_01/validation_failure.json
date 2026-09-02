@@ -1,0 +1,7 @@
+{
+  "group_id": "vs_connected_01",
+  "stage": "classification",
+  "error": "VS_CORE 的类别链顺序无效。",
+  "concept_ids": ["VS_CORE", "VS_HEIGHT", "VS_WEIGHT", "VS_TEMP", "VS_SYSBP", "VS_DIABP", "VS_PULSE", "VS_POST_DERIVATIONS"],
+  "recorded_at": "2026-09-02T11:04:24Z"
+}

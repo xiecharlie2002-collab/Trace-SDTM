@@ -1,0 +1,262 @@
+[
+  {
+    "concept_id": "AE_SOURCE_INTEGRATION",
+    "target_domain": "AE",
+    "form_name": "Adverse Events + Serious Adverse Event Details",
+    "expected_cardinality": "one_record_to_one_record",
+    "required": true,
+    "depends_on": [],
+    "source_refs": [
+      {
+        "dataset": "ae_main",
+        "variable": "STUDY",
+        "role": "join_key"
+      },
+      {
+        "dataset": "ae_main",
+        "variable": "PATNUM",
+        "role": "join_key"
+      },
+      {
+        "dataset": "ae_main",
+        "variable": "AEID",
+        "role": "join_key"
+      },
+      {
+        "dataset": "sae_detail",
+        "variable": "STUDY",
+        "role": "join_key"
+      },
+      {
+        "dataset": "sae_detail",
+        "variable": "PATNUM",
+        "role": "join_key"
+      },
+      {
+        "dataset": "sae_detail",
+        "variable": "AEID",
+        "role": "join_key"
+      },
+      {
+        "dataset": "sae_detail",
+        "variable": "AESHOSP",
+        "role": "hospitalization_indicator"
+      }
+    ],
+    "source_catalog": {
+      "ae_main": {
+        "file": "ae_main.csv",
+        "form_name": "Adverse Events",
+        "grain": "one_record_per_event",
+        "keys": ["STUDY", "PATNUM", "AEID"]
+      },
+      "sae_detail": {
+        "file": "sae_detail.csv",
+        "form_name": "Serious Adverse Event Details",
+        "grain": "one_record_per_event",
+        "keys": ["STUDY", "PATNUM", "AEID"]
+      }
+    },
+    "field_profiles": []
+  },
+  {
+    "concept_id": "AE_CORE",
+    "target_domain": "AE",
+    "form_name": "Adverse Events",
+    "expected_cardinality": "one_record_to_one_record",
+    "required": true,
+    "depends_on": ["AE_SOURCE_INTEGRATION", "DM_CORE"],
+    "source_refs": [
+      {
+        "dataset": "ae_merged",
+        "variable": "STUDY",
+        "role": "study_identifier"
+      },
+      {
+        "dataset": "ae_merged",
+        "variable": "PATNUM",
+        "role": "subject_identifier"
+      }
+    ],
+    "source_catalog": {
+      "ae_merged": {
+        "derived": true,
+        "form_name": "Adverse Events + Serious Adverse Event Details",
+        "grain": "one_record_per_event",
+        "keys": ["STUDY", "PATNUM", "AEID"]
+      }
+    },
+    "field_profiles": []
+  },
+  {
+    "concept_id": "AE_TERMS",
+    "target_domain": "AE",
+    "form_name": "Adverse Events",
+    "expected_cardinality": "one_record_to_one_record",
+    "required": true,
+    "depends_on": "AE_SOURCE_INTEGRATION",
+    "source_refs": [
+      {
+        "dataset": "ae_merged",
+        "variable": "AETERM",
+        "role": "reported_term"
+      },
+      {
+        "dataset": "ae_merged",
+        "variable": "AEDECOD",
+        "role": "coded_term"
+      },
+      {
+        "dataset": "ae_merged",
+        "variable": "AEBODSYS",
+        "role": "body_system"
+      }
+    ],
+    "source_catalog": {
+      "ae_merged": {
+        "derived": true,
+        "form_name": "Adverse Events + Serious Adverse Event Details",
+        "grain": "one_record_per_event",
+        "keys": ["STUDY", "PATNUM", "AEID"]
+      }
+    },
+    "field_profiles": []
+  },
+  {
+    "concept_id": "AE_SAFETY",
+    "target_domain": "AE",
+    "form_name": "Adverse Events + Serious Adverse Event Details",
+    "expected_cardinality": "one_record_to_one_record",
+    "required": true,
+    "depends_on": "AE_SOURCE_INTEGRATION",
+    "source_refs": [
+      {
+        "dataset": "ae_merged",
+        "variable": "AESEV",
+        "role": "severity"
+      },
+      {
+        "dataset": "ae_merged",
+        "variable": "AESER",
+        "role": "serious_indicator"
+      },
+      {
+        "dataset": "ae_merged",
+        "variable": "AESHOSP",
+        "role": "hospitalization_indicator"
+      }
+    ],
+    "source_catalog": {
+      "ae_merged": {
+        "derived": true,
+        "form_name": "Adverse Events + Serious Adverse Event Details",
+        "grain": "one_record_per_event",
+        "keys": ["STUDY", "PATNUM", "AEID"]
+      }
+    },
+    "field_profiles": []
+  },
+  {
+    "concept_id": "AE_REL_OUTCOME",
+    "target_domain": "AE",
+    "form_name": "Adverse Events",
+    "expected_cardinality": "one_record_to_one_record",
+    "required": true,
+    "depends_on": "AE_SOURCE_INTEGRATION",
+    "source_refs": [
+      {
+        "dataset": "ae_merged",
+        "variable": "AEREL",
+        "role": "causality"
+      },
+      {
+        "dataset": "ae_merged",
+        "variable": "AEOUTCOME",
+        "role": "outcome"
+      }
+    ],
+    "source_catalog": {
+      "ae_merged": {
+        "derived": true,
+        "form_name": "Adverse Events + Serious Adverse Event Details",
+        "grain": "one_record_per_event",
+        "keys": ["STUDY", "PATNUM", "AEID"]
+      }
+    },
+    "field_profiles": []
+  },
+  {
+    "concept_id": "AE_START",
+    "target_domain": "AE",
+    "form_name": "Adverse Events",
+    "expected_cardinality": "one_record_to_one_record",
+    "required": true,
+    "depends_on": ["AE_SOURCE_INTEGRATION", "DM_REFERENCE_START"],
+    "source_refs": [
+      {
+        "dataset": "ae_merged",
+        "variable": "AESTDAT",
+        "role": "date"
+      },
+      {
+        "dataset": "ae_merged",
+        "variable": "AESTTIM",
+        "role": "time"
+      }
+    ],
+    "source_catalog": {
+      "ae_merged": {
+        "derived": true,
+        "form_name": "Adverse Events + Serious Adverse Event Details",
+        "grain": "one_record_per_event",
+        "keys": ["STUDY", "PATNUM", "AEID"]
+      }
+    },
+    "field_profiles": []
+  },
+  {
+    "concept_id": "AE_END",
+    "target_domain": "AE",
+    "form_name": "Adverse Events",
+    "expected_cardinality": "one_record_to_one_record",
+    "required": true,
+    "depends_on": ["AE_SOURCE_INTEGRATION", "DM_REFERENCE_START"],
+    "source_refs": [
+      {
+        "dataset": "ae_merged",
+        "variable": "AEENDDAT",
+        "role": "date"
+      },
+      {
+        "dataset": "ae_merged",
+        "variable": "AEENDTIM",
+        "role": "time"
+      },
+      {
+        "dataset": "ae_merged",
+        "variable": "AEONGO",
+        "role": "ongoing_indicator"
+      }
+    ],
+    "source_catalog": {
+      "ae_merged": {
+        "derived": true,
+        "form_name": "Adverse Events + Serious Adverse Event Details",
+        "grain": "one_record_per_event",
+        "keys": ["STUDY", "PATNUM", "AEID"]
+      }
+    },
+    "field_profiles": []
+  },
+  {
+    "concept_id": "AE_SEQUENCE",
+    "target_domain": "AE",
+    "form_name": "Adverse Events",
+    "expected_cardinality": "domain_post_derivation",
+    "required": true,
+    "depends_on": ["AE_CORE", "AE_TERMS", "AE_START"],
+    "source_refs": [],
+    "source_catalog": {},
+    "field_profiles": []
+  }
+]

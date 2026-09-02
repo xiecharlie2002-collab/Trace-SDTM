@@ -1,0 +1,236 @@
+[
+  {
+    "concept_id": "VS_CORE",
+    "target_domain": "VS",
+    "form_name": "Vital Signs",
+    "expected_cardinality": "one_record_to_many_findings",
+    "required": true,
+    "depends_on": "DM_REFERENCE_START",
+    "source_refs": [
+      {
+        "dataset": "vs_mixed",
+        "variable": "STUDY",
+        "role": "study_identifier"
+      },
+      {
+        "dataset": "vs_mixed",
+        "variable": "PATNUM",
+        "role": "subject_identifier"
+      },
+      {
+        "dataset": "vs_mixed",
+        "variable": "INSTANCE",
+        "role": "visit"
+      },
+      {
+        "dataset": "vs_mixed",
+        "variable": "VTLD",
+        "role": "date"
+      },
+      {
+        "dataset": "vs_mixed",
+        "variable": "VSTIM",
+        "role": "time"
+      },
+      {
+        "dataset": "vs_mixed",
+        "variable": "SUBPOS",
+        "role": "body_position"
+      }
+    ],
+    "source_catalog": {
+      "vs_mixed": {
+        "file": "vs_mixed.csv",
+        "form_name": "Vital Signs",
+        "grain": "one_record_per_subject_visit",
+        "keys": ["STUDY", "PATNUM", "INSTANCE"]
+      }
+    },
+    "field_profiles": []
+  },
+  {
+    "concept_id": "VS_HEIGHT",
+    "target_domain": "VS",
+    "form_name": "Vital Signs",
+    "expected_cardinality": "one_observed_value_to_one_record",
+    "required": true,
+    "depends_on": "VS_CORE",
+    "source_refs": [
+      {
+        "dataset": "vs_mixed",
+        "variable": "HEIGHT",
+        "role": "result"
+      },
+      {
+        "dataset": "vs_mixed",
+        "variable": "HEIGHTU",
+        "role": "original_unit"
+      }
+    ],
+    "source_catalog": {
+      "vs_mixed": {
+        "file": "vs_mixed.csv",
+        "form_name": "Vital Signs",
+        "grain": "one_record_per_subject_visit",
+        "keys": ["STUDY", "PATNUM", "INSTANCE"]
+      }
+    },
+    "field_profiles": []
+  },
+  {
+    "concept_id": "VS_WEIGHT",
+    "target_domain": "VS",
+    "form_name": "Vital Signs",
+    "expected_cardinality": "one_observed_value_to_one_record",
+    "required": true,
+    "depends_on": "VS_CORE",
+    "source_refs": [
+      {
+        "dataset": "vs_mixed",
+        "variable": "WEIGHT",
+        "role": "result"
+      },
+      {
+        "dataset": "vs_mixed",
+        "variable": "WEIGHTU",
+        "role": "original_unit"
+      }
+    ],
+    "source_catalog": {
+      "vs_mixed": {
+        "file": "vs_mixed.csv",
+        "form_name": "Vital Signs",
+        "grain": "one_record_per_subject_visit",
+        "keys": ["STUDY", "PATNUM", "INSTANCE"]
+      }
+    },
+    "field_profiles": []
+  },
+  {
+    "concept_id": "VS_TEMP",
+    "target_domain": "VS",
+    "form_name": "Vital Signs",
+    "expected_cardinality": "one_observed_value_to_one_record",
+    "required": true,
+    "depends_on": "VS_CORE",
+    "source_refs": [
+      {
+        "dataset": "vs_mixed",
+        "variable": "TEMP",
+        "role": "result"
+      },
+      {
+        "dataset": "vs_mixed",
+        "variable": "TEMPU",
+        "role": "original_unit"
+      }
+    ],
+    "source_catalog": {
+      "vs_mixed": {
+        "file": "vs_mixed.csv",
+        "form_name": "Vital Signs",
+        "grain": "one_record_per_subject_visit",
+        "keys": ["STUDY", "PATNUM", "INSTANCE"]
+      }
+    },
+    "field_profiles": []
+  },
+  {
+    "concept_id": "VS_SYSBP",
+    "target_domain": "VS",
+    "form_name": "Vital Signs",
+    "expected_cardinality": "one_observed_value_to_one_record",
+    "required": true,
+    "depends_on": "VS_CORE",
+    "source_refs": [
+      {
+        "dataset": "vs_mixed",
+        "variable": "SYS_BP",
+        "role": "result"
+      },
+      {
+        "dataset": "vs_mixed",
+        "variable": "SYS_BPU",
+        "role": "original_unit"
+      }
+    ],
+    "source_catalog": {
+      "vs_mixed": {
+        "file": "vs_mixed.csv",
+        "form_name": "Vital Signs",
+        "grain": "one_record_per_subject_visit",
+        "keys": ["STUDY", "PATNUM", "INSTANCE"]
+      }
+    },
+    "field_profiles": []
+  },
+  {
+    "concept_id": "VS_DIABP",
+    "target_domain": "VS",
+    "form_name": "Vital Signs",
+    "expected_cardinality": "one_observed_value_to_one_record",
+    "required": true,
+    "depends_on": "VS_CORE",
+    "source_refs": [
+      {
+        "dataset": "vs_mixed",
+        "variable": "DIA_BP",
+        "role": "result"
+      },
+      {
+        "dataset": "vs_mixed",
+        "variable": "DIA_BPU",
+        "role": "original_unit"
+      }
+    ],
+    "source_catalog": {
+      "vs_mixed": {
+        "file": "vs_mixed.csv",
+        "form_name": "Vital Signs",
+        "grain": "one_record_per_subject_visit",
+        "keys": ["STUDY", "PATNUM", "INSTANCE"]
+      }
+    },
+    "field_profiles": []
+  },
+  {
+    "concept_id": "VS_PULSE",
+    "target_domain": "VS",
+    "form_name": "Vital Signs",
+    "expected_cardinality": "one_observed_value_to_one_record",
+    "required": true,
+    "depends_on": "VS_CORE",
+    "source_refs": [
+      {
+        "dataset": "vs_mixed",
+        "variable": "PULSE",
+        "role": "result"
+      },
+      {
+        "dataset": "vs_mixed",
+        "variable": "PULSEU",
+        "role": "original_unit"
+      }
+    ],
+    "source_catalog": {
+      "vs_mixed": {
+        "file": "vs_mixed.csv",
+        "form_name": "Vital Signs",
+        "grain": "one_record_per_subject_visit",
+        "keys": ["STUDY", "PATNUM", "INSTANCE"]
+      }
+    },
+    "field_profiles": []
+  },
+  {
+    "concept_id": "VS_POST_DERIVATIONS",
+    "target_domain": "VS",
+    "form_name": "Vital Signs",
+    "expected_cardinality": "domain_post_derivation",
+    "required": true,
+    "depends_on": ["VS_HEIGHT", "VS_WEIGHT", "VS_TEMP", "VS_SYSBP", "VS_DIABP", "VS_PULSE"],
+    "source_refs": [],
+    "source_catalog": {},
+    "field_profiles": []
+  }
+]

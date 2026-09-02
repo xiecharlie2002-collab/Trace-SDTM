@@ -1,0 +1,16 @@
+{
+  "received_at": "2026-09-02T11:04:07Z",
+  "response_sha256": "e0fcbbcb3112511190ea641ac84ca7da8675cb4c718b160fb5e817ab368c5ed2",
+  "finish_reason": "stop",
+  "reasoning_bytes": 0,
+  "usage": {
+    "prompt_tokens": 2327,
+    "completion_tokens": 798,
+    "total_tokens": 3125,
+    "prompt_tokens_details": {
+      "cached_tokens": 2304
+    },
+    "prompt_cache_hit_tokens": 2304,
+    "prompt_cache_miss_tokens": 23
+  }
+}

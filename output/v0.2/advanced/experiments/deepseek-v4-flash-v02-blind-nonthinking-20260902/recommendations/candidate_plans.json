@@ -1,0 +1,372 @@
+[
+  {
+    "concept_id": "AE_SOURCE_INTEGRATION",
+    "candidate_rank": 1,
+    "target_domain": "AE",
+    "categories": "source_integration",
+    "steps": [
+      {
+        "transform_id": "merge_sources",
+        "source_keys": [
+          "ae_main.STUDY",
+          "ae_main.PATNUM",
+          "ae_main.AEID",
+          "sae_detail.STUDY",
+          "sae_detail.PATNUM",
+          "sae_detail.AEID",
+          "sae_detail.AESHOSP"
+        ],
+        "target_variables": [],
+        "parameters": {
+          "left_dataset": "ae_main",
+          "right_dataset": "sae_detail",
+          "output_dataset": "ae_merged",
+          "by": {
+            "STUDY": "STUDY",
+            "PATNUM": "PATNUM",
+            "AEID": "AEID"
+          },
+          "relationship": "one-to-one",
+          "join_type": "left",
+          "select": [
+            "STUDY",
+            "PATNUM",
+            "AEID",
+            "AETERM",
+            "AEDECOD",
+            "AEBODSYS",
+            "AESEV",
+            "AESER",
+            "AEREL",
+            "AEOUTCOME",
+            "AESTDAT",
+            "AESTTIM",
+            "AEENDDAT",
+            "AEENDTIM",
+            "AEONGO",
+            "AESHOSP"
+          ],
+          "conflict_policy": "error"
+        }
+      }
+    ],
+    "recommendation_score": 1,
+    "reason": "Merges ae_main and sae_detail using STUDY, PATNUM, AEID as join keys with one-to-one relationship and left join to preserve all AE records.",
+    "uncertainties": "Assumes one-to-one relationship between ae_main and sae_detail; if not, merge may fail or produce duplicates.",
+    "status": "proposed",
+    "review_required": true,
+    "provenance": "model",
+    "group_id": "ae_connected_01"
+  },
+  {
+    "concept_id": "AE_CORE",
+    "candidate_rank": 1,
+    "target_domain": "AE",
+    "categories": "direct_assignment",
+    "steps": [
+      {
+        "transform_id": "assign_no_ct",
+        "source_keys": [
+          "ae_merged.STUDY"
+        ],
+        "target_variables": [
+          "STUDYID"
+        ],
+        "parameters": {}
+      },
+      {
+        "transform_id": "hardcode_no_ct",
+        "source_keys": [],
+        "target_variables": [
+          "DOMAIN"
+        ],
+        "parameters": {
+          "value": "AE"
+        }
+      },
+      {
+        "transform_id": "assign_no_ct",
+        "source_keys": [
+          "ae_merged.PATNUM"
+        ],
+        "target_variables": [
+          "USUBJID"
+        ],
+        "parameters": {}
+      }
+    ],
+    "recommendation_score": 0.9,
+    "reason": "Direct assignment of STUDY to STUDYID and PATNUM to USUBJID after source integration; DOMAIN hardcoded to 'AE'.",
+    "uncertainties": "USUBJID may require mapping from PATNUM via DM_CORE; if PATNUM is not the direct subject identifier, conditional derivation may be needed.",
+    "status": "proposed",
+    "review_required": true,
+    "provenance": "model",
+    "group_id": "ae_connected_01"
+  },
+  {
+    "concept_id": "AE_TERMS",
+    "candidate_rank": 1,
+    "target_domain": "AE",
+    "categories": ["direct_assignment", "controlled_terminology"],
+    "steps": [
+      {
+        "transform_id": "assign_no_ct",
+        "source_keys": [
+          "ae_merged.AETERM"
+        ],
+        "target_variables": [
+          "AETERM"
+        ],
+        "parameters": {}
+      },
+      {
+        "transform_id": "assign_no_ct",
+        "source_keys": [
+          "ae_merged.AEDECOD"
+        ],
+        "target_variables": [
+          "AEDECOD"
+        ],
+        "parameters": {}
+      },
+      {
+        "transform_id": "assign_no_ct",
+        "source_keys": [
+          "ae_merged.AEBODSYS"
+        ],
+        "target_variables": [
+          "AEBODSYS"
+        ],
+        "parameters": {}
+      }
+    ],
+    "recommendation_score": 0.8,
+    "reason": "Direct assignment of reported term, coded term, and body system; no controlled terminology mapping specified.",
+    "uncertainties": "AEDECOD and AEBODSYS may require MedDRA dictionary mapping; source values may not be standard.",
+    "status": "proposed",
+    "review_required": true,
+    "provenance": "model",
+    "group_id": "ae_connected_01"
+  },
+  {
+    "concept_id": "AE_SAFETY",
+    "candidate_rank": 1,
+    "target_domain": "AE",
+    "categories": "controlled_terminology",
+    "steps": [
+      {
+        "transform_id": "assign_ct",
+        "source_keys": [
+          "ae_merged.AESEV"
+        ],
+        "target_variables": [
+          "AESEV"
+        ],
+        "parameters": {
+          "codelist_id": "AESEV"
+        }
+      },
+      {
+        "transform_id": "assign_ct",
+        "source_keys": [
+          "ae_merged.AESER"
+        ],
+        "target_variables": [
+          "AESER"
+        ],
+        "parameters": {
+          "codelist_id": "NY"
+        }
+      },
+      {
+        "transform_id": "assign_ct",
+        "source_keys": [
+          "ae_merged.AESHOSP"
+        ],
+        "target_variables": [
+          "AESHOSP"
+        ],
+        "parameters": {
+          "codelist_id": "NY"
+        }
+      }
+    ],
+    "recommendation_score": 0.9,
+    "reason": "Maps severity, serious, and hospitalization to controlled terminology using standard codelists.",
+    "uncertainties": "Source values for AESEV and AESER not specified; codelist mappings may need confirmation.",
+    "status": "proposed",
+    "review_required": true,
+    "provenance": "model",
+    "group_id": "ae_connected_01"
+  },
+  {
+    "concept_id": "AE_REL_OUTCOME",
+    "candidate_rank": 1,
+    "target_domain": "AE",
+    "categories": "controlled_terminology",
+    "steps": [
+      {
+        "transform_id": "assign_ct",
+        "source_keys": [
+          "ae_merged.AEREL"
+        ],
+        "target_variables": [
+          "AEREL"
+        ],
+        "parameters": {
+          "codelist_id": "AEREL"
+        }
+      },
+      {
+        "transform_id": "assign_ct",
+        "source_keys": [
+          "ae_merged.AEOUTCOME"
+        ],
+        "target_variables": [
+          "AEOUT"
+        ],
+        "parameters": {
+          "codelist_id": "AEOUT"
+        }
+      }
+    ],
+    "recommendation_score": 0.9,
+    "reason": "Maps causality and outcome to controlled terminology using standard codelists.",
+    "uncertainties": "Source values for AEREL and AEOUTCOME not specified; codelist mappings may need confirmation.",
+    "status": "proposed",
+    "review_required": true,
+    "provenance": "model",
+    "group_id": "ae_connected_01"
+  },
+  {
+    "concept_id": "AE_START",
+    "candidate_rank": 1,
+    "target_domain": "AE",
+    "categories": ["date_time_conversion", "temporal_derivation"],
+    "steps": [
+      {
+        "transform_id": "to_iso8601_datetime",
+        "source_keys": [
+          "ae_merged.AESTDAT",
+          "ae_merged.AESTTIM"
+        ],
+        "target_variables": [
+          "AESTDTC"
+        ],
+        "parameters": {
+          "formats": [
+            "m/d/y",
+            "H:M"
+          ]
+        }
+      },
+      {
+        "transform_id": "derive_study_day",
+        "source_keys": [],
+        "target_variables": [
+          "AESTDY"
+        ],
+        "parameters": {
+          "target_date": "AESTDTC",
+          "reference_date": "RFSTDTC"
+        }
+      }
+    ],
+    "recommendation_score": 0.9,
+    "reason": "Converts start date and time to ISO 8601 datetime and derives study day from reference date.",
+    "uncertainties": "Date format not specified; assumed m/d/y and H:M. If format differs, needs_information.",
+    "status": "proposed",
+    "review_required": true,
+    "provenance": "model",
+    "group_id": "ae_connected_01"
+  },
+  {
+    "concept_id": "AE_END",
+    "candidate_rank": 1,
+    "target_domain": "AE",
+    "categories": ["date_time_conversion", "conditional_derivation", "temporal_derivation"],
+    "steps": [
+      {
+        "transform_id": "to_iso8601_datetime",
+        "source_keys": [
+          "ae_merged.AEENDDAT",
+          "ae_merged.AEENDTIM"
+        ],
+        "target_variables": [
+          "AEENDTC"
+        ],
+        "parameters": {
+          "formats": [
+            "m/d/y",
+            "H:M"
+          ]
+        }
+      },
+      {
+        "transform_id": "derive_ongoing_flag",
+        "source_keys": [
+          "ae_merged.AEONGO"
+        ],
+        "target_variables": [
+          "AEENRF"
+        ],
+        "parameters": {
+          "ongoing_value": "ONGOING",
+          "affirmative_values": [
+            "Y",
+            "Yes"
+          ]
+        }
+      },
+      {
+        "transform_id": "derive_study_day",
+        "source_keys": [],
+        "target_variables": [
+          "AEENDY"
+        ],
+        "parameters": {
+          "target_date": "AEENDTC",
+          "reference_date": "RFSTDTC"
+        }
+      }
+    ],
+    "recommendation_score": 0.9,
+    "reason": "Converts end date/time to ISO 8601, derives ongoing flag from AEONGO, and derives study day if end date present.",
+    "uncertainties": "Date format not specified; ongoing handling may require conditional logic if AEONGO values differ.",
+    "status": "proposed",
+    "review_required": true,
+    "provenance": "model",
+    "group_id": "ae_connected_01"
+  },
+  {
+    "concept_id": "AE_SEQUENCE",
+    "candidate_rank": 1,
+    "target_domain": "AE",
+    "categories": "temporal_derivation",
+    "steps": [
+      {
+        "transform_id": "derive_sequence",
+        "source_keys": [],
+        "target_variables": [
+          "AESEQ"
+        ],
+        "parameters": {
+          "record_variables": [
+            "STUDYID",
+            "USUBJID",
+            "AESTDTC",
+            "AETERM"
+          ],
+          "start_at": 1
+        }
+      }
+    ],
+    "recommendation_score": 1,
+    "reason": "Derives sequence number after sorting by subject and start date/time.",
+    "uncertainties": "",
+    "status": "proposed",
+    "review_required": true,
+    "provenance": "model",
+    "group_id": "ae_connected_01"
+  }
+]

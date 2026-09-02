@@ -372,7 +372,12 @@ candidate_steps_v02 <- function(candidates, concept_id, rank) {
   from_json_text(hit$plan_json[[1]])$steps %||% list()
 }
 
-canonical_steps_v02 <- function(steps) registry_json(lapply(steps, sort_json_object))
+canonical_steps_v02 <- function(steps) registry_json(lapply(steps, function(step) list(
+  transform_id = as.character(step$transform_id),
+  source_keys = as.list(unname(as.character(unlist(step$source_keys %||% character(), use.names = FALSE)))),
+  target_variables = as.list(unname(as.character(unlist(step$target_variables %||% character(), use.names = FALSE)))),
+  parameters = sort_json_object(step$parameters %||% list())
+)))
 
 review_against_gold <- function(config = load_project_config()) {
   review_path <- trace_path(config$paths$review_dir, "mapping_review.xlsx")

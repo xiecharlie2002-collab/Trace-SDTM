@@ -238,12 +238,20 @@ evaluate_recommendations <- function(config = load_project_config()) {
     concept_id = concept$concept_id,
     gold_categories = paste(plan_signature_v02(gold_plan_steps(gold$plans[[concept$concept_id]]), registry)$categories, collapse = " | ")
   ))
-  class_detail <- dplyr::left_join(classifications, gold_categories, by = "concept_id") |>
-    dplyr::mutate(classification_correct = categories == gold_categories)
+  class_detail <- dplyr::left_join(gold_categories, classifications, by = "concept_id") |>
+    dplyr::mutate(classification_correct = !is.na(categories) & categories == gold_categories)
   review_path <- trace_path(config$paths$review_dir, "concept_review_audit.csv")
   review <- if (file.exists(review_path)) readr::read_csv(review_path, show_col_types = FALSE) else NULL
+  review_summary <- read_optional_json(trace_path(config$paths$review_dir, "expert_review_summary.json"), list())
   model_run <- read_optional_json(trace_path(config$paths$recommendation_dir, "model_run.json"), list(status = "unknown", provenance = "unknown"))
   valid_scores <- !is.na(candidates$recommendation_score) & candidates$recommendation_score >= 0 & candidates$recommendation_score <= 1
+  group_failures <- model_run$group_failures %||% list()
+  rejected_groups <- if (is.data.frame(group_failures)) nrow(group_failures) else length(group_failures)
+  rejected_group_concepts <- if (is.data.frame(group_failures)) {
+    sum(lengths(group_failures$concept_ids %||% list()))
+  } else {
+    sum(vapply(group_failures, function(x) length(x$concept_ids %||% character()), integer(1)))
+  }
 
   summary <- list(
     status = model_run$status %||% "unknown",
@@ -252,13 +260,13 @@ evaluate_recommendations <- function(config = load_project_config()) {
     concepts_with_candidate = length(unique(candidates$concept_id[candidates$candidate_rank == 1L])),
     candidate_count = nrow(candidates),
     stage1_category_correct = sum(class_detail$classification_correct, na.rm = TRUE),
-    stage1_category_denominator = nrow(class_detail),
+    stage1_category_denominator = length(concept_ids),
     category_top1_correct = sum(top1$category_chain_correct, na.rm = TRUE),
     category_top3_hit = sum(top3$category_top3_hit, na.rm = TRUE),
     function_correct_given_category_correct = sum(top1$function_chain_correct & top1$category_chain_correct, na.rm = TRUE),
     function_given_category_denominator = sum(top1$category_chain_correct, na.rm = TRUE),
     target_set_complete = sum(top1$target_set_complete, na.rm = TRUE),
-    target_set_denominator = nrow(top1),
+    target_set_denominator = length(concept_ids),
     target_omission_concepts = sum(nzchar(top1$missing_targets)),
     target_overreport_concepts = sum(nzchar(top1$extra_targets)),
     complete_plan_top1_correct = sum(top1$complete_plan_correct, na.rm = TRUE),
@@ -267,10 +275,12 @@ evaluate_recommendations <- function(config = load_project_config()) {
     parameter_schema_denominator = nrow(detail),
     score_in_unit_interval = sum(valid_scores),
     score_denominator = length(valid_scores),
-    accepted = if (is.null(review)) NA_integer_ else sum(review$decision == "accept"),
-    modified = if (is.null(review)) NA_integer_ else sum(review$decision == "modify"),
-    rejected = if (is.null(review)) NA_integer_ else sum(review$decision == "reject"),
-    needs_information = if (is.null(review)) NA_integer_ else sum(review$decision == "needs_information"),
+    rejected_groups = rejected_groups,
+    rejected_group_concepts = rejected_group_concepts,
+    accepted = if (is.null(review)) review_summary$accepted %||% NA_integer_ else sum(review$decision == "accept"),
+    modified = if (is.null(review)) review_summary$modified %||% NA_integer_ else sum(review$decision == "modify"),
+    rejected = if (is.null(review)) review_summary$rejected %||% NA_integer_ else sum(review$decision == "reject"),
+    needs_information = if (is.null(review)) review_summary$needs_information %||% NA_integer_ else sum(review$decision == "needs_information"),
     disclaimer = if (identical(model_run$provenance, "reference_seed")) "参考种子不是模型运行，指标仅验证评价程序。" else "指标来自实际模型运行及当前金标准。"
   )
   by_domain <- top1 |>

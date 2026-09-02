@@ -200,18 +200,26 @@ validate_recommendations <- function(recommendations, config, tasks, metadata) {
 }
 
 perform_mapping_request <- function(prompt, endpoint, api_key, model, config) {
+  request_body <- list(
+    model = model,
+    temperature = config$model$temperature,
+    max_tokens = config$model$max_completion_tokens %||% 8192L,
+    response_format = list(type = "json_object"),
+    messages = list(
+      list(role = "system", content = "Return only valid JSON. Follow the supplied clinical mapping constraints."),
+      list(role = "user", content = prompt)
+    )
+  )
+  thinking_mode <- config$model$thinking_mode %||% ""
+  if (nzchar(thinking_mode)) {
+    if (!thinking_mode %in% c("enabled", "disabled")) {
+      trace_abort("模型 thinking_mode 只能是 enabled 或 disabled。")
+    }
+    request_body$thinking <- list(type = thinking_mode)
+  }
   request <- httr2::request(endpoint) |>
     httr2::req_headers(Authorization = paste("Bearer", api_key)) |>
-    httr2::req_body_json(list(
-      model = model,
-      temperature = config$model$temperature,
-      max_tokens = config$model$max_completion_tokens %||% 8192L,
-      response_format = list(type = "json_object"),
-      messages = list(
-        list(role = "system", content = "Return only valid JSON. Follow the supplied clinical mapping constraints."),
-        list(role = "user", content = prompt)
-      )
-    )) |>
+    httr2::req_body_json(request_body) |>
     httr2::req_timeout(config$model$timeout_seconds)
 
   max_attempts <- as.integer(config$model$max_attempts %||% 1L)
@@ -231,6 +239,12 @@ call_mapping_model <- function(config = load_project_config()) {
   model <- Sys.getenv("TRACE_SDTM_MODEL", unset = "")
   if (!nzchar(api_key) || !nzchar(base_url) || !nzchar(model)) {
     trace_abort("未配置 TRACE_SDTM_API_KEY、TRACE_SDTM_BASE_URL 和 TRACE_SDTM_MODEL，无法执行真实推荐。可用 recommend --seed 生成明确标记的离线参考种子。")
+  }
+  timeout_override <- Sys.getenv("TRACE_SDTM_TIMEOUT_SECONDS", unset = "")
+  if (nzchar(timeout_override)) {
+    timeout_value <- suppressWarnings(as.integer(timeout_override))
+    if (is.na(timeout_value) || timeout_value < 1L) trace_abort("TRACE_SDTM_TIMEOUT_SECONDS 必须是正整数。")
+    config$model$timeout_seconds <- timeout_value
   }
 
   dictionary_path <- trace_path(config$paths$profile_dir, "source_dictionary.csv")
@@ -491,7 +505,8 @@ parse_classifications_v02 <- function(records, group, registry) {
   parsed[match(known_ids, ids)]
 }
 
-validate_candidate_plan_v02 <- function(record, classification, concept, specification, metadata, registry, group_id, provenance) {
+validate_candidate_plan_v02 <- function(record, classification, concept, specification, metadata, registry, group_id, provenance,
+                                        config = load_project_config()) {
   required <- c("concept_id", "candidate_rank", "target_domain", "steps", "recommendation_score", "reason", "uncertainties", "status", "review_required")
   missing <- setdiff(required, names(record))
   if (length(missing)) trace_abort(sprintf("第二阶段候选缺少字段：%s", paste(missing, collapse = ", ")))
@@ -511,7 +526,7 @@ validate_candidate_plan_v02 <- function(record, classification, concept, specifi
     if (any(!candidate_categories %in% classification$categories)) trace_abort(sprintf("%s 使用了第一阶段未选类别中的函数。", concept$concept_id))
     proposal <- concept
     proposal$steps <- steps
-    validate_concept_plan(proposal, specification, metadata, registry)
+    validate_concept_plan(proposal, specification, metadata, registry, config)
   }
   list(
     concept_id = concept$concept_id,
@@ -529,14 +544,15 @@ validate_candidate_plan_v02 <- function(record, classification, concept, specifi
   )
 }
 
-parse_candidate_plans_v02 <- function(records, classifications, group, specification, metadata, registry, provenance = "model") {
+parse_candidate_plans_v02 <- function(records, classifications, group, specification, metadata, registry, provenance = "model",
+                                      config = load_project_config()) {
   if (!is.list(records) || !length(records)) trace_abort(sprintf("%s 第二阶段没有返回候选方案。", group$group_id))
   concepts <- stats::setNames(group$concepts, vapply(group$concepts, `[[`, character(1), "concept_id"))
   classes <- stats::setNames(classifications, vapply(classifications, `[[`, character(1), "concept_id"))
   parsed <- lapply(records, function(record) {
     id <- as.character(record$concept_id %||% "")
     if (is.null(concepts[[id]])) trace_abort(sprintf("第二阶段返回未知概念：%s", id))
-    validate_candidate_plan_v02(record, classes[[id]], concepts[[id]], specification, metadata, registry, group$group_id, provenance)
+    validate_candidate_plan_v02(record, classes[[id]], concepts[[id]], specification, metadata, registry, group$group_id, provenance, config)
   })
   keys <- vapply(parsed, function(x) paste(x$concept_id, x$candidate_rank), character(1))
   if (anyDuplicated(keys)) trace_abort(sprintf("%s 第二阶段出现重复候选序号。", group$group_id))
@@ -579,7 +595,8 @@ candidate_table_v02 <- function(candidates) {
   ))
 }
 
-save_recommendations_v02 <- function(classifications, candidates, config, source, model = NA_character_, group_runs = list()) {
+save_recommendations_v02 <- function(classifications, candidates, config, source, model = NA_character_, group_runs = list(),
+                                     run_status = NULL, group_failures = list()) {
   ensure_output_directories(config)
   class_table <- classifications_table_v02(classifications)
   candidate_table <- candidate_table_v02(candidates)
@@ -588,7 +605,7 @@ save_recommendations_v02 <- function(classifications, candidates, config, source
   write_csv(candidate_table, trace_path(config$paths$recommendation_dir, "candidate_plans.csv"))
   write_json(candidates, trace_path(config$paths$recommendation_dir, "candidate_plans.json"))
   write_json(list(
-    status = if (identical(source, "model")) "completed" else "reference_seed",
+    status = run_status %||% if (identical(source, "model")) "completed" else "reference_seed",
     schema_version = "0.2",
     scenario = config$project$scenario,
     provenance = source,
@@ -598,6 +615,7 @@ save_recommendations_v02 <- function(classifications, candidates, config, source
     concept_count = length(unique(candidate_table$concept_id)),
     candidate_count = nrow(candidate_table),
     group_runs = group_runs,
+    group_failures = group_failures,
     api_key_logged = FALSE
   ), trace_path(config$paths$recommendation_dir, "model_run.json"))
   create_review_workbook(candidate_table, config, preapprove = identical(source, "reference_seed"))
@@ -623,7 +641,7 @@ seed_recommendations <- function(config = load_project_config()) {
       steps <- gold_plan_steps(plans[[concept$concept_id]])
       proposal <- concept
       proposal$steps <- steps
-      validate_concept_plan(proposal, specification, metadata, registry)
+      validate_concept_plan(proposal, specification, metadata, registry, config)
       categories <- unique(vapply(steps, function(step) registry_entry(step$transform_id, registry)$category, character(1)))
       classification <- list(
         concept_id = concept$concept_id, categories = categories, classification_score = 1,
@@ -635,23 +653,39 @@ seed_recommendations <- function(config = load_project_config()) {
           concept_id = concept$concept_id, candidate_rank = 1L, target_domain = concept$target_domain,
           steps = steps, recommendation_score = 1, reason = "专家金标准种子。",
           uncertainties = "不是真实模型结果，不能用于评价模型准确率。", status = "proposed", review_required = TRUE
-        ), classification, concept, specification, metadata, registry, group$group_id, "reference_seed"
+        ), classification, concept, specification, metadata, registry, group$group_id, "reference_seed", config
       )
     }
   }
   save_recommendations_v02(classifications, candidates, config, "reference_seed")
 }
 
-request_json_v02 <- function(prompt, endpoint, api_key, model, config, label) {
+request_json_v02 <- function(prompt, endpoint, api_key, model, config, label, raw_path = NULL) {
   response <- perform_mapping_request(prompt, endpoint, api_key, model, config)
   body <- httr2::resp_body_json(response, simplifyVector = FALSE)
   content <- body$choices[[1]]$message$content %||% ""
-  if (!nzchar(trimws(content))) trace_abort(sprintf("%s 模型响应为空。", label))
+  content_sha256 <- digest::digest(content, algo = "sha256")
+  if (!is.null(raw_path)) {
+    ensure_parent(raw_path)
+    writeLines(enc2utf8(as.character(content)), raw_path, useBytes = TRUE)
+    write_json(list(
+      received_at = utc_now(),
+      response_sha256 = content_sha256,
+      finish_reason = body$choices[[1]]$finish_reason %||% NA_character_,
+      reasoning_bytes = nchar(as.character(body$choices[[1]]$message$reasoning_content %||% ""), type = "bytes"),
+      usage = body$usage %||% list()
+    ), paste0(raw_path, ".metadata.json"))
+  }
+  if (!nzchar(trimws(content))) {
+    finish_reason <- as.character(body$choices[[1]]$finish_reason %||% "未提供")
+    reasoning_length <- nchar(as.character(body$choices[[1]]$message$reasoning_content %||% ""), type = "bytes")
+    trace_abort(sprintf("%s 模型响应为空；结束原因=%s，推理字段=%d 字节。", label, finish_reason, reasoning_length))
+  }
   parsed <- tryCatch(
     jsonlite::fromJSON(extract_json_content(content), simplifyVector = FALSE),
     error = function(error) trace_abort(sprintf("%s 不是有效 JSON：%s", label, conditionMessage(error)))
   )
-  list(parsed = parsed, content_sha256 = digest::digest(content, algo = "sha256"))
+  list(parsed = parsed, content_sha256 = content_sha256)
 }
 
 call_mapping_model <- function(config = load_project_config()) {
@@ -660,6 +694,25 @@ call_mapping_model <- function(config = load_project_config()) {
   model <- Sys.getenv("TRACE_SDTM_MODEL", unset = "")
   if (!nzchar(api_key) || !nzchar(base_url) || !nzchar(model)) {
     trace_abort("未配置 TRACE_SDTM_API_KEY、TRACE_SDTM_BASE_URL 和 TRACE_SDTM_MODEL。可用 recommend --seed 生成明确标记的离线参考种子。")
+  }
+  timeout_override <- Sys.getenv("TRACE_SDTM_TIMEOUT_SECONDS", unset = "")
+  if (nzchar(timeout_override)) {
+    timeout_value <- suppressWarnings(as.integer(timeout_override))
+    if (is.na(timeout_value) || timeout_value < 1L) trace_abort("TRACE_SDTM_TIMEOUT_SECONDS 必须是正整数。")
+    config$model$timeout_seconds <- timeout_value
+  }
+  token_override <- Sys.getenv("TRACE_SDTM_MAX_COMPLETION_TOKENS", unset = "")
+  if (nzchar(token_override)) {
+    token_value <- suppressWarnings(as.integer(token_override))
+    if (is.na(token_value) || token_value < 256L) trace_abort("TRACE_SDTM_MAX_COMPLETION_TOKENS 必须是不小于 256 的整数。")
+    config$model$max_completion_tokens <- token_value
+  }
+  thinking_override <- tolower(Sys.getenv("TRACE_SDTM_THINKING_MODE", unset = ""))
+  if (nzchar(thinking_override)) {
+    if (!thinking_override %in% c("enabled", "disabled")) {
+      trace_abort("TRACE_SDTM_THINKING_MODE 只能是 enabled 或 disabled。")
+    }
+    config$model$thinking_mode <- thinking_override
   }
   specification <- load_mapping_template(config)
   validate_specification_v02(specification, config)
@@ -673,26 +726,98 @@ call_mapping_model <- function(config = load_project_config()) {
   all_classifications <- list()
   all_candidates <- list()
   group_runs <- list()
+  group_failures <- list()
+  blind_evaluation <- identical(tolower(Sys.getenv("TRACE_SDTM_BLIND_EVAL", unset = "false")), "true")
   group_dir <- ensure_dir(trace_path(config$paths$recommendation_dir, "groups"))
 
   for (group in groups) {
-    trace_info("正在进行 %s 的第一阶段类别判断（%d 个临床概念）。", group$group_id, length(group$concepts))
     stage1_prompt <- classification_prompt_v02(group, metadata, registry, config)
-    stage1 <- request_json_v02(stage1_prompt, endpoint, api_key, model, config, paste0(group$group_id, " 第一阶段"))
-    classifications <- parse_classifications_v02(stage1$parsed$classifications %||% stage1$parsed, group, registry)
+    stage1_prompt_hash <- digest::digest(stage1_prompt, algo = "sha256")
+    group_path <- ensure_dir(file.path(group_dir, group$group_id))
+    cache_paths <- list(
+      classifications = file.path(group_path, "classifications.json"),
+      candidates = file.path(group_path, "candidate_plans.json"),
+      run = file.path(group_path, "run_metadata.json")
+    )
+    write_json(group$context, file.path(group_path, "source_context.json"))
+    resume <- identical(tolower(Sys.getenv("TRACE_SDTM_RESUME", unset = "false")), "true")
+    if (resume && all(vapply(cache_paths, file.exists, logical(1)))) {
+      cached_run <- jsonlite::read_json(cache_paths$run, simplifyVector = TRUE)
+      cached_class_raw <- jsonlite::read_json(cache_paths$classifications, simplifyVector = FALSE)
+      cached_classifications <- parse_classifications_v02(cached_class_raw, group, registry)
+      cached_stage2_prompt <- selection_prompt_v02(group, cached_classifications, metadata, registry, config)
+      cache_matches <- identical(as.character(cached_run$stage1_prompt_sha256), stage1_prompt_hash) &&
+        identical(as.character(cached_run$stage2_prompt_sha256), digest::digest(cached_stage2_prompt, algo = "sha256")) &&
+        (is.null(cached_run$model) || identical(as.character(cached_run$model), model))
+      if (cache_matches) {
+        cached_candidate_raw <- jsonlite::read_json(cache_paths$candidates, simplifyVector = FALSE)
+        cached_candidates <- parse_candidate_plans_v02(
+          cached_candidate_raw, cached_classifications, group, specification, metadata, registry, provenance = "model", config = config
+        )
+        all_classifications <- c(all_classifications, cached_classifications)
+        all_candidates <- c(all_candidates, cached_candidates)
+        group_runs[[length(group_runs) + 1L]] <- cached_run
+        trace_info("已复用并重新校验 %s 的两阶段检查点。", group$group_id)
+        next
+      }
+    }
+    trace_info("正在进行 %s 的第一阶段类别判断（%d 个临床概念）。", group$group_id, length(group$concepts))
+    stage1_result <- tryCatch({
+      stage1 <- request_json_v02(
+        stage1_prompt, endpoint, api_key, model, config, paste0(group$group_id, " 第一阶段"),
+        file.path(group_path, "stage1_raw_response.json")
+      )
+      classifications <- parse_classifications_v02(stage1$parsed$classifications %||% stage1$parsed, group, registry)
+      write_json(classifications, file.path(group_path, "classifications.json"))
+      list(stage = stage1, classifications = classifications)
+    }, error = identity)
+    if (inherits(stage1_result, "error")) {
+      failure <- list(
+        group_id = group$group_id, stage = "classification", error = sanitize_for_log(conditionMessage(stage1_result)),
+        concept_ids = vapply(group$concepts, `[[`, character(1), "concept_id"), recorded_at = utc_now()
+      )
+      write_json(failure, file.path(group_path, "validation_failure.json"))
+      group_failures[[length(group_failures) + 1L]] <- failure
+      if (!blind_evaluation) stop(stage1_result)
+      trace_info("盲评保留了 %s 第一阶段的失败结果，并继续下一组。", group$group_id)
+      next
+    }
+    stage1 <- stage1_result$stage
+    classifications <- stage1_result$classifications
+    all_classifications <- c(all_classifications, classifications)
     trace_info("正在进行 %s 的第二阶段函数选择。", group$group_id)
     stage2_prompt <- selection_prompt_v02(group, classifications, metadata, registry, config)
-    stage2 <- request_json_v02(stage2_prompt, endpoint, api_key, model, config, paste0(group$group_id, " 第二阶段"))
-    candidates <- parse_candidate_plans_v02(
-      stage2$parsed$recommendations %||% stage2$parsed, classifications, group,
-      specification, metadata, registry, provenance = "model"
-    )
-    group_path <- ensure_dir(file.path(group_dir, group$group_id))
-    write_json(group$context, file.path(group_path, "source_context.json"))
-    write_json(classifications, file.path(group_path, "classifications.json"))
+    stage2_result <- tryCatch({
+      stage2 <- request_json_v02(
+        stage2_prompt, endpoint, api_key, model, config, paste0(group$group_id, " 第二阶段"),
+        file.path(group_path, "stage2_raw_response.json")
+      )
+      candidates <- parse_candidate_plans_v02(
+        stage2$parsed$recommendations %||% stage2$parsed, classifications, group,
+        specification, metadata, registry, provenance = "model", config = config
+      )
+      list(stage = stage2, candidates = candidates)
+    }, error = identity)
+    if (inherits(stage2_result, "error")) {
+      failure <- list(
+        group_id = group$group_id, stage = "function_selection", error = sanitize_for_log(conditionMessage(stage2_result)),
+        concept_ids = vapply(group$concepts, `[[`, character(1), "concept_id"), recorded_at = utc_now(),
+        stage1_response_sha256 = stage1$content_sha256
+      )
+      write_json(failure, file.path(group_path, "validation_failure.json"))
+      group_failures[[length(group_failures) + 1L]] <- failure
+      if (!blind_evaluation) stop(stage2_result)
+      trace_info("盲评保留了 %s 第二阶段的失败结果，并继续下一组。", group$group_id)
+      next
+    }
+    stage2 <- stage2_result$stage
+    candidates <- stage2_result$candidates
     write_json(candidates, file.path(group_path, "candidate_plans.json"))
     run <- list(
       group_id = group$group_id,
+      model = model,
+      thinking_mode = config$model$thinking_mode %||% "default",
+      max_completion_tokens = config$model$max_completion_tokens %||% 8192L,
       concept_ids = vapply(group$concepts, `[[`, character(1), "concept_id"),
       stage1_prompt_sha256 = digest::digest(stage1_prompt, algo = "sha256"),
       stage1_response_sha256 = stage1$content_sha256,
@@ -705,8 +830,11 @@ call_mapping_model <- function(config = load_project_config()) {
     )
     write_json(run, file.path(group_path, "run_metadata.json"))
     group_runs[[length(group_runs) + 1L]] <- run
-    all_classifications <- c(all_classifications, classifications)
     all_candidates <- c(all_candidates, candidates)
   }
-  save_recommendations_v02(all_classifications, all_candidates, config, "model", model, group_runs)
+  save_recommendations_v02(
+    all_classifications, all_candidates, config, "model", model, group_runs,
+    run_status = if (length(group_failures)) "completed_with_rejections" else "completed",
+    group_failures = group_failures
+  )
 }

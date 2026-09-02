@@ -1,0 +1,9 @@
+concept_id,candidate_rank,target_domain,form_name,complexity,gold_categories,proposed_categories,category_chain_correct,function_chain_correct,source_chain_correct,target_set_complete,missing_targets,extra_targets,parameter_values_correct,complete_plan_correct,parameter_schema_valid,recommendation_score,status,provenance,group_id
+AE_SOURCE_INTEGRATION,1,AE,Adverse Events + Serious Adverse Event Details,complex,source_integration,source_integration,TRUE,TRUE,TRUE,TRUE,,,FALSE,FALSE,TRUE,1,proposed,model,ae_connected_01
+AE_CORE,1,AE,Adverse Events,moderate,direct_assignment | field_combination,direct_assignment,FALSE,FALSE,FALSE,TRUE,,,FALSE,FALSE,TRUE,0.9,proposed,model,ae_connected_01
+AE_TERMS,1,AE,Adverse Events,moderate,direct_assignment | character_normalization,direct_assignment,FALSE,FALSE,TRUE,TRUE,,,FALSE,FALSE,TRUE,0.8,proposed,model,ae_connected_01
+AE_SAFETY,1,AE,Adverse Events + Serious Adverse Event Details,moderate,controlled_terminology,controlled_terminology,TRUE,TRUE,TRUE,TRUE,,,TRUE,TRUE,TRUE,0.9,proposed,model,ae_connected_01
+AE_REL_OUTCOME,1,AE,Adverse Events,moderate,controlled_terminology,controlled_terminology,TRUE,TRUE,TRUE,TRUE,,,TRUE,TRUE,TRUE,0.9,proposed,model,ae_connected_01
+AE_START,1,AE,Adverse Events,moderate,date_time_conversion | temporal_derivation,date_time_conversion | temporal_derivation,TRUE,FALSE,TRUE,TRUE,,,FALSE,FALSE,TRUE,0.9,proposed,model,ae_connected_01
+AE_END,1,AE,Adverse Events,moderate,date_time_conversion | conditional_derivation | temporal_derivation,date_time_conversion | conditional_derivation | temporal_derivation,TRUE,FALSE,FALSE,TRUE,,,FALSE,FALSE,TRUE,0.9,proposed,model,ae_connected_01
+AE_SEQUENCE,1,AE,Adverse Events,moderate,temporal_derivation,temporal_derivation,TRUE,TRUE,TRUE,TRUE,,,FALSE,FALSE,TRUE,1,proposed,model,ae_connected_01

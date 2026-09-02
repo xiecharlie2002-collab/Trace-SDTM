@@ -1,0 +1,183 @@
+[
+  {
+    "concept_id": "DM_CORE",
+    "target_domain": "DM",
+    "form_name": "Demographics",
+    "expected_cardinality": "one_record_to_one_record",
+    "required": true,
+    "depends_on": [],
+    "source_refs": [
+      {
+        "dataset": "dm_subject",
+        "variable": "STUDY",
+        "role": "study_identifier"
+      },
+      {
+        "dataset": "dm_subject",
+        "variable": "PATNUM",
+        "role": "subject_identifier"
+      }
+    ],
+    "source_catalog": {
+      "dm_subject": {
+        "file": "dm_subject.csv",
+        "form_name": "Demographics",
+        "grain": "one_record_per_subject",
+        "keys": ["STUDY", "PATNUM"]
+      }
+    },
+    "field_profiles": []
+  },
+  {
+    "concept_id": "DM_REFERENCE_START",
+    "target_domain": "DM",
+    "form_name": "Exposure A + Exposure B",
+    "expected_cardinality": "many_records_to_one_subject",
+    "required": true,
+    "depends_on": "DM_CORE",
+    "source_refs": [
+      {
+        "dataset": "ex_a_raw",
+        "variable": "EXSTDAT",
+        "role": "date"
+      },
+      {
+        "dataset": "ex_a_raw",
+        "variable": "EXSTTIM",
+        "role": "time"
+      },
+      {
+        "dataset": "ex_b_raw",
+        "variable": "DOSE_DATE",
+        "role": "date"
+      },
+      {
+        "dataset": "ex_b_raw",
+        "variable": "DOSE_TIME",
+        "role": "time"
+      }
+    ],
+    "source_catalog": {
+      "ex_a_raw": {
+        "file": "ex_a_raw.csv",
+        "form_name": "Exposure A",
+        "grain": "many_records_per_subject",
+        "keys": ["STUDY", "PATNUM"]
+      },
+      "ex_b_raw": {
+        "file": "ex_b_raw.csv",
+        "form_name": "Exposure B",
+        "grain": "many_records_per_subject",
+        "keys": ["STUDY", "PATNUM"]
+      }
+    },
+    "field_profiles": []
+  },
+  {
+    "concept_id": "DM_CONSENT",
+    "target_domain": "DM",
+    "form_name": "Demographics",
+    "expected_cardinality": "one_record_to_one_record",
+    "required": true,
+    "depends_on": "DM_CORE",
+    "source_refs": [
+      {
+        "dataset": "dm_subject",
+        "variable": "IC_DT",
+        "role": "date"
+      }
+    ],
+    "source_catalog": {
+      "dm_subject": {
+        "file": "dm_subject.csv",
+        "form_name": "Demographics",
+        "grain": "one_record_per_subject",
+        "keys": ["STUDY", "PATNUM"]
+      }
+    },
+    "field_profiles": []
+  },
+  {
+    "concept_id": "DM_DEMOGRAPHICS",
+    "target_domain": "DM",
+    "form_name": "Demographics",
+    "expected_cardinality": "one_record_to_one_record",
+    "required": true,
+    "depends_on": "DM_CORE",
+    "source_refs": [
+      {
+        "dataset": "dm_subject",
+        "variable": "AGE",
+        "role": "age"
+      },
+      {
+        "dataset": "dm_subject",
+        "variable": "SEX",
+        "role": "sex"
+      },
+      {
+        "dataset": "dm_subject",
+        "variable": "ETHNIC",
+        "role": "ethnicity"
+      },
+      {
+        "dataset": "dm_subject",
+        "variable": "RACE",
+        "role": "race"
+      },
+      {
+        "dataset": "dm_subject",
+        "variable": "COUNTRY",
+        "role": "country"
+      }
+    ],
+    "source_catalog": {
+      "dm_subject": {
+        "file": "dm_subject.csv",
+        "form_name": "Demographics",
+        "grain": "one_record_per_subject",
+        "keys": ["STUDY", "PATNUM"]
+      }
+    },
+    "field_profiles": []
+  },
+  {
+    "concept_id": "DM_TREATMENT",
+    "target_domain": "DM",
+    "form_name": "Demographics",
+    "expected_cardinality": "one_record_to_one_record",
+    "required": true,
+    "depends_on": "DM_CORE",
+    "source_refs": [
+      {
+        "dataset": "dm_subject",
+        "variable": "PLANNED_ARMCD",
+        "role": "planned_arm_code"
+      },
+      {
+        "dataset": "dm_subject",
+        "variable": "PLANNED_ARM",
+        "role": "planned_arm"
+      },
+      {
+        "dataset": "dm_subject",
+        "variable": "ACTUAL_ARMCD",
+        "role": "actual_arm_code"
+      },
+      {
+        "dataset": "dm_subject",
+        "variable": "ACTUAL_ARM",
+        "role": "actual_arm"
+      }
+    ],
+    "source_catalog": {
+      "dm_subject": {
+        "file": "dm_subject.csv",
+        "form_name": "Demographics",
+        "grain": "one_record_per_subject",
+        "keys": ["STUDY", "PATNUM"]
+      }
+    },
+    "field_profiles": []
+  }
+]
