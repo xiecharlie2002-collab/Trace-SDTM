@@ -26,7 +26,7 @@ print_trace_help <- function() {
     "  report",
     "  run",
     "  test",
-    "所有数据命令均可追加 --scenario basic|advanced；默认 basic。",
+    "所有数据命令均可追加 --scenario basic|intermediate|advanced；默认 basic。",
     sep = "\n"
   ), "\n")
 }

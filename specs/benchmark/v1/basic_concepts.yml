@@ -1,0 +1,178 @@
+schema_version: '0.2'
+specification:
+  name: TraceSDTM basic benchmark concept specification
+  version: 1.0.0
+  status: frozen
+  standard: SDTMIG 3.4
+  scenario: basic
+  benchmark_level: basic
+  expected_concept_count: 18
+  approval: {reviewer: benchmark-author, approved_at: '2026-09-02', review_workbook_sha256: null}
+source_catalog:
+  dm_basic:
+    file: dm_raw.csv
+    form_name: Demographics
+    grain: one_record_per_subject
+    keys: [STUDY, PATNUM]
+  ae_basic:
+    file: ae_raw.csv
+    form_name: Adverse Events
+    grain: one_record_per_event
+    keys: [STUDY, PATNUM, AEID]
+  vs_basic:
+    file: vs_raw.csv
+    form_name: Vital Signs
+    grain: one_record_per_finding
+    keys: [STUDY, PATNUM, VSID]
+domain_sources: {DM: dm_basic, AE: ae_basic, VS: vs_basic}
+concepts:
+  - concept_id: DM_STUDY_IDENTIFIER
+    target_domain: DM
+    form_name: Demographics
+    source_refs: [{dataset: dm_basic, variable: STUDY, role: study_identifier}]
+    depends_on: []
+    expected_cardinality: one_record_to_one_record
+    required: true
+    difficulty: simple
+  - concept_id: DM_DOMAIN_CONSTANT
+    target_domain: DM
+    form_name: Demographics
+    source_refs: []
+    depends_on: []
+    expected_cardinality: one_constant_per_record
+    required: true
+    difficulty: simple
+  - concept_id: DM_UNIQUE_SUBJECT_IDENTIFIER
+    target_domain: DM
+    form_name: Demographics
+    source_refs:
+      - {dataset: dm_basic, variable: STUDY, role: study_identifier}
+      - {dataset: dm_basic, variable: PATNUM, role: subject_identifier}
+    depends_on: []
+    expected_cardinality: one_record_to_one_record
+    required: true
+    difficulty: simple
+  - concept_id: DM_INFORMED_CONSENT
+    target_domain: DM
+    form_name: Demographics
+    source_refs: [{dataset: dm_basic, variable: ICDATE, role: informed_consent_date}]
+    depends_on: []
+    expected_cardinality: one_record_to_one_record
+    required: true
+    difficulty: simple
+  - concept_id: DM_SEX_TERM
+    target_domain: DM
+    form_name: Demographics
+    source_refs: [{dataset: dm_basic, variable: SEX, role: sex}]
+    depends_on: []
+    expected_cardinality: one_record_to_one_record
+    required: true
+    difficulty: simple
+  - concept_id: DM_COUNTRY
+    target_domain: DM
+    form_name: Demographics
+    source_refs: [{dataset: dm_basic, variable: COUNTRY, role: country}]
+    depends_on: []
+    expected_cardinality: one_record_to_one_record
+    required: true
+    difficulty: simple
+  - concept_id: AE_STUDY_IDENTIFIER
+    target_domain: AE
+    form_name: Adverse Events
+    source_refs: [{dataset: ae_basic, variable: STUDY, role: study_identifier}]
+    depends_on: []
+    expected_cardinality: one_record_to_one_record
+    required: true
+    difficulty: simple
+  - concept_id: AE_DOMAIN_CONSTANT
+    target_domain: AE
+    form_name: Adverse Events
+    source_refs: []
+    depends_on: []
+    expected_cardinality: one_constant_per_record
+    required: true
+    difficulty: simple
+  - concept_id: AE_UNIQUE_SUBJECT_IDENTIFIER
+    target_domain: AE
+    form_name: Adverse Events
+    source_refs:
+      - {dataset: ae_basic, variable: STUDY, role: study_identifier}
+      - {dataset: ae_basic, variable: PATNUM, role: subject_identifier}
+    depends_on: []
+    expected_cardinality: one_record_to_one_record
+    required: true
+    difficulty: simple
+  - concept_id: AE_REPORTED_TERM
+    target_domain: AE
+    form_name: Adverse Events
+    source_refs: [{dataset: ae_basic, variable: AETERM, role: reported_term}]
+    depends_on: []
+    expected_cardinality: one_record_to_one_record
+    required: true
+    difficulty: simple
+  - concept_id: AE_SEVERITY
+    target_domain: AE
+    form_name: Adverse Events
+    source_refs: [{dataset: ae_basic, variable: AESEV, role: severity}]
+    depends_on: []
+    expected_cardinality: one_record_to_one_record
+    required: true
+    difficulty: simple
+  - concept_id: AE_START_DATE
+    target_domain: AE
+    form_name: Adverse Events
+    source_refs: [{dataset: ae_basic, variable: AESTDAT, role: start_date}]
+    depends_on: []
+    expected_cardinality: one_record_to_one_record
+    required: true
+    difficulty: simple
+  - concept_id: VS_STUDY_IDENTIFIER
+    target_domain: VS
+    form_name: Vital Signs
+    source_refs: [{dataset: vs_basic, variable: STUDY, role: study_identifier}]
+    depends_on: []
+    expected_cardinality: one_record_to_one_record
+    required: true
+    difficulty: simple
+  - concept_id: VS_DOMAIN_CONSTANT
+    target_domain: VS
+    form_name: Vital Signs
+    source_refs: []
+    depends_on: []
+    expected_cardinality: one_constant_per_record
+    required: true
+    difficulty: simple
+  - concept_id: VS_UNIQUE_SUBJECT_IDENTIFIER
+    target_domain: VS
+    form_name: Vital Signs
+    source_refs:
+      - {dataset: vs_basic, variable: STUDY, role: study_identifier}
+      - {dataset: vs_basic, variable: PATNUM, role: subject_identifier}
+    depends_on: []
+    expected_cardinality: one_record_to_one_record
+    required: true
+    difficulty: simple
+  - concept_id: VS_TEST_CODE
+    target_domain: VS
+    form_name: Vital Signs
+    source_refs: [{dataset: vs_basic, variable: VSTESTCD, role: test_code}]
+    depends_on: []
+    expected_cardinality: one_record_to_one_record
+    required: true
+    difficulty: simple
+  - concept_id: VS_ORIGINAL_RESULT
+    target_domain: VS
+    form_name: Vital Signs
+    source_refs: [{dataset: vs_basic, variable: VSORRES, role: original_result}]
+    depends_on: []
+    expected_cardinality: one_record_to_one_record
+    required: true
+    difficulty: simple
+  - concept_id: VS_MEASUREMENT_DATE
+    target_domain: VS
+    form_name: Vital Signs
+    source_refs: [{dataset: vs_basic, variable: VSDAT, role: measurement_date}]
+    depends_on: []
+    expected_cardinality: one_record_to_one_record
+    required: true
+    difficulty: simple

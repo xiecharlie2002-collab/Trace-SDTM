@@ -1,6 +1,6 @@
 project:
   name: TraceSDTM
-  version: 0.2.0
+  version: 0.3.0
   study_id: TRACE001
   standard: SDTMIG
   standard_version: '3.4'
@@ -14,21 +14,32 @@ paths:
   generated_transform_docs: docs/transform_catalog.md
 scenarios:
   basic:
-    raw_dir: data/raw
-    specification_template: specs/v0.2/basic_concepts.yml
-    gold_specification: specs/v0.2/basic_gold.yml
+    raw_dir: data/benchmark/v1/basic/raw
+    specification_template: specs/benchmark/v1/basic_concepts.yml
+    gold_specification: specs/benchmark/v1/basic_gold.yml
+    mapping_policies: specs/benchmark/v1/basic_policies.yml
     metadata: specs/sdtm_metadata.yml
     controlled_terminology: specs/v0.2/controlled_terminology.yml
     unit_conversions: specs/v0.2/unit_conversions.yml
-    output_base: output/v0.2/basic
+    output_base: output/benchmark/v1/basic
+  intermediate:
+    raw_dir: data/benchmark/v1/intermediate/raw
+    specification_template: specs/benchmark/v1/intermediate_concepts.yml
+    gold_specification: specs/benchmark/v1/intermediate_gold.yml
+    mapping_policies: specs/benchmark/v1/intermediate_policies.yml
+    metadata: specs/sdtm_metadata.yml
+    controlled_terminology: specs/v0.2/controlled_terminology.yml
+    unit_conversions: specs/v0.2/unit_conversions.yml
+    output_base: output/benchmark/v1/intermediate
   advanced:
     raw_dir: data/advanced/raw
     specification_template: specs/v0.2/advanced_concepts.yml
     gold_specification: specs/v0.2/advanced_gold.yml
+    mapping_policies: specs/benchmark/v1/advanced_policies.yml
     metadata: specs/v0.2/advanced_metadata.yml
     controlled_terminology: specs/v0.2/controlled_terminology.yml
     unit_conversions: specs/v0.2/unit_conversions.yml
-    output_base: output/scenarios/advanced
+    output_base: output/benchmark/v1/advanced
 model:
   timeout_seconds: 60
   max_attempts: 3

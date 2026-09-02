@@ -38,6 +38,35 @@ infer_source_label <- function(variable) {
   if (!length(value) || is.na(value)) gsub("[._]", " ", variable) else value
 }
 
+infer_slash_date_format <- function(values) {
+  values <- values[grepl("^\\d{1,2}/\\d{1,2}/\\d{4}$", values)]
+  if (!length(values)) return(character())
+  parts <- do.call(rbind, strsplit(values, "/", fixed = TRUE))
+  first <- suppressWarnings(as.integer(parts[, 1L]))
+  second <- suppressWarnings(as.integer(parts[, 2L]))
+  first_over_12 <- any(first > 12L, na.rm = TRUE)
+  second_over_12 <- any(second > 12L, na.rm = TRUE)
+  if (first_over_12 && second_over_12) return("mixed_m/d/y_and_d/m/y")
+  if (first_over_12) return("d/m/y")
+  if (second_over_12) return("m/d/y")
+  "m/d/y_or_d/m/y"
+}
+
+infer_source_formats <- function(values) {
+  values <- as.character(stats::na.omit(values))
+  formats <- infer_slash_date_format(values)
+  if (any(grepl("^(UNK|UN|\\d{1,2})-[A-Za-z]{3}-(UNK|UN|\\d{4})$", values, ignore.case = TRUE))) {
+    formats <- c(formats, "dd-mmm-yyyy")
+  }
+  if (any(grepl("^\\d{4}-\\d{2}-\\d{2}", values))) formats <- c(formats, "y-m-d")
+  if (any(grepl("^\\d{1,2}:\\d{2}:\\d{2}$", values))) {
+    formats <- c(formats, "H:M:S")
+  } else if (any(grepl("^\\d{1,2}:\\d{2}$", values))) {
+    formats <- c(formats, "H:M")
+  }
+  unique(formats)
+}
+
 profile_one_dataset <- function(domain, domain_spec, config) {
   path <- trace_path(config$paths$raw_dir, domain_spec$source_file)
   if (!file.exists(path)) trace_abort(sprintf("缺少原始数据：%s", path))
@@ -75,21 +104,22 @@ profile_sources <- function(config = load_project_config()) {
     path <- trace_path(config$paths$raw_dir, source$file)
     if (!file.exists(path)) trace_abort(sprintf("缺少原始数据：%s", path))
     data <- read_raw_csv(path)
+    literal_data <- readr::read_csv(
+      path, na = c("", "NA", "N/A"), show_col_types = FALSE, progress = FALSE,
+      name_repair = "minimal", col_types = readr::cols(.default = readr::col_character())
+    )
     domains <- unique(vapply(Filter(function(concept) any(vapply(concept_source_refs(concept), function(ref) identical(ref$dataset, dataset), logical(1))), concepts), function(concept) concept$target_domain, character(1)))
     purrr::map_dfr(names(data), function(variable) {
       values <- data[[variable]]
-      observed <- unique(as.character(stats::na.omit(values)))
+      literal_values <- literal_data[[variable]]
+      observed <- unique(as.character(stats::na.omit(literal_values)))
       roles <- unique(unlist(lapply(concepts, function(concept) {
         refs <- Filter(function(ref) identical(ref$dataset, dataset) && identical(ref$variable, variable), concept_source_refs(concept))
         vapply(refs, function(ref) as.character(ref$role %||% ""), character(1))
       })))
-      character_values <- as.character(stats::na.omit(values))
+      character_values <- as.character(stats::na.omit(literal_values))
       partial_tokens <- unique(unlist(stringr::str_extract_all(character_values, stringr::regex("UNK|\\bUN\\b", ignore_case = TRUE))))
-      formats <- character()
-      if (any(grepl("^\\d{1,2}/\\d{1,2}/\\d{4}$", character_values))) formats <- c(formats, "m/d/y_or_d/m/y")
-      if (any(grepl("^(UNK|UN|\\d{1,2})-[A-Za-z]{3}-(UNK|UN|\\d{4})$", character_values, ignore.case = TRUE))) formats <- c(formats, "dd-mmm-yyyy")
-      if (any(grepl("^\\d{4}-\\d{2}-\\d{2}", character_values))) formats <- c(formats, "y-m-d")
-      if (any(grepl("^\\d{1,2}:\\d{2}", character_values))) formats <- c(formats, "H:M")
+      formats <- infer_source_formats(character_values)
       tibble::tibble(
         source_domain = paste(domains, collapse = " | "),
         source_dataset = dataset,

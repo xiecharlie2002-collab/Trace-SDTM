@@ -110,7 +110,7 @@ test_that("超范围分值、未知函数和信息不足方案被拒绝", {
   metadata <- load_metadata(config)
   registry <- load_transform_registry(config)
   concept <- concept_lookup(specification)$DM_CONSENT
-  classification <- list(concept_id = "DM_CONSENT", categories = "datetime_conversion")
+  classification <- list(concept_id = "DM_CONSENT", categories = "date_time_conversion")
   base <- list(
     concept_id = "DM_CONSENT", candidate_rank = 1L, target_domain = "DM",
     steps = gold_plan_steps(load_gold_specification(config)$plans$DM_CONSENT), recommendation_score = 1.2,
@@ -144,7 +144,7 @@ test_that("审核比较忽略字符向量与 JSON 列表的表示差异", {
 test_that("实验产物按场景隔离且密钥不会进入提示词", {
   config <- load_project_config("advanced")
   routed <- apply_experiment_paths(config, "deepseek-test")
-  expect_match(routed$paths$recommendation_dir, "output/v0.2/advanced/experiments/deepseek-test", fixed = TRUE)
+  expect_match(routed$paths$recommendation_dir, "output/benchmark/v1/advanced/experiments/deepseek-test", fixed = TRUE)
   expect_error(apply_experiment_paths(config, "../outside"), "只能包含")
   old <- Sys.getenv("TRACE_SDTM_API_KEY", unset = NA_character_)
   on.exit(if (is.na(old)) Sys.unsetenv("TRACE_SDTM_API_KEY") else Sys.setenv(TRACE_SDTM_API_KEY = old), add = TRUE)

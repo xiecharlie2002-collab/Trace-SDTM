@@ -448,14 +448,27 @@ category_catalog_for_model <- function(registry) {
     category = category,
     name = value$name,
     description = value$description,
-    stage_order = value$stage_order
+    stage_order = value$stage_order,
+    encapsulates = unname(unlist(value$encapsulates %||% character(), use.names = FALSE)),
+    do_not_add = unname(unlist(value$do_not_add %||% character(), use.names = FALSE))
   ))
+}
+
+mapping_policy_context <- function(config = load_project_config()) {
+  policies <- load_mapping_policies(config)
+  # 映射政策只包含研究级约定，不得序列化金标准步骤。
+  forbidden <- c("plans", "steps", "transform_id", "gold_specification")
+  present <- intersect(forbidden, names(policies))
+  if (length(present)) trace_abort(sprintf("映射政策包含禁止顶层字段：%s。", paste(present, collapse = "、")))
+  policies
 }
 
 classification_prompt_v02 <- function(group, metadata, registry, config = load_project_config()) {
   target_meta <- metadata$domains[[group$target_domain]]$variables
   prompt <- paste(
     "你是临床数据标准映射助手。第一阶段只判断每个临床概念需要的转换类别链，不选择具体函数。",
+    "类别表示最终将选择的登记函数所属类别，不是业务语义关键词清单。类别目录的 encapsulates 已由该类别内部完成，不得为这些内部操作重复增加类别。",
+    "必须返回覆盖概念所需函数的最小类别链：不能因为一个函数内部组合日期时间、生成检查代码或规范术语大小写而重复列出字段组合、直接赋值或字符规范化。",
     "不得发明来源字段、数据集或连接键，不得生成程序、公式、正则表达式或自由条件。",
     "若日期格式有歧义、连接键不足、基数关系不明确或单位不能识别，status 必须为 needs_information。",
     "返回 JSON 对象，顶层键 classifications。每个概念恰好一条记录，字段为 concept_id、categories、classification_score、evidence、uncertainties、status。",
@@ -463,6 +476,7 @@ classification_prompt_v02 <- function(group, metadata, registry, config = load_p
     "categories 必须是按执行顺序排列的类别标识符字符串数组，只能逐字使用类别目录中的 category 值；不得使用数字、中文名称或自行缩写。",
     "categories 对应的 stage_order 必须非递减，并在输出前自行核对。正确示例：{\"concept_id\":\"EXAMPLE\",\"categories\":[\"direct_assignment\",\"temporal_derivation\"],\"classification_score\":0.9,\"evidence\":[\"有直接来源并需要研究日派生。\"],\"uncertainties\":[],\"status\":\"proposed\"}。",
     "转换类别目录：", registry_json(category_catalog_for_model(registry)),
+    "经批准的项目映射政策：", registry_json(mapping_policy_context(config)),
     "目标域专业上下文：", registry_json(list(domain = group$target_domain, variables = target_meta)),
     "临床概念及来源上下文：", registry_json(group$context),
     sep = "\n"
@@ -543,9 +557,13 @@ selection_prompt_v02 <- function(group, classifications, metadata, registry, con
     "若信息不足，返回 status=needs_information、steps=[] 并说明待确认信息，不得猜测。所有候选都必须 review_required=true。",
     "返回 JSON 对象，顶层键 recommendations。每条含 concept_id、candidate_rank、target_domain、steps、recommendation_score、reason、uncertainties、status、review_required。",
     "每个 step 必须含 transform_id、source_keys、target_variables、parameters。candidate_rank 为 1 到 3，分值为 0 到 1。",
+    "函数卡 output_mode=dataset 或 none 时 target_variables 必须为 []；派生数据集名称只能写入登记参数 output_dataset，不能当作 SDTM 目标变量。",
+    "项目政策要求身份单位标准化时，即使原始单位与目标单位相同，也必须选择 standardize_unit，不得用普通直接赋值替代。",
+    "上游概念在项目政策 upstream_outputs 中声明的变量可用于后续派生参数；无需当前原始来源的后续派生仍使用 source_keys=[]。",
     "第一阶段分类：", registry_json(classifications),
     "本次唯一可见的函数卡：", registry_json(function_cards_for_model(registry, categories)),
     "可用受控资源目录：", registry_json(model_resource_catalog(config)),
+    "经批准的项目映射政策：", registry_json(mapping_policy_context(config)),
     "目标域专业上下文：", registry_json(list(domain = group$target_domain, variables = metadata$domains[[group$target_domain]]$variables)),
     "临床概念及来源上下文：", registry_json(group$context),
     sep = "\n"
@@ -640,6 +658,47 @@ parse_candidate_plans_v02 <- function(records, classifications, group, specifica
   missing_top <- setdiff(names(concepts), top_ids)
   if (length(missing_top)) trace_abort(sprintf("%s 缺少首选方案：%s", group$group_id, paste(missing_top, collapse = ", ")))
   parsed
+}
+
+diagnose_candidate_plans_v03 <- function(records, classifications, group, specification, metadata, registry,
+                                         provenance = "model", config = load_project_config()) {
+  concepts <- stats::setNames(group$concepts, vapply(group$concepts, `[[`, character(1), "concept_id"))
+  classes <- stats::setNames(classifications, vapply(classifications, `[[`, character(1), "concept_id"))
+  valid <- list()
+  failures <- list()
+  if (!is.list(records) || !length(records)) {
+    failures[[1L]] <- list(concept_id = "", candidate_rank = NA_integer_, error = "第二阶段没有返回候选方案。")
+  } else {
+    for (index in seq_along(records)) {
+      record <- records[[index]]
+      id <- as.character(record$concept_id %||% "")
+      rank <- suppressWarnings(as.integer(record$candidate_rank %||% NA_integer_))
+      result <- tryCatch({
+        if (is.null(concepts[[id]])) trace_abort(sprintf("第二阶段返回未知概念：%s", id))
+        validate_candidate_plan_v02(
+          record, classes[[id]], concepts[[id]], specification, metadata, registry,
+          group$group_id, provenance, config
+        )
+      }, error = identity)
+      if (inherits(result, "error")) {
+        failures[[length(failures) + 1L]] <- list(
+          concept_id = id, candidate_rank = rank,
+          error = sanitize_for_log(conditionMessage(result))
+        )
+      } else {
+        valid[[length(valid) + 1L]] <- result
+      }
+    }
+  }
+  valid_top <- vapply(Filter(function(x) x$candidate_rank == 1L, valid), `[[`, character(1), "concept_id")
+  missing_top <- setdiff(names(concepts), valid_top)
+  list(
+    valid_candidates = valid,
+    failures = failures,
+    valid_top_concepts = valid_top,
+    missing_top_concepts = missing_top,
+    diagnostic_only = TRUE
+  )
 }
 
 classifications_table_v02 <- function(classifications) {
@@ -874,8 +933,14 @@ call_mapping_model <- function(config = load_project_config()) {
         stage2_prompt, endpoint, api_key, model, config, paste0(group$group_id, " 第二阶段"),
         file.path(group_path, "stage2_raw_response.json")
       )
+      raw_records <- stage2$parsed$recommendations %||% stage2$parsed
+      diagnostic <- diagnose_candidate_plans_v03(
+        raw_records, classifications, group, specification, metadata, registry,
+        provenance = "model", config = config
+      )
+      write_json(diagnostic, file.path(group_path, "stage2_concept_diagnostic.json"))
       candidates <- parse_candidate_plans_v02(
-        stage2$parsed$recommendations %||% stage2$parsed, classifications, group,
+        raw_records, classifications, group,
         specification, metadata, registry, provenance = "model", config = config
       )
       list(stage = stage2, candidates = candidates)

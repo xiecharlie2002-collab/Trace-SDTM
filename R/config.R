@@ -1,7 +1,7 @@
 scenario_from_args <- function(args = commandArgs(trailingOnly = TRUE)) {
   position <- match("--scenario", args)
   if (!is.na(position)) {
-    if (position == length(args)) trace_abort("--scenario 后必须提供 basic 或 advanced。")
+    if (position == length(args)) trace_abort("--scenario 后必须提供场景名称。")
     return(as.character(args[[position + 1L]]))
   }
   Sys.getenv("TRACE_SDTM_SCENARIO", unset = "basic")
@@ -10,7 +10,7 @@ scenario_from_args <- function(args = commandArgs(trailingOnly = TRUE)) {
 load_project_config <- function(scenario = Sys.getenv("TRACE_SDTM_SCENARIO", unset = "basic")) {
   config <- yaml::read_yaml(trace_path("config", "project.yml"))
   if (!scenario %in% names(config$scenarios)) {
-    trace_abort(sprintf("未知场景：%s。允许值为 basic、advanced。", scenario))
+    trace_abort(sprintf("未知场景：%s。允许值为 %s。", scenario, paste(names(config$scenarios), collapse = "、")))
   }
   scenario_config <- config$scenarios[[scenario]]
   config$project$scenario <- scenario
@@ -35,8 +35,7 @@ apply_experiment_paths <- function(config, experiment_id) {
   if (!grepl("^[A-Za-z0-9][A-Za-z0-9._-]*$", experiment_id)) {
     trace_abort("TRACE_SDTM_EXPERIMENT_ID 只能包含字母、数字、点、下划线和连字符。")
   }
-  scenario <- config$project$scenario %||% "basic"
-  base <- file.path("output", "v0.2", scenario, "experiments", experiment_id)
+  base <- file.path(config$paths$output_base, "experiments", experiment_id)
   generated_paths <- c(
     profile_dir = "profile",
     recommendation_dir = "recommendations",
@@ -70,6 +69,25 @@ load_mapping_template <- function(config = load_project_config()) {
 
 load_gold_specification <- function(config = load_project_config()) {
   yaml::read_yaml(trace_path(config$paths$gold_specification))
+}
+
+load_mapping_policies <- function(config = load_project_config()) {
+  path <- config$paths$mapping_policies %||% ""
+  if (!nzchar(path) || !file.exists(trace_path(path))) {
+    trace_abort(sprintf("%s 场景缺少映射政策文件。", config$project$scenario))
+  }
+  policies <- yaml::read_yaml(trace_path(path))
+  required <- c(
+    "policy_version", "scenario", "identifiers", "date_time_formats",
+    "upstream_outputs", "sequence_rules", "baseline_rules",
+    "unit_standardization", "dataset_output_contract"
+  )
+  missing <- setdiff(required, names(policies))
+  if (length(missing)) trace_abort(sprintf("映射政策缺少字段：%s。", paste(missing, collapse = "、")))
+  if (!identical(as.character(policies$scenario), config$project$scenario)) {
+    trace_abort(sprintf("映射政策场景 %s 与当前场景 %s 不一致。", policies$scenario, config$project$scenario))
+  }
+  policies
 }
 
 load_approved_mapping <- function(config = load_project_config()) {

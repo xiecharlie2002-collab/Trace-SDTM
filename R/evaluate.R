@@ -158,8 +158,48 @@ concept_complexity_v02 <- function(steps, registry) {
   categories <- plan_signature_v02(steps, registry)$categories
   advanced <- c("source_integration", "record_transposition", "unit_conversion")
   if (any(categories %in% advanced) || length(steps) >= 4L) return("complex")
-  if (length(steps) >= 2L || any(categories %in% c("datetime_conversion", "temporal_derivation"))) return("moderate")
+  if (length(steps) >= 2L || any(categories %in% c("date_time_conversion", "temporal_derivation"))) return("moderate")
   "simple"
+}
+
+step_sequence_edit_distance <- function(left, right) {
+  left <- as.character(left)
+  right <- as.character(right)
+  distances <- matrix(0L, nrow = length(left) + 1L, ncol = length(right) + 1L)
+  distances[, 1L] <- seq.int(0L, length(left))
+  distances[1L, ] <- seq.int(0L, length(right))
+  if (!length(left) || !length(right)) return(distances[nrow(distances), ncol(distances)])
+  for (i in seq_along(left)) {
+    for (j in seq_along(right)) {
+      distances[i + 1L, j + 1L] <- min(
+        distances[i, j + 1L] + 1L,
+        distances[i + 1L, j] + 1L,
+        distances[i, j] + as.integer(left[[i]] != right[[j]])
+      )
+    }
+  }
+  distances[nrow(distances), ncol(distances)]
+}
+
+step_difference_count <- function(proposed, expected) {
+  common <- min(length(proposed), length(expected))
+  differences <- abs(length(proposed) - length(expected))
+  if (common) {
+    differences <- differences + sum(vapply(seq_len(common), function(index) {
+      !identical(canonical_steps_v02(list(proposed[[index]])), canonical_steps_v02(list(expected[[index]])))
+    }, logical(1)))
+  }
+  as.integer(differences)
+}
+
+modification_grade_v03 <- function(status, proposed, expected, target_correct, complete_correct) {
+  if (isTRUE(complete_correct)) return("none")
+  if (!identical(status, "proposed") || !length(proposed) || !isTRUE(target_correct)) return("major")
+  proposed_functions <- vapply(proposed, `[[`, character(1), "transform_id")
+  expected_functions <- vapply(expected, `[[`, character(1), "transform_id")
+  if (identical(proposed_functions, expected_functions) && step_difference_count(proposed, expected) <= 1L) return("minor")
+  if (step_sequence_edit_distance(proposed_functions, expected_functions) <= 1L) return("moderate")
+  "major"
 }
 
 candidate_evaluation_rows_v02 <- function(candidates, specification, gold, registry) {
@@ -186,7 +226,7 @@ candidate_evaluation_rows_v02 <- function(candidates, specification, gold, regis
       candidate_rank = as.integer(candidate_rank),
       target_domain = target_domain,
       form_name = concept$form_name,
-      complexity = concept_complexity_v02(expected, registry),
+      complexity = as.character(concept$difficulty %||% concept_complexity_v02(expected, registry)),
       gold_categories = paste(gold_signature$categories, collapse = " | "),
       proposed_categories = paste(proposed_signature$categories, collapse = " | "),
       category_chain_correct = identical(proposed_signature$categories, gold_signature$categories),
@@ -197,8 +237,15 @@ candidate_evaluation_rows_v02 <- function(candidates, specification, gold, regis
       extra_targets = paste(extra_targets, collapse = " | "),
       parameter_values_correct = parameter_correct,
       complete_plan_correct = all(c(function_correct, source_correct, target_correct, parameter_correct)),
+      modification_grade = modification_grade_v03(
+        status, proposed, expected, target_correct,
+        all(c(function_correct, source_correct, target_correct, parameter_correct))
+      ),
+      strictly_validated = TRUE,
       parameter_schema_valid = TRUE,
       recommendation_score = as.numeric(recommendation_score),
+      reason = as.character(reason),
+      uncertainties = as.character(uncertainties),
       status = status,
       provenance = provenance,
       group_id = group_id
@@ -220,8 +267,32 @@ evaluate_recommendations <- function(config = load_project_config()) {
   gold <- load_gold_specification(config)
   registry <- load_transform_registry(config)
   detail <- candidate_evaluation_rows_v02(candidates, specification, gold, registry)
-  top1 <- dplyr::filter(detail, candidate_rank == 1L)
   concept_ids <- vapply(specification$concepts, `[[`, character(1), "concept_id")
+  concepts <- concept_lookup(specification)
+  top1_available <- dplyr::filter(detail, candidate_rank == 1L)
+  missing_ids <- setdiff(concept_ids, top1_available$concept_id)
+  missing_rows <- purrr::map_dfr(missing_ids, function(concept_id) {
+    concept <- concepts[[concept_id]]
+    expected <- gold_plan_steps(gold$plans[[concept_id]])
+    signature <- plan_signature_v02(expected, registry)
+    tibble::tibble(
+      concept_id = concept_id, candidate_rank = 1L, target_domain = concept$target_domain,
+      form_name = concept$form_name,
+      complexity = as.character(concept$difficulty %||% concept_complexity_v02(expected, registry)),
+      gold_categories = paste(signature$categories, collapse = " | "), proposed_categories = "",
+      category_chain_correct = FALSE, function_chain_correct = FALSE, source_chain_correct = FALSE,
+      target_set_complete = FALSE, missing_targets = paste(signature$targets, collapse = " | "),
+      extra_targets = "", parameter_values_correct = FALSE, complete_plan_correct = FALSE,
+      modification_grade = "major", strictly_validated = FALSE,
+      parameter_schema_valid = FALSE, recommendation_score = NA_real_,
+      reason = "", uncertainties = "",
+      status = "group_rejected_or_missing", provenance = "", group_id = ""
+    )
+  })
+  top1 <- dplyr::bind_rows(top1_available, missing_rows) |>
+    dplyr::mutate(concept_id = factor(concept_id, levels = concept_ids)) |>
+    dplyr::arrange(concept_id) |>
+    dplyr::mutate(concept_id = as.character(concept_id))
   top3 <- detail |>
     dplyr::filter(candidate_rank <= 3L) |>
     dplyr::group_by(concept_id) |>
@@ -239,7 +310,20 @@ evaluate_recommendations <- function(config = load_project_config()) {
     gold_categories = paste(plan_signature_v02(gold_plan_steps(gold$plans[[concept$concept_id]]), registry)$categories, collapse = " | ")
   ))
   class_detail <- dplyr::left_join(gold_categories, classifications, by = "concept_id") |>
-    dplyr::mutate(classification_correct = !is.na(categories) & categories == gold_categories)
+    dplyr::rowwise() |>
+    dplyr::mutate(
+      classification_correct = !is.na(categories) & categories == gold_categories,
+      category_all_gold_included = !is.na(categories) && all(
+        strsplit(gold_categories, " \\| ")[[1L]] %in% strsplit(categories, " \\| ")[[1L]]
+      ),
+      missing_categories = if (is.na(categories)) gold_categories else paste(
+        setdiff(strsplit(gold_categories, " \\| ")[[1L]], strsplit(categories, " \\| ")[[1L]]), collapse = " | "
+      ),
+      extra_categories = if (is.na(categories)) "" else paste(
+        setdiff(strsplit(categories, " \\| ")[[1L]], strsplit(gold_categories, " \\| ")[[1L]]), collapse = " | "
+      )
+    ) |>
+    dplyr::ungroup()
   review_path <- trace_path(config$paths$review_dir, "concept_review_audit.csv")
   review <- if (file.exists(review_path)) readr::read_csv(review_path, show_col_types = FALSE) else NULL
   review_summary <- read_optional_json(trace_path(config$paths$review_dir, "expert_review_summary.json"), list())
@@ -257,9 +341,11 @@ evaluate_recommendations <- function(config = load_project_config()) {
     status = model_run$status %||% "unknown",
     provenance = model_run$provenance %||% "unknown",
     evaluated_concepts = length(concept_ids),
+    stage1_valid_classification = sum(!is.na(class_detail$categories)),
     concepts_with_candidate = length(unique(candidates$concept_id[candidates$candidate_rank == 1L])),
     candidate_count = nrow(candidates),
     stage1_category_correct = sum(class_detail$classification_correct, na.rm = TRUE),
+    stage1_all_gold_categories_included = sum(class_detail$category_all_gold_included, na.rm = TRUE),
     stage1_category_denominator = length(concept_ids),
     category_top1_correct = sum(top1$category_chain_correct, na.rm = TRUE),
     category_top3_hit = sum(top3$category_top3_hit, na.rm = TRUE),
@@ -280,7 +366,11 @@ evaluate_recommendations <- function(config = load_project_config()) {
     accepted = if (is.null(review)) review_summary$accepted %||% NA_integer_ else sum(review$decision == "accept"),
     modified = if (is.null(review)) review_summary$modified %||% NA_integer_ else sum(review$decision == "modify"),
     rejected = if (is.null(review)) review_summary$rejected %||% NA_integer_ else sum(review$decision == "reject"),
-    needs_information = if (is.null(review)) review_summary$needs_information %||% NA_integer_ else sum(review$decision == "needs_information"),
+    needs_information = sum(top1$status == "needs_information", na.rm = TRUE),
+    modification_none = sum(top1$modification_grade == "none"),
+    modification_minor = sum(top1$modification_grade == "minor"),
+    modification_moderate = sum(top1$modification_grade == "moderate"),
+    modification_major = sum(top1$modification_grade == "major"),
     disclaimer = if (identical(model_run$provenance, "reference_seed")) "参考种子不是模型运行，指标仅验证评价程序。" else "指标来自实际模型运行及当前金标准。"
   )
   by_domain <- top1 |>
@@ -288,6 +378,8 @@ evaluate_recommendations <- function(config = load_project_config()) {
     dplyr::summarise(
       category_correct = sum(category_chain_correct), function_correct = sum(function_chain_correct),
       target_complete = sum(target_set_complete), complete_plan_correct = sum(complete_plan_correct),
+      minor = sum(modification_grade == "minor"), moderate = sum(modification_grade == "moderate"),
+      major = sum(modification_grade == "major"),
       total = dplyr::n(), .groups = "drop"
     )
   by_form <- top1 |>
@@ -295,16 +387,21 @@ evaluate_recommendations <- function(config = load_project_config()) {
     dplyr::summarise(complete_plan_correct = sum(complete_plan_correct), total = dplyr::n(), .groups = "drop")
   by_complexity <- top1 |>
     dplyr::group_by(complexity) |>
-    dplyr::summarise(complete_plan_correct = sum(complete_plan_correct), total = dplyr::n(), .groups = "drop")
+    dplyr::summarise(
+      complete_plan_correct = sum(complete_plan_correct),
+      minor = sum(modification_grade == "minor"), moderate = sum(modification_grade == "moderate"),
+      major = sum(modification_grade == "major"), total = dplyr::n(), .groups = "drop"
+    )
   by_category <- top1 |>
     tidyr::separate_rows(gold_categories, sep = " \\| ") |>
     dplyr::group_by(gold_categories) |>
     dplyr::summarise(function_correct = sum(function_chain_correct), complete_plan_correct = sum(complete_plan_correct), total = dplyr::n(), .groups = "drop")
   advanced_features <- top1 |>
-    dplyr::filter(grepl("source_integration|datetime_conversion|unit_conversion|record_transposition", gold_categories)) |>
+    dplyr::filter(grepl("source_integration|date_time_conversion|unit_conversion|record_transposition", gold_categories)) |>
     dplyr::select(concept_id, target_domain, gold_categories, function_chain_correct, target_set_complete, complete_plan_correct)
 
   write_csv(detail, trace_path(config$paths$recommendation_dir, "mapping_evaluation.csv"))
+  write_csv(top1, trace_path(config$paths$recommendation_dir, "mapping_evaluation_formal.csv"))
   write_csv(class_detail, trace_path(config$paths$recommendation_dir, "classification_evaluation.csv"))
   write_csv(by_domain, trace_path(config$paths$recommendation_dir, "mapping_evaluation_by_domain.csv"))
   write_csv(by_form, trace_path(config$paths$recommendation_dir, "mapping_evaluation_by_form.csv"))

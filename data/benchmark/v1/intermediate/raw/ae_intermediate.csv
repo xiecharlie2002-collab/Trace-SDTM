@@ -1,0 +1,8 @@
+STUDY,PATNUM,AEID,AETERM,AEDECOD,AEBODSYS,AESEV,AESER,AESHOSP,AEREL,AEOUTCOME,AESTDAT,AESTTIM,AEENDDAT,AEENDTIM,AEONGO
+TRACE-MID,701-1001,AE01,Headache,Headache,Nervous system disorders,Mild Adverse Event,No,No,Possibly Related,Recovered/Resolved,06-Jan-2025,10:30:00,07-Jan-2025,16:45:00,No
+TRACE-MID,701-1001,AE02,Nausea,Nausea,Gastrointestinal disorders,Moderate Adverse Event,No,No,Probably Related,Recovering/Resolving,08-Jan-2025,12:15:30,,,Yes
+TRACE-MID,701-1002,AE01,Dizziness,Dizziness,Nervous system disorders,Severe Adverse Event,Yes,Yes,Probably Related,Recovered/Resolved,07-Jan-2025,09:05:15,09-Jan-2025,14:20:30,No
+TRACE-MID,702-1003,AE01,Rash,Rash,Skin and subcutaneous tissue disorders,Mild Adverse Event,No,No,Unlikely Related,Recovered/Resolved,09-Jan-2025,08:00:00,12-Jan-2025,18:10:45,No
+TRACE-MID,702-1004,AE01,Fatigue,Fatigue,General disorders and administration site conditions,Moderate Adverse Event,No,No,Possibly Related,Not Recovered/not Resolved,10-Jan-2025,13:40:20,,,Yes
+TRACE-MID,703-1005,AE01,Fever,Pyrexia,General disorders and administration site conditions,Mild Adverse Event,No,No,Not Related,Recovered/Resolved,10-Jan-2025,15:25:10,11-Jan-2025,07:50:05,No
+TRACE-MID,703-1006,AE01,Joint pain,Arthralgia,Musculoskeletal and connective tissue disorders,Moderate Adverse Event,No,No,Unlikely Related,Recovering/Resolving,12-Jan-2025,11:10:55,14-Jan-2025,09:35:40,No

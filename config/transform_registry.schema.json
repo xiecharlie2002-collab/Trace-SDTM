@@ -12,7 +12,9 @@
         "required": ["description", "stage_order"],
         "properties": {
           "description": {"type": "string"},
-          "stage_order": {"type": "integer", "minimum": 1}
+          "stage_order": {"type": "integer", "minimum": 1},
+          "encapsulates": {"type": ["array", "string"], "items": {"type": "string"}},
+          "do_not_add": {"type": ["array", "string"], "items": {"type": "string"}}
         }
       }
     },

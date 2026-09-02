@@ -1,0 +1,7 @@
+STUDY,PATNUM,FIRST_DOSE_DATE,FIRST_DOSE_TIME,IC_DATE,AGE,SEX,ETHNIC,RACE,COUNTRY,PLANNED_ARMCD,PLANNED_ARM,ACTUAL_ARMCD,ACTUAL_ARM
+TRACE-MID,701-1001,05-Jan-2025,08:15:00,20-Dec-2024,34,Female,Not Hispanic or Latino,Asian,CHN,TRTA,Treatment A,TRTA,Treatment A
+TRACE-MID,701-1002,06-Jan-2025,09:30:15,21-Dec-2024,52,Male,Hispanic or Latino,White,USA,TRTB,Treatment B,TRTB,Treatment B
+TRACE-MID,702-1003,07-Jan-2025,07:45:30,23-Dec-2024,41,Female,Not Hispanic or Latino,Black or African American,GBR,TRTA,Treatment A,TRTA,Treatment A
+TRACE-MID,702-1004,08-Jan-2025,10:05:45,27-Dec-2024,66,Male,Not Reported,White,CAN,TRTB,Treatment B,TRTA,Treatment A
+TRACE-MID,703-1005,09-Jan-2025,11:20:05,30-Dec-2024,29,Unknown,Unknown,Multiple,AUS,TRTA,Treatment A,TRTA,Treatment A
+TRACE-MID,703-1006,10-Jan-2025,06:55:50,02-Jan-2025,58,Female,Not Hispanic or Latino,American Indian or Alaska Native,USA,TRTB,Treatment B,TRTB,Treatment B

@@ -258,6 +258,9 @@ validate_step_contract <- function(step, concept, specification, metadata, regis
   if (output_mode == "single" && length(targets) != 1L) {
     trace_abort(sprintf("%s/%s 必须且只能生成一个目标变量。", concept$concept_id, step$transform_id))
   }
+  if (output_mode %in% c("dataset", "none") && length(targets)) {
+    trace_abort(sprintf("%s/%s 输出数据集或无字段输出时 target_variables 必须为空。", concept$concept_id, step$transform_id))
+  }
   allowed_variables <- names(metadata$domains[[concept$target_domain]]$variables)
   unknown_targets <- setdiff(targets, allowed_variables)
   if (length(unknown_targets)) trace_abort(sprintf("%s 包含未知目标变量：%s", concept$concept_id, paste(unknown_targets, collapse = ", ")))
