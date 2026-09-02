@@ -1,0 +1,22 @@
+concept_id,categories,classification_score,evidence,uncertainties,status,group_id
+DM_CORE,direct_assignment | field_combination,1,专家金标准种子。,不是真实模型结果。,proposed,dm_connected_01
+DM_REFERENCE_START,source_integration,1,专家金标准种子。,不是真实模型结果。,proposed,dm_connected_01
+DM_CONSENT,date_time_conversion,1,专家金标准种子。,不是真实模型结果。,proposed,dm_connected_01
+DM_DEMOGRAPHICS,direct_assignment | controlled_terminology,1,专家金标准种子。,不是真实模型结果。,proposed,dm_connected_01
+DM_TREATMENT,direct_assignment,1,专家金标准种子。,不是真实模型结果。,proposed,dm_connected_01
+AE_SOURCE_INTEGRATION,source_integration,1,专家金标准种子。,不是真实模型结果。,proposed,ae_connected_01
+AE_CORE,direct_assignment | field_combination,1,专家金标准种子。,不是真实模型结果。,proposed,ae_connected_01
+AE_TERMS,direct_assignment | character_normalization,1,专家金标准种子。,不是真实模型结果。,proposed,ae_connected_01
+AE_SAFETY,controlled_terminology,1,专家金标准种子。,不是真实模型结果。,proposed,ae_connected_01
+AE_REL_OUTCOME,controlled_terminology,1,专家金标准种子。,不是真实模型结果。,proposed,ae_connected_01
+AE_START,date_time_conversion | temporal_derivation,1,专家金标准种子。,不是真实模型结果。,proposed,ae_connected_01
+AE_END,date_time_conversion | conditional_derivation | temporal_derivation,1,专家金标准种子。,不是真实模型结果。,proposed,ae_connected_01
+AE_SEQUENCE,temporal_derivation,1,专家金标准种子。,不是真实模型结果。,proposed,ae_connected_01
+VS_CORE,direct_assignment | field_combination | date_time_conversion | controlled_terminology | temporal_derivation,1,专家金标准种子。,不是真实模型结果。,proposed,vs_connected_01
+VS_HEIGHT,record_transposition | unit_conversion,1,专家金标准种子。,不是真实模型结果。,proposed,vs_connected_01
+VS_WEIGHT,record_transposition | unit_conversion,1,专家金标准种子。,不是真实模型结果。,proposed,vs_connected_01
+VS_TEMP,record_transposition | unit_conversion,1,专家金标准种子。,不是真实模型结果。,proposed,vs_connected_01
+VS_SYSBP,record_transposition | unit_conversion,1,专家金标准种子。,不是真实模型结果。,proposed,vs_connected_01
+VS_DIABP,record_transposition | unit_conversion,1,专家金标准种子。,不是真实模型结果。,proposed,vs_connected_01
+VS_PULSE,record_transposition | unit_conversion,1,专家金标准种子。,不是真实模型结果。,proposed,vs_connected_01
+VS_POST_DERIVATIONS,temporal_derivation,1,专家金标准种子。,不是真实模型结果。,proposed,vs_connected_01

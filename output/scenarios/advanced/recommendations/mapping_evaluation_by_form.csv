@@ -1,0 +1,6 @@
+target_domain,form_name,complete_plan_correct,total
+AE,Adverse Events,6,6
+AE,Adverse Events + Serious Adverse Event Details,2,2
+DM,Demographics,4,4
+DM,Exposure A + Exposure B,1,1
+VS,Vital Signs,8,8

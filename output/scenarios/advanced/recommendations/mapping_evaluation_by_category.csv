@@ -1,0 +1,11 @@
+gold_categories,function_correct,complete_plan_correct,total
+character_normalization,1,1,1
+conditional_derivation,1,1,1
+controlled_terminology,4,4,4
+date_time_conversion,4,4,4
+direct_assignment,6,6,6
+field_combination,3,3,3
+record_transposition,6,6,6
+source_integration,2,2,2
+temporal_derivation,5,5,5
+unit_conversion,6,6,6

@@ -11,6 +11,8 @@ run_pipeline <- function(config = load_project_config()) {
 print_trace_help <- function() {
   cat(paste(
     "TraceSDTM 命令：",
+    "  registry-check         验证注册表、参数模式和实现绑定",
+    "  registry-docs          由注册表生成函数目录",
     "  profile",
     "  recommend              调用真实 OpenAI 兼容接口",
     "  recommend --seed       生成明确标记的离线参考种子",
@@ -24,6 +26,7 @@ print_trace_help <- function() {
     "  report",
     "  run",
     "  test",
+    "所有数据命令均可追加 --scenario basic|advanced；默认 basic。",
     sep = "\n"
   ), "\n")
 }
@@ -34,9 +37,16 @@ run_tests <- function() {
 
 trace_main <- function(args = commandArgs(trailingOnly = TRUE)) {
   command <- args[[1]] %||% "help"
-  config <- load_project_config()
+  scenario <- scenario_from_args(args)
+  Sys.setenv(TRACE_SDTM_SCENARIO = scenario)
+  config <- load_project_config(scenario)
   switch(
     command,
+    `registry-check` = {
+      registry <- load_transform_registry(config)
+      trace_info("转换注册表检查通过：版本 %s，共 %d 个函数。", registry$registry_version, length(registry$transforms))
+    },
+    `registry-docs` = write_transform_catalog(config),
     profile = profile_sources(config),
     recommend = {
       profile_sources(config)

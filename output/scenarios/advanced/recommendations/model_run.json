@@ -1,0 +1,13 @@
+{
+  "status": "reference_seed",
+  "schema_version": "0.2",
+  "scenario": "advanced",
+  "provenance": "reference_seed",
+  "model": null,
+  "prompt_design": "concept_grouped_two_stage_registry_v02",
+  "generated_at": "2026-09-02T10:13:38Z",
+  "concept_count": 21,
+  "candidate_count": 21,
+  "group_runs": [],
+  "api_key_logged": false
+}

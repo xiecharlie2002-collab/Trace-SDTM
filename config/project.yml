@@ -1,6 +1,6 @@
 project:
   name: TraceSDTM
-  version: 0.1.0
+  version: 0.2.0
   study_id: TRACE001
   standard: SDTMIG
   standard_version: '3.4'
@@ -9,49 +9,30 @@ project:
     - AE
     - VS
 paths:
-  raw_dir: data/raw
-  profile_dir: output/profile
-  recommendation_dir: output/recommendations
-  review_dir: output/review
-  specification_template: specs/mapping_template.yml
-  approved_specification: specs/approved_mapping.yml
-  metadata: specs/sdtm_metadata.yml
-  gold_mapping: specs/gold_mapping.csv
-  csv_dir: output/sdtm/csv
-  xpt_dir: output/sdtm/xpt
-  lineage_dir: output/lineage
-  local_validation_dir: output/validation/local
-  p21_validation_dir: output/validation/p21
-  report_dir: output/report
-  manifest_dir: output/manifests
-  log_dir: logs
+  transform_registry: config/transform_registry.yml
+  transform_registry_schema: config/transform_registry.schema.json
+  generated_transform_docs: docs/transform_catalog.md
+scenarios:
+  basic:
+    raw_dir: data/raw
+    specification_template: specs/v0.2/basic_concepts.yml
+    gold_specification: specs/v0.2/basic_gold.yml
+    metadata: specs/sdtm_metadata.yml
+    controlled_terminology: specs/v0.2/controlled_terminology.yml
+    unit_conversions: specs/v0.2/unit_conversions.yml
+    output_base: output/v0.2/basic
+  advanced:
+    raw_dir: data/advanced/raw
+    specification_template: specs/v0.2/advanced_concepts.yml
+    gold_specification: specs/v0.2/advanced_gold.yml
+    metadata: specs/v0.2/advanced_metadata.yml
+    controlled_terminology: specs/v0.2/controlled_terminology.yml
+    unit_conversions: specs/v0.2/unit_conversions.yml
+    output_base: output/scenarios/advanced
 model:
   timeout_seconds: 60
   max_attempts: 3
-  batch_size: 4
+  max_group_characters: 45000
   max_completion_tokens: 8192
   temperature: 0
   endpoint_suffix: /chat/completions
-  allowed_mapping_types:
-    - direct
-    - constant
-    - controlled_term
-    - date_conversion
-    - combine
-    - conditional
-    - transpose
-    - custom
-    - drop
-  allowed_transform_ids:
-    - direct_map
-    - assign_constant
-    - map_controlled_term
-    - to_iso8601_date
-    - combine_fields
-    - conditional_map
-    - transpose_findings
-    - derive_usubjid
-    - derive_sequence
-    - derive_study_day
-    - derive_visitnum
-    - custom_transform

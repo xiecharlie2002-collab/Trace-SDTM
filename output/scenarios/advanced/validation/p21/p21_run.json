@@ -1,0 +1,17 @@
+{
+  "started_at": "2026-09-02T10:14:16Z",
+  "finished_at": "2026-09-02T10:14:48Z",
+  "exit_status": 1,
+  "execution_status": "completed_with_findings",
+  "process_completed": true,
+  "report_exists": true,
+  "community_version": "4.2.0.5013",
+  "client_version": "1.0.9",
+  "engine_name": "FDA 2508.1",
+  "standard": "SDTMIG 3.4",
+  "controlled_terminology_version": "2026-03-27",
+  "input_sha256": ["b552b1318c8b7cf4218064d353f05a15daf07a03a2fcaa75f0ad4c4c87893422", "5cfa5f261af445e73111f0fa1e922c49af444f6cc1cd833ad49b43ed0ae6b4b4", "7124c42866f2bef13d733a4e0d760068e171e7efa609dfa2d09947e7282b44c9"],
+  "report_sha256": "9905bc509937d052289ea1bd286e23087e10e5df208fef91bae4efc0e1754196",
+  "command_arguments": ["-Xms256m", "-Xmx2048m", "-jar", "D:\\Pinnacle\\resources\\app.asar.unpacked\\components\\lib\\p21-client-1.0.9.jar", "--standard=SDTM", "--standard.version=3.4", "--engine.version=2508.1", "--filter=FDA", "--config=D:\\Pinnacle\\resources\\app.asar.unpacked\\components\\lib\\configs", "--source.sdtm=D:/clinical_programming_10weeks/02_project/output/scenarios/advanced/sdtm/xpt", "--cdisc.ct.sdtm.version=2026-03-27", "--report=D:/clinical_programming_10weeks/02_project/output/scenarios/advanced/validation/p21/p21_report.xlsx", "--report.type=Excel", "--report.cutoff=100"],
+  "secrets_logged": false
+}

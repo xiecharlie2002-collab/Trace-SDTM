@@ -1,0 +1,851 @@
+schema_version: '0.2'
+specification:
+  name: TraceSDTM basic concept specification
+  version: 0.2.0
+  status: approved
+  standard: SDTMIG 3.4
+  scenario: basic
+  approval:
+    reviewer: portfolio_demo_reviewer
+    approved_at: '2026-09-02T09:42:58Z'
+    review_workbook_sha256: d087a7af884a271937922003d2513a85445fb96e627c2c0ce928b57aa5eb5c9b
+    registry_version: 1.0.0
+    registry_sha256: 01b6685f725c9b42c57b5a591b4226490b071948f83cb89416a6d15acf1b1a37
+source_catalog:
+  dm_raw:
+    file: dm_raw.csv
+    form_name: Demographics
+    grain: one_record_per_subject
+    keys:
+    - STUDY
+    - PATNUM
+  ae_raw:
+    file: ae_raw.csv
+    form_name: Adverse Events
+    grain: one_record_per_event
+    keys:
+    - STUDY
+    - PATNUM
+  vs_raw:
+    file: vs_raw.csv
+    form_name: Vital Signs
+    grain: one_record_per_subject_visit
+    keys:
+    - STUDY
+    - PATNUM
+    - INSTANCE
+domain_sources:
+  DM: dm_raw
+  AE: ae_raw
+  VS: vs_raw
+concepts:
+- concept_id: DM_CORE
+  target_domain: DM
+  form_name: Demographics
+  source_refs:
+  - dataset: dm_raw
+    variable: STUDY
+    role: study_identifier
+  - dataset: dm_raw
+    variable: PATNUM
+    role: subject_identifier
+  depends_on: []
+  expected_cardinality: one_record_to_one_record
+  required: yes
+  steps:
+  - transform_id: assign_no_ct
+    source_keys:
+    - dm_raw.STUDY
+    target_variables:
+    - STUDYID
+    parameters: {}
+  - transform_id: hardcode_no_ct
+    source_keys: []
+    target_variables:
+    - DOMAIN
+    parameters:
+      value: DM
+  - transform_id: derive_usubjid
+    source_keys:
+    - dm_raw.STUDY
+    - dm_raw.PATNUM
+    target_variables:
+    - USUBJID
+    parameters:
+      separator: '-'
+  - transform_id: assign_no_ct
+    source_keys:
+    - dm_raw.PATNUM
+    target_variables:
+    - SUBJID
+    parameters: {}
+  - transform_id: extract_delimited_part
+    source_keys:
+    - dm_raw.PATNUM
+    target_variables:
+    - SITEID
+    parameters:
+      separator: '-'
+      position: 1
+  review:
+    decision: accept
+    reviewer: portfolio_demo_reviewer
+    reviewed_at: '2026-09-02T09:42:57Z'
+    comment: 专家金标准种子，仅用于离线演示。
+- concept_id: DM_DATES
+  target_domain: DM
+  form_name: Demographics
+  source_refs:
+  - dataset: dm_raw
+    variable: FIRST_DOSE_DT
+    role: reference_start
+  - dataset: dm_raw
+    variable: IC_DT
+    role: informed_consent
+  depends_on: DM_CORE
+  expected_cardinality: one_record_to_one_record
+  required: yes
+  steps:
+  - transform_id: to_iso8601_date
+    source_keys:
+    - dm_raw.FIRST_DOSE_DT
+    target_variables:
+    - RFSTDTC
+    parameters:
+      formats:
+      - m/d/y
+      - dd-mmm-yyyy
+      - y-m-d
+  - transform_id: to_iso8601_date
+    source_keys:
+    - dm_raw.IC_DT
+    target_variables:
+    - RFICDTC
+    parameters:
+      formats:
+      - m/d/y
+      - dd-mmm-yyyy
+      - y-m-d
+  review:
+    decision: accept
+    reviewer: portfolio_demo_reviewer
+    reviewed_at: '2026-09-02T09:42:57Z'
+    comment: 专家金标准种子，仅用于离线演示。
+- concept_id: DM_DEMOGRAPHICS
+  target_domain: DM
+  form_name: Demographics
+  source_refs:
+  - dataset: dm_raw
+    variable: IT.AGE
+    role: age
+  - dataset: dm_raw
+    variable: IT.SEX
+    role: sex
+  - dataset: dm_raw
+    variable: IT.ETHNIC
+    role: ethnicity
+  - dataset: dm_raw
+    variable: IT.RACE
+    role: race
+  - dataset: dm_raw
+    variable: COUNTRY
+    role: country
+  depends_on: DM_CORE
+  expected_cardinality: one_record_to_one_record
+  required: yes
+  steps:
+  - transform_id: assign_no_ct
+    source_keys:
+    - dm_raw.IT.AGE
+    target_variables:
+    - AGE
+    parameters: {}
+  - transform_id: hardcode_ct
+    source_keys: []
+    target_variables:
+    - AGEU
+    parameters:
+      value: YEARS
+      codelist_id: AGEU
+  - transform_id: assign_ct
+    source_keys:
+    - dm_raw.IT.SEX
+    target_variables:
+    - SEX
+    parameters:
+      codelist_id: SEX
+  - transform_id: assign_ct
+    source_keys:
+    - dm_raw.IT.ETHNIC
+    target_variables:
+    - ETHNIC
+    parameters:
+      codelist_id: ETHNIC
+  - transform_id: assign_ct
+    source_keys:
+    - dm_raw.IT.RACE
+    target_variables:
+    - RACE
+    parameters:
+      codelist_id: RACE
+  - transform_id: assign_no_ct
+    source_keys:
+    - dm_raw.COUNTRY
+    target_variables:
+    - COUNTRY
+    parameters: {}
+  review:
+    decision: accept
+    reviewer: portfolio_demo_reviewer
+    reviewed_at: '2026-09-02T09:42:57Z'
+    comment: 专家金标准种子，仅用于离线演示。
+- concept_id: DM_TREATMENT
+  target_domain: DM
+  form_name: Demographics
+  source_refs:
+  - dataset: dm_raw
+    variable: PLANNED_ARMCD
+    role: planned_arm_code
+  - dataset: dm_raw
+    variable: PLANNED_ARM
+    role: planned_arm
+  - dataset: dm_raw
+    variable: ACTUAL_ARMCD
+    role: actual_arm_code
+  - dataset: dm_raw
+    variable: ACTUAL_ARM
+    role: actual_arm
+  depends_on: DM_CORE
+  expected_cardinality: one_record_to_one_record
+  required: yes
+  steps:
+  - transform_id: assign_no_ct
+    source_keys:
+    - dm_raw.PLANNED_ARMCD
+    target_variables:
+    - ARMCD
+    parameters: {}
+  - transform_id: assign_no_ct
+    source_keys:
+    - dm_raw.PLANNED_ARM
+    target_variables:
+    - ARM
+    parameters: {}
+  - transform_id: assign_no_ct
+    source_keys:
+    - dm_raw.ACTUAL_ARMCD
+    target_variables:
+    - ACTARMCD
+    parameters: {}
+  - transform_id: assign_no_ct
+    source_keys:
+    - dm_raw.ACTUAL_ARM
+    target_variables:
+    - ACTARM
+    parameters: {}
+  review:
+    decision: accept
+    reviewer: portfolio_demo_reviewer
+    reviewed_at: '2026-09-02T09:42:57Z'
+    comment: 专家金标准种子，仅用于离线演示。
+- concept_id: AE_CORE
+  target_domain: AE
+  form_name: Adverse Events
+  source_refs:
+  - dataset: ae_raw
+    variable: STUDY
+    role: study_identifier
+  - dataset: ae_raw
+    variable: PATNUM
+    role: subject_identifier
+  depends_on: DM_CORE
+  expected_cardinality: one_record_to_one_record
+  required: yes
+  steps:
+  - transform_id: assign_no_ct
+    source_keys:
+    - ae_raw.STUDY
+    target_variables:
+    - STUDYID
+    parameters: {}
+  - transform_id: hardcode_no_ct
+    source_keys: []
+    target_variables:
+    - DOMAIN
+    parameters:
+      value: AE
+  - transform_id: derive_usubjid
+    source_keys:
+    - ae_raw.STUDY
+    - ae_raw.PATNUM
+    target_variables:
+    - USUBJID
+    parameters:
+      separator: '-'
+  review:
+    decision: accept
+    reviewer: portfolio_demo_reviewer
+    reviewed_at: '2026-09-02T09:42:56Z'
+    comment: 专家金标准种子，仅用于离线演示。
+- concept_id: AE_TERMS
+  target_domain: AE
+  form_name: Adverse Events
+  source_refs:
+  - dataset: ae_raw
+    variable: IT.AETERM
+    role: reported_term
+  - dataset: ae_raw
+    variable: AEDECOD
+    role: coded_term
+  - dataset: ae_raw
+    variable: AEBODSYS
+    role: body_system
+  depends_on: AE_CORE
+  expected_cardinality: one_record_to_one_record
+  required: yes
+  steps:
+  - transform_id: assign_no_ct
+    source_keys:
+    - ae_raw.IT.AETERM
+    target_variables:
+    - AETERM
+    parameters: {}
+  - transform_id: assign_no_ct
+    source_keys:
+    - ae_raw.AEDECOD
+    target_variables:
+    - AEDECOD
+    parameters: {}
+  - transform_id: normalize_case
+    source_keys:
+    - ae_raw.AEBODSYS
+    target_variables:
+    - AEBODSYS
+    parameters:
+      case: upper
+  review:
+    decision: accept
+    reviewer: portfolio_demo_reviewer
+    reviewed_at: '2026-09-02T09:42:57Z'
+    comment: 专家金标准种子，仅用于离线演示。
+- concept_id: AE_SAFETY
+  target_domain: AE
+  form_name: Adverse Events
+  source_refs:
+  - dataset: ae_raw
+    variable: IT.AESEV
+    role: severity
+  - dataset: ae_raw
+    variable: IT.AESER
+    role: serious_indicator
+  - dataset: ae_raw
+    variable: IT.AESHOSP
+    role: hospitalization_indicator
+  depends_on: AE_CORE
+  expected_cardinality: one_record_to_one_record
+  required: yes
+  steps:
+  - transform_id: assign_ct
+    source_keys:
+    - ae_raw.IT.AESEV
+    target_variables:
+    - AESEV
+    parameters:
+      codelist_id: AESEV
+  - transform_id: assign_ct
+    source_keys:
+    - ae_raw.IT.AESER
+    target_variables:
+    - AESER
+    parameters:
+      codelist_id: NY
+  - transform_id: assign_ct
+    source_keys:
+    - ae_raw.IT.AESHOSP
+    target_variables:
+    - AESHOSP
+    parameters:
+      codelist_id: NY
+  review:
+    decision: accept
+    reviewer: portfolio_demo_reviewer
+    reviewed_at: '2026-09-02T09:42:57Z'
+    comment: 专家金标准种子，仅用于离线演示。
+- concept_id: AE_REL_OUTCOME
+  target_domain: AE
+  form_name: Adverse Events
+  source_refs:
+  - dataset: ae_raw
+    variable: IT.AEREL
+    role: causality
+  - dataset: ae_raw
+    variable: AEOUTCOME
+    role: outcome
+  depends_on: AE_CORE
+  expected_cardinality: one_record_to_one_record
+  required: yes
+  steps:
+  - transform_id: assign_ct
+    source_keys:
+    - ae_raw.IT.AEREL
+    target_variables:
+    - AEREL
+    parameters:
+      codelist_id: AEREL
+  - transform_id: assign_ct
+    source_keys:
+    - ae_raw.AEOUTCOME
+    target_variables:
+    - AEOUT
+    parameters:
+      codelist_id: AEOUT
+  review:
+    decision: accept
+    reviewer: portfolio_demo_reviewer
+    reviewed_at: '2026-09-02T09:42:57Z'
+    comment: 专家金标准种子，仅用于离线演示。
+- concept_id: AE_DATES
+  target_domain: AE
+  form_name: Adverse Events
+  source_refs:
+  - dataset: ae_raw
+    variable: IT.AESTDAT
+    role: start_date
+  - dataset: ae_raw
+    variable: IT.AEENDAT
+    role: end_date
+  depends_on:
+  - AE_CORE
+  - DM_DATES
+  expected_cardinality: one_record_to_one_record
+  required: yes
+  steps:
+  - transform_id: to_iso8601_date
+    source_keys:
+    - ae_raw.IT.AESTDAT
+    target_variables:
+    - AESTDTC
+    parameters:
+      formats:
+      - m/d/y
+      - dd-mmm-yyyy
+      - y-m-d
+  - transform_id: to_iso8601_date
+    source_keys:
+    - ae_raw.IT.AEENDAT
+    target_variables:
+    - AEENDTC
+    parameters:
+      formats:
+      - m/d/y
+      - dd-mmm-yyyy
+      - y-m-d
+  - transform_id: derive_ongoing_flag
+    source_keys:
+    - ae_raw.IT.AEENDAT
+    target_variables:
+    - AEENRF
+    parameters:
+      ongoing_value: ONGOING
+      affirmative_values:
+      - 'Y'
+      - 'Yes'
+  - transform_id: derive_study_day
+    source_keys: []
+    target_variables:
+    - AESTDY
+    parameters:
+      target_date: AESTDTC
+      reference_date: RFSTDTC
+  - transform_id: derive_study_day
+    source_keys: []
+    target_variables:
+    - AEENDY
+    parameters:
+      target_date: AEENDTC
+      reference_date: RFSTDTC
+  review:
+    decision: accept
+    reviewer: portfolio_demo_reviewer
+    reviewed_at: '2026-09-02T09:42:57Z'
+    comment: 专家金标准种子，仅用于离线演示。
+- concept_id: AE_SEQUENCE
+  target_domain: AE
+  form_name: Adverse Events
+  source_refs: []
+  depends_on:
+  - AE_TERMS
+  - AE_DATES
+  expected_cardinality: domain_post_derivation
+  required: yes
+  steps:
+  - transform_id: derive_sequence
+    source_keys: []
+    target_variables:
+    - AESEQ
+    parameters:
+      record_variables:
+      - STUDYID
+      - USUBJID
+      - AESTDTC
+      - AETERM
+      - AEDECOD
+      - .SOURCE_ROW
+      start_at: 1
+  review:
+    decision: accept
+    reviewer: portfolio_demo_reviewer
+    reviewed_at: '2026-09-02T09:42:57Z'
+    comment: 专家金标准种子，仅用于离线演示。
+- concept_id: VS_CORE
+  target_domain: VS
+  form_name: Vital Signs
+  source_refs:
+  - dataset: vs_raw
+    variable: STUDY
+    role: study_identifier
+  - dataset: vs_raw
+    variable: PATNUM
+    role: subject_identifier
+  - dataset: vs_raw
+    variable: INSTANCE
+    role: visit
+  - dataset: vs_raw
+    variable: VTLD
+    role: date
+  - dataset: vs_raw
+    variable: SUBPOS
+    role: body_position
+  depends_on: DM_DATES
+  expected_cardinality: one_record_to_many_findings
+  required: yes
+  steps:
+  - transform_id: assign_no_ct
+    source_keys:
+    - vs_raw.STUDY
+    target_variables:
+    - STUDYID
+    parameters: {}
+  - transform_id: hardcode_no_ct
+    source_keys: []
+    target_variables:
+    - DOMAIN
+    parameters:
+      value: VS
+  - transform_id: derive_usubjid
+    source_keys:
+    - vs_raw.STUDY
+    - vs_raw.PATNUM
+    target_variables:
+    - USUBJID
+    parameters:
+      separator: '-'
+  - transform_id: assign_no_ct
+    source_keys:
+    - vs_raw.INSTANCE
+    target_variables:
+    - VISIT
+    parameters: {}
+  - transform_id: to_iso8601_date
+    source_keys:
+    - vs_raw.VTLD
+    target_variables:
+    - VSDTC
+    parameters:
+      formats:
+      - dd-mmm-yyyy
+      - m/d/y
+      - y-m-d
+  - transform_id: assign_ct
+    source_keys:
+    - vs_raw.SUBPOS
+    target_variables:
+    - VSPOS
+    parameters:
+      codelist_id: VSPOS
+  - transform_id: derive_visitnum
+    source_keys:
+    - vs_raw.INSTANCE
+    target_variables:
+    - VISITNUM
+    parameters:
+      visit_map_id: trace_visits_v1
+  review:
+    decision: accept
+    reviewer: portfolio_demo_reviewer
+    reviewed_at: '2026-09-02T09:42:58Z'
+    comment: 专家金标准种子，仅用于离线演示。
+- concept_id: VS_HEIGHT
+  target_domain: VS
+  form_name: Vital Signs
+  source_refs:
+  - dataset: vs_raw
+    variable: IT.HEIGHT_VSORRES
+    role: result
+  depends_on: VS_CORE
+  expected_cardinality: one_observed_value_to_one_record
+  required: yes
+  steps:
+  - transform_id: transpose_findings
+    source_keys:
+    - vs_raw.IT.HEIGHT_VSORRES
+    target_variables:
+    - VSTESTCD
+    - VSTEST
+    - VSORRES
+    - VSORRESU
+    parameters:
+      test_code: HEIGHT
+      test_name: Height
+      original_unit: cm
+      unit_source: ~
+  - transform_id: standardize_unit
+    source_keys:
+    - vs_raw.IT.HEIGHT_VSORRES
+    target_variables:
+    - VSSTRESC
+    - VSSTRESN
+    - VSSTRESU
+    parameters:
+      conversion_set_id: vs_standard_v1
+      target_unit: cm
+  review:
+    decision: accept
+    reviewer: portfolio_demo_reviewer
+    reviewed_at: '2026-09-02T09:42:58Z'
+    comment: 专家金标准种子，仅用于离线演示。
+- concept_id: VS_WEIGHT
+  target_domain: VS
+  form_name: Vital Signs
+  source_refs:
+  - dataset: vs_raw
+    variable: IT.WEIGHT
+    role: result
+  depends_on: VS_CORE
+  expected_cardinality: one_observed_value_to_one_record
+  required: yes
+  steps:
+  - transform_id: transpose_findings
+    source_keys:
+    - vs_raw.IT.WEIGHT
+    target_variables:
+    - VSTESTCD
+    - VSTEST
+    - VSORRES
+    - VSORRESU
+    parameters:
+      test_code: WEIGHT
+      test_name: Weight
+      original_unit: kg
+      unit_source: ~
+  - transform_id: standardize_unit
+    source_keys:
+    - vs_raw.IT.WEIGHT
+    target_variables:
+    - VSSTRESC
+    - VSSTRESN
+    - VSSTRESU
+    parameters:
+      conversion_set_id: vs_standard_v1
+      target_unit: kg
+  review:
+    decision: accept
+    reviewer: portfolio_demo_reviewer
+    reviewed_at: '2026-09-02T09:42:58Z'
+    comment: 专家金标准种子，仅用于离线演示。
+- concept_id: VS_TEMP
+  target_domain: VS
+  form_name: Vital Signs
+  source_refs:
+  - dataset: vs_raw
+    variable: IT.TEMP
+    role: result
+  depends_on: VS_CORE
+  expected_cardinality: one_observed_value_to_one_record
+  required: yes
+  steps:
+  - transform_id: transpose_findings
+    source_keys:
+    - vs_raw.IT.TEMP
+    target_variables:
+    - VSTESTCD
+    - VSTEST
+    - VSORRES
+    - VSORRESU
+    parameters:
+      test_code: TEMP
+      test_name: Temperature
+      original_unit: C
+      unit_source: ~
+  - transform_id: standardize_unit
+    source_keys:
+    - vs_raw.IT.TEMP
+    target_variables:
+    - VSSTRESC
+    - VSSTRESN
+    - VSSTRESU
+    parameters:
+      conversion_set_id: vs_standard_v1
+      target_unit: C
+  review:
+    decision: accept
+    reviewer: portfolio_demo_reviewer
+    reviewed_at: '2026-09-02T09:42:58Z'
+    comment: 专家金标准种子，仅用于离线演示。
+- concept_id: VS_SYSBP
+  target_domain: VS
+  form_name: Vital Signs
+  source_refs:
+  - dataset: vs_raw
+    variable: SYS_BP
+    role: result
+  depends_on: VS_CORE
+  expected_cardinality: one_observed_value_to_one_record
+  required: yes
+  steps:
+  - transform_id: transpose_findings
+    source_keys:
+    - vs_raw.SYS_BP
+    target_variables:
+    - VSTESTCD
+    - VSTEST
+    - VSORRES
+    - VSORRESU
+    parameters:
+      test_code: SYSBP
+      test_name: Systolic Blood Pressure
+      original_unit: mmHg
+      unit_source: ~
+  - transform_id: standardize_unit
+    source_keys:
+    - vs_raw.SYS_BP
+    target_variables:
+    - VSSTRESC
+    - VSSTRESN
+    - VSSTRESU
+    parameters:
+      conversion_set_id: vs_standard_v1
+      target_unit: mmHg
+  review:
+    decision: accept
+    reviewer: portfolio_demo_reviewer
+    reviewed_at: '2026-09-02T09:42:58Z'
+    comment: 专家金标准种子，仅用于离线演示。
+- concept_id: VS_DIABP
+  target_domain: VS
+  form_name: Vital Signs
+  source_refs:
+  - dataset: vs_raw
+    variable: DIA_BP
+    role: result
+  depends_on: VS_CORE
+  expected_cardinality: one_observed_value_to_one_record
+  required: yes
+  steps:
+  - transform_id: transpose_findings
+    source_keys:
+    - vs_raw.DIA_BP
+    target_variables:
+    - VSTESTCD
+    - VSTEST
+    - VSORRES
+    - VSORRESU
+    parameters:
+      test_code: DIABP
+      test_name: Diastolic Blood Pressure
+      original_unit: mmHg
+      unit_source: ~
+  - transform_id: standardize_unit
+    source_keys:
+    - vs_raw.DIA_BP
+    target_variables:
+    - VSSTRESC
+    - VSSTRESN
+    - VSSTRESU
+    parameters:
+      conversion_set_id: vs_standard_v1
+      target_unit: mmHg
+  review:
+    decision: accept
+    reviewer: portfolio_demo_reviewer
+    reviewed_at: '2026-09-02T09:42:58Z'
+    comment: 专家金标准种子，仅用于离线演示。
+- concept_id: VS_PULSE
+  target_domain: VS
+  form_name: Vital Signs
+  source_refs:
+  - dataset: vs_raw
+    variable: PULSE
+    role: result
+  depends_on: VS_CORE
+  expected_cardinality: one_observed_value_to_one_record
+  required: yes
+  steps:
+  - transform_id: transpose_findings
+    source_keys:
+    - vs_raw.PULSE
+    target_variables:
+    - VSTESTCD
+    - VSTEST
+    - VSORRES
+    - VSORRESU
+    parameters:
+      test_code: PULSE
+      test_name: Pulse Rate
+      original_unit: beats/min
+      unit_source: ~
+  - transform_id: standardize_unit
+    source_keys:
+    - vs_raw.PULSE
+    target_variables:
+    - VSSTRESC
+    - VSSTRESN
+    - VSSTRESU
+    parameters:
+      conversion_set_id: vs_standard_v1
+      target_unit: beats/min
+  review:
+    decision: accept
+    reviewer: portfolio_demo_reviewer
+    reviewed_at: '2026-09-02T09:42:58Z'
+    comment: 专家金标准种子，仅用于离线演示。
+- concept_id: VS_POST_DERIVATIONS
+  target_domain: VS
+  form_name: Vital Signs
+  source_refs: []
+  depends_on:
+  - VS_HEIGHT
+  - VS_WEIGHT
+  - VS_TEMP
+  - VS_SYSBP
+  - VS_DIABP
+  - VS_PULSE
+  expected_cardinality: domain_post_derivation
+  required: yes
+  steps:
+  - transform_id: derive_sequence
+    source_keys: []
+    target_variables:
+    - VSSEQ
+    parameters:
+      record_variables:
+      - STUDYID
+      - USUBJID
+      - VSDTC
+      - VSTESTCD
+      - VSPOS
+      - VISITNUM
+      - .SOURCE_ROW
+      start_at: 1
+  - transform_id: derive_study_day
+    source_keys: []
+    target_variables:
+    - VSDY
+    parameters:
+      target_date: VSDTC
+      reference_date: RFSTDTC
+  review:
+    decision: accept
+    reviewer: portfolio_demo_reviewer
+    reviewed_at: '2026-09-02T09:42:58Z'
+    comment: 专家金标准种子，仅用于离线演示。

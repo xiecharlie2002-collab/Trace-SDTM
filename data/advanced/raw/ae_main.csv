@@ -1,0 +1,6 @@
+STUDY,PATNUM,AEID,AETERM,AEDECOD,AEBODSYS,AESEV,AESER,AEREL,AEOUTCOME,AESTDAT,AESTTIM,AEENDDAT,AEENDTIM,AEONGO
+TRACE002,701-2001,1,Headache,HEADACHE,Nervous system disorders,Mild Adverse Event,No,Possibly Related,Recovered/Resolved,06-JAN-2025,10:30,07-JAN-2025,09:15,No
+TRACE002,701-2002,1,Nausea,NAUSEA,Gastrointestinal disorders,Moderate Adverse Event,No,Probably Related,Recovering/Resolving,UNK-JAN-2025,,UNK-JAN-2025,,No
+TRACE002,702-2003,1,Application site erythema,APPLICATION SITE ERYTHEMA,General disorders and administration site conditions,Mild Adverse Event,No,Possibly Related,Not Recovered/not Resolved,UNK-UNK-2025,,,,Yes
+TRACE002,702-2004,1,Dizziness,DIZZINESS,Nervous system disorders,Severe Adverse Event,Yes,Probably Related,Recovered/Resolved,08-JAN-2025,14:00,10-JAN-2025,11:00,No
+TRACE002,702-2004,2,Fatigue,FATIGUE,General disorders and administration site conditions,Moderate Adverse Event,No,Unlikely Related,Recovered/Resolved,15-JAN-2025,,16-JAN-2025,,No

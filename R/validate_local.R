@@ -2,12 +2,13 @@ lineage_mapping_id <- function(lineage, domain, variable, value = NULL) {
   if (is.null(lineage) || !nrow(lineage)) return("")
   domain <- as.character(domain)[1]
   variable <- as.character(variable)[1]
-  hit <- lineage$target_domain == domain & lineage$target_variable == variable
-  if (!is.null(value) && nzchar(value)) {
-    value_hit <- hit & lineage$target_value == value
-    if (any(value_hit)) hit <- value_hit
-  }
-  paste(unique(lineage$mapping_id[hit]), collapse = " | ")
+  target_column <- if ("target_variables" %in% names(lineage)) "target_variables" else "target_variable"
+  id_column <- if ("concept_id" %in% names(lineage)) "concept_id" else "mapping_id"
+  target_values <- as.character(lineage[[target_column]])
+  hit <- lineage$target_domain == domain & vapply(
+    strsplit(target_values, " | ", fixed = TRUE), function(items) variable %in% items, logical(1)
+  )
+  paste(unique(lineage[[id_column]][hit]), collapse = " | ")
 }
 
 record_keys <- function(data, domain, metadata) {
@@ -192,12 +193,40 @@ validate_vs_pairs <- function(data, metadata, lineage, run_id) {
   expected_unit <- vapply(pairs, function(item) item$unit, character(1))
   test <- unname(expected_test[data$VSTESTCD])
   unit <- unname(expected_unit[data$VSTESTCD])
+  conversions <- load_unit_conversions(load_project_config())$sets$vs_standard_v1
+  conversion_table <- purrr::map_dfr(conversions, tibble::as_tibble)
+  original_unit_valid <- vapply(seq_len(nrow(data)), function(index) {
+    any(
+      conversion_table$test_code == data$VSTESTCD[[index]] &
+        conversion_table$from_unit == data$VSORRESU[[index]] &
+        conversion_table$to_unit == unit[[index]]
+    )
+  }, logical(1))
   issues <- list(
     issue_rows(data, is.na(test) | data$VSTEST != test, "LOCAL013", "ERROR", "VS", "VSTEST", "VSTESTCD 与 VSTEST 不匹配。", run_id, metadata, lineage),
-    issue_rows(data, is.na(unit) | data$VSORRESU != unit | data$VSSTRESU != unit, "LOCAL014", "ERROR", "VS", "VSORRESU", "检查项目与单位不匹配。", run_id, metadata, lineage),
+    issue_rows(data, is.na(unit) | data$VSSTRESU != unit, "LOCAL014", "ERROR", "VS", "VSSTRESU", "标准单位与检查项目不匹配。", run_id, metadata, lineage),
+    issue_rows(data, !original_unit_valid, "LOCAL016", "ERROR", "VS", "VSORRESU", "原始单位没有登记到受控换算表。", run_id, metadata, lineage),
     issue_rows(data, is.na(data$VSSTRESN), "LOCAL015", "ERROR", "VS", "VSSTRESN", "数值型生命体征无法转换为标准数值。", run_id, metadata, lineage)
   )
   dplyr::bind_rows(issues)
+}
+
+validate_partial_date_derivations <- function(datasets, metadata, lineage, run_id) {
+  checks <- list(
+    list(domain = "AE", date = "AESTDTC", derived = "AESTDY"),
+    list(domain = "AE", date = "AEENDTC", derived = "AEENDY"),
+    list(domain = "VS", date = "VSDTC", derived = "VSDY")
+  )
+  purrr::map_dfr(checks, function(check) {
+    data <- datasets[[check$domain]]
+    if (!all(c(check$date, check$derived) %in% names(data))) return(empty_issue_table())
+    value <- as.character(data[[check$date]])
+    incomplete <- !is.na(value) & nzchar(value) & !grepl("^\\d{4}-\\d{2}-\\d{2}", value)
+    issue_rows(
+      data, incomplete & !is.na(data[[check$derived]]), "LOCAL017", "ERROR", check$domain,
+      check$derived, "不完整日期不能派生研究日。", run_id, metadata, lineage
+    )
+  })
 }
 
 validate_local <- function(config = load_project_config()) {
@@ -213,7 +242,8 @@ validate_local <- function(config = load_project_config()) {
     validate_subject_links(datasets, metadata, lineage, run_id),
     validate_sequences(datasets, metadata, lineage, run_id),
     validate_ae_dates(datasets$AE, metadata, lineage, run_id),
-    validate_vs_pairs(datasets$VS, metadata, lineage, run_id)
+    validate_vs_pairs(datasets$VS, metadata, lineage, run_id),
+    validate_partial_date_derivations(datasets, metadata, lineage, run_id)
   )
   if (!nrow(issues)) issues <- empty_issue_table()
   output <- trace_path(config$paths$local_validation_dir, "local_issues.csv")

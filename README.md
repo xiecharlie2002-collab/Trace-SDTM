@@ -1,102 +1,112 @@
 # TraceSDTM
 
-TraceSDTM 是一个人工监督、规格驱动、可追溯的 SDTM 自动化作品集项目。它覆盖 DM、AE、VS 三个域，重点不是宣称“全自动替代程序员”，而是展示如何安全地把大模型建议接入受控的临床数据标准化流程。
+TraceSDTM 是一个人工监督、注册表约束、规格驱动、可追溯的 SDTM 自动化作品集项目。0.2 版继续只覆盖 DM、AE、VS，但增加了多来源整合、不完整日期时间、受控单位换算、VS 横向转纵向和基线标志。
 
-## 已实现流程
+## 流程
 
 ```text
-模拟原始数据
+来源数据登记与画像
     ↓
-字段画像与数据字典
+按域、表单、临床概念和依赖关系分组
     ↓
-受约束的候选映射
+模型第一阶段：判断转换类别
     ↓
-Excel 人工审核
+模型第二阶段：在类别内选择登记函数和参数
     ↓
-已批准 YAML 规格
+按完整映射方案进行人工审核
     ↓
-R 与 sdtm.oak 确定性构建
+注册表复核并锁定 0.2 YAML 规格
     ↓
-CSV、XPT、字段追溯
+R 与 sdtm.oak 确定性生成 CSV、XPT 和追溯
     ↓
 本地检查 + Pinnacle 21 Community
     ↓
-离线 HTML 项目报告
+评价明细与离线 HTML 报告
 ```
 
-## 当前验证结果
+模型不能生成或执行 R 代码、单位公式、正则表达式、连接键或自由条件。正式构建只读取批准后的 YAML，不再次调用模型。
 
-- 生成 DM 6 行、AE 8 行、VS 60 行。
-- 原始数据画像包含 43 个字段，候选映射包含 40 个需审核任务。
-- VS 覆盖身高、体重、体温、收缩压、舒张压和脉搏 6 类测量。
+## 两个演示场景
+
+`basic` 用于快速展示既有 DM、AE、VS 流程；`advanced` 独立展示 0.2 新能力，不覆盖基础场景和 0.1 历史成果。
+
+高级场景当前实际结果：
+
+- 画像包含 57 个来源字段，形成 21 个临床概念审核任务。
+- 生成 DM 4 行、AE 5 行、VS 44 行。
+- 从两个暴露来源取得各受试者最早给药日期时间，生成 RFSTDTC。
+- AE 保留年、年月和完整日期时间等不同精度，不进行日期填补。
+- `70 in → 177.8 cm`、`180 lb → 81.6 kg`、`98.6 F → 37.0 C` 已通过自动测试。SDTM 中将 `lb` 规范为受控术语 `LB`，原始来源仍保留在追溯证据中。
+- 24 条给药前最后一次有效检查记录被标记为 VSBLFL。
 - 本地检查为 0 个问题。
-- Pinnacle 21 Community 4.2.0.5013 使用 FDA 2508.1、SDTMIG 3.4 和 2026-03-27 受控术语完成真实验证。
-- 当前 Pinnacle 21 问题均被归为明确的最小范围限制；DM、AE、VS 内没有未解释的 Reject，也没有 `generated_domain_defect`。
+- Pinnacle 21 Community 4.2.0.5013 已用 FDA 2508.1、SDTMIG 3.4 和 2026-03-27 受控术语真实验证；DM、AE、VS 没有域内缺陷，只保留缺少 Define-XML、TS 等最小范围问题。
 
-Pinnacle 21 仍会报告缺少 Define-XML、TS、其他未覆盖域以及部分 Expected 变量。这些原始结果全部保留，不能把本项目描述成“完整提交包通过验证”。
+项目不生成完整提交包，因此不能把范围问题描述为“全部合规通过”。
 
 ## 快速运行
 
-在本目录执行：
-
 ```powershell
-Rscript scripts/trace_sdtm.R recommend --seed
-Rscript scripts/trace_sdtm.R approve
-Rscript scripts/trace_sdtm.R run
+Rscript scripts/trace_sdtm.R registry-check --scenario advanced
+Rscript scripts/trace_sdtm.R recommend --seed --scenario advanced
+Rscript scripts/trace_sdtm.R approve --scenario advanced
+Rscript scripts/trace_sdtm.R run --scenario advanced
 ```
 
-`recommend --seed` 使用专家模板生成离线参考种子。它只用于演示审核、构建和评价程序，不是实际模型输出。
+`recommend --seed` 使用专家金标准生成离线参考种子，只用于演示审核、构建和评价程序，不是实际模型输出。
 
-单独执行各阶段：
+常用命令：
 
 ```powershell
-Rscript scripts/trace_sdtm.R profile
-Rscript scripts/trace_sdtm.R build
-Rscript scripts/trace_sdtm.R validate-local
-Rscript scripts/trace_sdtm.R doctor-p21
-Rscript scripts/trace_sdtm.R validate-p21
-Rscript scripts/trace_sdtm.R report
-Rscript scripts/trace_sdtm.R test
+Rscript scripts/trace_sdtm.R registry-docs --scenario advanced
+Rscript scripts/trace_sdtm.R profile --scenario advanced
+Rscript scripts/trace_sdtm.R build --scenario advanced
+Rscript scripts/trace_sdtm.R validate-local --scenario advanced
+Rscript scripts/trace_sdtm.R doctor-p21 --scenario advanced
+Rscript scripts/trace_sdtm.R validate-p21 --scenario advanced
+Rscript scripts/trace_sdtm.R report --scenario advanced
+Rscript scripts/trace_sdtm.R test --scenario advanced
 ```
 
 ## 使用真实大模型
 
-配置 OpenAI 兼容接口：
+配置 OpenAI 兼容接口后运行：
 
 ```powershell
 $env:TRACE_SDTM_API_KEY = '<密钥>'
 $env:TRACE_SDTM_BASE_URL = 'https://api.example.com/v1'
 $env:TRACE_SDTM_MODEL = '<模型名称>'
-Rscript scripts/trace_sdtm.R recommend
+$env:TRACE_SDTM_EXPERIMENT_ID = 'model-20260902'
+Rscript scripts/trace_sdtm.R recommend --scenario advanced
 ```
 
-建议同时设置独立实验编号。此时全部生成物写入
-`output/experiments/<实验编号>/`，不会覆盖基线输出：
-
-```powershell
-$env:TRACE_SDTM_EXPERIMENT_ID = 'deepseek-v4-flash-20260901'
-Rscript scripts/trace_sdtm.R recommend
-```
-
-真实推荐仍需打开对应实验目录中的 `review/mapping_review.xlsx` 完成人工决策，再运行：
+实验产物写入 `output/v0.2/advanced/experiments/<实验编号>/`，不会覆盖基线。打开该目录中的 `review/mapping_review.xlsx` 完成人工审核后运行：
 
 ```powershell
 $env:TRACE_SDTM_REVIEWER = '<审核者标识>'
-Rscript scripts/trace_sdtm.R approve
+Rscript scripts/trace_sdtm.R approve --scenario advanced
+Rscript scripts/trace_sdtm.R run --scenario advanced
 ```
 
-为了可重复评价，项目另提供 `review-gold`，可用专家金标准填写审核表。它只适用于本项目实验，不得表述为法规流程中的独立专家签字：
+为了可重复评价，可以用专家金标准代填审核表：
 
 ```powershell
-Rscript scripts/trace_sdtm.R review-gold
-Rscript scripts/trace_sdtm.R approve
+Rscript scripts/trace_sdtm.R review-gold --scenario advanced
+Rscript scripts/trace_sdtm.R approve --scenario advanced
 ```
 
-模型只能选择允许的域、变量、映射类型和已登记转换函数。任何未知映射标识、未知目标变量、非法 JSON 或任意代码执行请求都会被拒绝。
+这只适用于作品集实验，不等同于法规流程中的独立专家签字。
 
-## Pinnacle 21 配置
+## 注册表和 sdtm.oak
 
-默认配置位于 `config/p21.yml`：
+`config/transform_registry.yml` 是 23 个转换函数的唯一元数据源，同时服务于提示词、模型结果验证、审核工作簿、YAML 检查、函数调度、自动测试和文档生成。
+
+项目选择性使用 sdtm.oak 0.2.0 的普通赋值、受控术语、日期时间、参考日期、序号、研究日和基线算法。单位换算由项目版本化受控表完成。参数使用 JSON Schema Draft-07 验证，函数只能从 R 中的受控绑定表解析。
+
+自动生成的函数目录见 `docs/transform_catalog.md`，整体架构见 `docs/architecture.md`。
+
+## Pinnacle 21
+
+默认本机配置位于 `config/p21.yml`：
 
 ```text
 Community：4.2.0.5013
@@ -107,36 +117,31 @@ Community：4.2.0.5013
 受控术语：2026-03-27
 ```
 
-程序只调用已安装组件，不复制、修改或提交 Pinnacle 21 文件。自动调用失败时，也可以在图形界面完成验证后导入报告：
+程序只调用已安装组件，不复制、修改或提交 Pinnacle 21 文件。也可以导入图形界面生成的报告：
 
 ```powershell
-Rscript scripts/trace_sdtm.R import-p21 --file '<报告路径>'
+Rscript scripts/trace_sdtm.R import-p21 --file '<报告路径>' --scenario advanced
 ```
 
 ## 依赖复现
-
-首次使用先安装 `renv`，再恢复锁定依赖：
 
 ```powershell
 Rscript -e "install.packages('renv', repos='https://cloud.r-project.org')"
 Rscript -e "renv::restore()"
 ```
 
-项目使用 sdtm.oak 0.2.0 的日期、研究日和序号算法。依赖版本记录在 `renv.lock`。
-
 ## 重要产物
 
-- `output/review/mapping_review.xlsx`：人工审核界面
-- `specs/approved_mapping.yml`：唯一允许进入构建的映射规格
-- `output/sdtm/xpt`：Pinnacle 21 实际验证的 XPT
-- `output/lineage/field_lineage.csv`：字段级追溯
-- `output/validation/p21/p21_report.xlsx`：原始验证报告
-- `output/report/trace_sdtm_report.html`：离线项目报告
+- `config/transform_registry.yml`：唯一转换元数据源。
+- `output/scenarios/advanced/review/mapping_review.xlsx`：按临床概念审核的工作簿。
+- `output/scenarios/advanced/specs/approved_mapping.yml`：唯一允许进入构建的 0.2 规格。
+- `output/scenarios/advanced/sdtm/xpt`：Pinnacle 21 实际验证的 XPT。
+- `output/scenarios/advanced/lineage/field_lineage.csv`：字段级追溯。
+- `output/scenarios/advanced/validation/p21/p21_report.xlsx`：原始验证报告。
+- `output/scenarios/advanced/report/trace_sdtm_report.html`：可离线打开的项目报告。
 
 ## 边界
 
-本项目不包含 Define-XML、aCRF、完整试验设计域、ADaM、TLF、电子签名、多用户权限、法规申报级验证或 CDISC CORE。所有输出仍需合格的临床数据标准专家审核。
+本项目不包含 Define-XML、aCRF、完整试验设计域、ADaM、TLF、电子签名、多用户权限、法规申报级系统验证或 CDISC CORE。所有输出仍需合格的临床数据标准专家审核。
 
-五分钟演示说明见 `docs/demo.md`。
-
-DeepSeek V4 Flash 的真实盲评方法、结果和错误分析见 `docs/deepseek_v4_flash_blind_experiment.md`。
+五分钟演示见 `docs/demo.md`。0.1 阶段的真实 DeepSeek 盲评记录保留在 `docs/deepseek_v4_flash_blind_experiment.md`。

@@ -1,42 +1,65 @@
-test_that("日期、术语和标识符转换符合预期", {
-  template <- load_mapping_template()
-  dm <- read_raw_csv(trace_path("data", "raw", "dm_raw.csv"))
-  mappings <- template$domains$DM$mappings
-
-  date_mapping <- mappings[[which(vapply(mappings, function(x) x$mapping_id == "DM005", logical(1)))]]
-  sex_mapping <- mappings[[which(vapply(mappings, function(x) x$mapping_id == "DM009", logical(1)))]]
-  id_mapping <- mappings[[which(vapply(mappings, function(x) x$mapping_id == "DM003", logical(1)))]]
-
-  expect_equal(to_iso8601_date(dm, date_mapping)[1], "2025-01-05")
-  expect_equal(map_controlled_term(dm, sex_mapping)[1:2], c("F", "M"))
-  expect_equal(derive_usubjid(dm, id_mapping)[1], "TRACE001-701-1001")
+test_that("转换注册表唯一、完整且所有实现均可解析", {
+  config <- load_project_config("advanced")
+  registry <- load_transform_registry(config)
+  ids <- vapply(registry$transforms, `[[`, character(1), "transform_id")
+  expect_length(ids, 23L)
+  expect_identical(anyDuplicated(ids), 0L)
+  expect_setequal(vapply(registry$transforms, `[[`, character(1), "implementation_id"), names(transform_implementation_bindings()))
+  expect_true(all(vapply(registry$transforms, function(entry) length(entry$examples) > 0L, logical(1))))
+  expect_true(all(vapply(Filter(function(entry) isTRUE(entry$model_selectable), registry$transforms), function(entry) length(entry$not_allowed_when) > 0L, logical(1))))
 })
 
-test_that("无效日期和未知自定义转换被拒绝", {
-  raw <- data.frame(DATE = "not-a-date", VALUE = "x")
-  date_mapping <- list(mapping_id = "T001", source_variables = "DATE", parameters = list(formats = "y-m-d"))
-  custom_mapping <- list(mapping_id = "T002", source_variables = "VALUE", parameters = list(name = "not_registered"))
-  expect_error(to_iso8601_date(raw, date_mapping), "无法转换")
-  expect_error(custom_transform(raw, custom_mapping), "未登记")
+test_that("参数模式禁止未知参数和自由公式", {
+  config <- load_project_config("advanced")
+  specification <- load_mapping_template(config)
+  metadata <- load_metadata(config)
+  registry <- load_transform_registry(config)
+  concept <- concept_lookup(specification)$VS_HEIGHT
+  step <- gold_plan_steps(load_gold_specification(config)$plans$VS_HEIGHT)[[2]]
+  step$parameters$formula <- "value * 2.54"
+  expect_error(validate_step_contract(step, concept, specification, metadata, registry, config), "参数不符合模式")
 })
 
-test_that("序号按受试者从一开始且可重复", {
-  data <- tibble::tibble(
-    STUDYID = c("S", "S", "S"),
-    USUBJID = c("S-1", "S-1", "S-2"),
-    AESTDTC = c("2025-01-02", "2025-01-01", "2025-01-03"),
-    AETERM = c("B", "A", "C"),
-    AEDECOD = c("B", "A", "C"),
-    .SOURCE_ROW = 1:3
+test_that("完整、不完整和日期时间转换不进行日期填补", {
+  config <- load_project_config("advanced")
+  specification <- load_mapping_template(config)
+  sources <- load_registered_sources_v02(specification, config)
+  sources$ae_merged <- dplyr::left_join(sources$ae_main, sources$sae_detail, by = c("STUDY", "PATNUM", "AEID"))
+  concept <- concept_lookup(specification)$AE_START
+  step <- gold_plan_steps(load_gold_specification(config)$plans$AE_START)[[1]]
+  state <- list(sources = sources, target = tibble::tibble(.SOURCE_ROW = seq_len(nrow(sources$ae_merged))))
+  result <- step_to_iso8601_partial_datetime(state, concept, step, config)$target$AESTDTC
+  expect_equal(result[c(1, 2, 3)], c("2025-01-06T10:30", "2025-01", "2025"))
+  expect_false(any(grepl("01-01", result[2:3], fixed = TRUE)))
+})
+
+test_that("受控单位换算得到指定示例且未知单位被拒绝", {
+  config <- load_project_config("advanced")
+  state <- list(current_records = tibble::tibble(VSTESTCD = c("HEIGHT", "WEIGHT", "TEMP"), VSORRES = c("70", "180", "98.6"), VSORRESU = c("in", "LB", "F")))
+  concept <- list(concept_id = "UNIT_TEST")
+  steps <- list(
+    list(transform_id = "standardize_unit", target_variables = c("VSSTRESC", "VSSTRESN", "VSSTRESU"), parameters = list(conversion_set_id = "vs_standard_v1", target_unit = "cm")),
+    list(transform_id = "standardize_unit", target_variables = c("VSSTRESC", "VSSTRESN", "VSSTRESU"), parameters = list(conversion_set_id = "vs_standard_v1", target_unit = "kg")),
+    list(transform_id = "standardize_unit", target_variables = c("VSSTRESC", "VSSTRESN", "VSSTRESU"), parameters = list(conversion_set_id = "vs_standard_v1", target_unit = "C"))
   )
-  mapping <- list(
-    mapping_id = "AESEQ",
-    target_variable = "AESEQ",
-    parameters = list(record_variables = c("STUDYID", "USUBJID", "AESTDTC", "AETERM", "AEDECOD", ".SOURCE_ROW"))
-  )
-  first <- derive_sequence(data, mapping)
-  second <- derive_sequence(data, mapping)
-  expect_identical(first, second)
-  expect_equal(first$AESEQ[first$USUBJID == "S-1"], 1:2)
+  values <- vapply(seq_along(steps), function(index) {
+    one <- state
+    one$current_records <- state$current_records[index, ]
+    step_standardize_unit(one, concept, steps[[index]], config)$current_records$VSSTRESN
+  }, numeric(1))
+  expect_equal(values, c(177.8, 81.6, 37.0))
+  bad <- state
+  bad$current_records <- tibble::tibble(VSTESTCD = "WEIGHT", VSORRES = "180", VSORRESU = "stone")
+  expect_error(step_standardize_unit(bad, concept, steps[[2]], config), "未登记")
 })
 
+test_that("受控连接在重复键或缺失键时停止", {
+  config <- load_project_config("advanced")
+  specification <- load_mapping_template(config)
+  concept <- concept_lookup(specification)$AE_SOURCE_INTEGRATION
+  step <- gold_plan_steps(load_gold_specification(config)$plans$AE_SOURCE_INTEGRATION)[[1]]
+  sources <- load_registered_sources_v02(specification, config)
+  sources$sae_detail <- dplyr::bind_rows(sources$sae_detail, sources$sae_detail[1, ])
+  state <- list(sources = sources, base_dataset = "ae_main", target = tibble::tibble(.SOURCE_ROW = sources$ae_main$.SOURCE_ROW))
+  expect_error(step_merge_sources(state, concept, step, config), "不满足 one-to-one")
+})

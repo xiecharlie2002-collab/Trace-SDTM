@@ -1,0 +1,9 @@
+STUDY,PATNUM,INSTANCE,VTLD,VSTIM,SUBPOS,HEIGHT,HEIGHTU,WEIGHT,WEIGHTU,TEMP,TEMPU,SYS_BP,SYS_BPU,DIA_BP,DIA_BPU,PULSE,PULSEU
+TRACE002,701-2001,Screening 1,20-Dec-2024,09:00,Supine,70,in,180,lb,98.6,F,122,mmHg,78,mmHg,64,beats/min
+TRACE002,701-2001,Week 2,19-Jan-2025,09:15,Sitting,,,81.2,kg,37.1,C,120,mmHg,76,mmHg,62,beats/min
+TRACE002,701-2002,Screening 1,21-Dec-2024,10:00,Sitting,181,cm,86,kg,36.5,C,130,mmHg,82,mmHg,72,beats/min
+TRACE002,701-2002,Week 2,19-Jan-2025,10:10,Sitting,,,188,lb,98.2,F,126,mmHg,80,mmHg,70,beats/min
+TRACE002,702-2003,Screening 1,22-Dec-2024,08:30,Standing,62.6,in,132,lb,99.1,F,116,mmHg,74,mmHg,68,beats/min
+TRACE002,702-2003,Week 2,20-Jan-2025,08:45,Standing,,,60.4,kg,37.0,C,118,mmHg,75,mmHg,67,beats/min
+TRACE002,702-2004,Screening 1,23-Dec-2024,11:00,Supine,174,cm,92,kg,36.8,C,138,mmHg,88,mmHg,76,beats/min
+TRACE002,702-2004,Week 2,20-Jan-2025,11:20,Supine,,,200,lb,99.0,F,134,mmHg,84,mmHg,74,beats/min

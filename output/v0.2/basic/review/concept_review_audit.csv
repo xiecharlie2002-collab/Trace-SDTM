@@ -1,0 +1,19 @@
+concept_id,target_domain,form_name,required,selected_rank,recommendation_score,model_status,decision,review_comment
+AE_CORE,AE,Adverse Events,TRUE,1,1,proposed,accept,专家金标准种子，仅用于离线演示。
+AE_DATES,AE,Adverse Events,TRUE,1,1,proposed,accept,专家金标准种子，仅用于离线演示。
+AE_REL_OUTCOME,AE,Adverse Events,TRUE,1,1,proposed,accept,专家金标准种子，仅用于离线演示。
+AE_SAFETY,AE,Adverse Events,TRUE,1,1,proposed,accept,专家金标准种子，仅用于离线演示。
+AE_SEQUENCE,AE,Adverse Events,TRUE,1,1,proposed,accept,专家金标准种子，仅用于离线演示。
+AE_TERMS,AE,Adverse Events,TRUE,1,1,proposed,accept,专家金标准种子，仅用于离线演示。
+DM_CORE,DM,Demographics,TRUE,1,1,proposed,accept,专家金标准种子，仅用于离线演示。
+DM_DATES,DM,Demographics,TRUE,1,1,proposed,accept,专家金标准种子，仅用于离线演示。
+DM_DEMOGRAPHICS,DM,Demographics,TRUE,1,1,proposed,accept,专家金标准种子，仅用于离线演示。
+DM_TREATMENT,DM,Demographics,TRUE,1,1,proposed,accept,专家金标准种子，仅用于离线演示。
+VS_CORE,VS,Vital Signs,TRUE,1,1,proposed,accept,专家金标准种子，仅用于离线演示。
+VS_DIABP,VS,Vital Signs,TRUE,1,1,proposed,accept,专家金标准种子，仅用于离线演示。
+VS_HEIGHT,VS,Vital Signs,TRUE,1,1,proposed,accept,专家金标准种子，仅用于离线演示。
+VS_POST_DERIVATIONS,VS,Vital Signs,TRUE,1,1,proposed,accept,专家金标准种子，仅用于离线演示。
+VS_PULSE,VS,Vital Signs,TRUE,1,1,proposed,accept,专家金标准种子，仅用于离线演示。
+VS_SYSBP,VS,Vital Signs,TRUE,1,1,proposed,accept,专家金标准种子，仅用于离线演示。
+VS_TEMP,VS,Vital Signs,TRUE,1,1,proposed,accept,专家金标准种子，仅用于离线演示。
+VS_WEIGHT,VS,Vital Signs,TRUE,1,1,proposed,accept,专家金标准种子，仅用于离线演示。

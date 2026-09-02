@@ -1,0 +1,812 @@
+[
+  {
+    "concept_id": "DM_CORE",
+    "candidate_rank": 1,
+    "target_domain": "DM",
+    "categories": ["direct_assignment", "field_combination"],
+    "steps": [
+      {
+        "transform_id": "assign_no_ct",
+        "source_keys": "dm_subject.STUDY",
+        "target_variables": "STUDYID",
+        "parameters": {}
+      },
+      {
+        "transform_id": "hardcode_no_ct",
+        "source_keys": [],
+        "target_variables": "DOMAIN",
+        "parameters": {
+          "value": "DM"
+        }
+      },
+      {
+        "transform_id": "derive_usubjid",
+        "source_keys": ["dm_subject.STUDY", "dm_subject.PATNUM"],
+        "target_variables": "USUBJID",
+        "parameters": {
+          "separator": "-"
+        }
+      },
+      {
+        "transform_id": "assign_no_ct",
+        "source_keys": "dm_subject.PATNUM",
+        "target_variables": "SUBJID",
+        "parameters": {}
+      },
+      {
+        "transform_id": "extract_delimited_part",
+        "source_keys": "dm_subject.PATNUM",
+        "target_variables": "SITEID",
+        "parameters": {
+          "separator": "-",
+          "position": 1
+        }
+      }
+    ],
+    "recommendation_score": 1,
+    "reason": "专家金标准种子。",
+    "uncertainties": "不是真实模型结果，不能用于评价模型准确率。",
+    "status": "proposed",
+    "review_required": true,
+    "provenance": "reference_seed",
+    "group_id": "dm_connected_01"
+  },
+  {
+    "concept_id": "DM_REFERENCE_START",
+    "candidate_rank": 1,
+    "target_domain": "DM",
+    "categories": "source_integration",
+    "steps": [
+      {
+        "transform_id": "derive_reference_datetime",
+        "source_keys": ["ex_a_raw.EXSTDAT", "ex_a_raw.EXSTTIM", "ex_b_raw.DOSE_DATE", "ex_b_raw.DOSE_TIME"],
+        "target_variables": "RFSTDTC",
+        "parameters": {
+          "selection": "min",
+          "subject_keys": "PATNUM",
+          "sources": [
+            {
+              "dataset": "ex_a_raw",
+              "date_variable": "EXSTDAT",
+              "time_variable": "EXSTTIM",
+              "date_formats": "m/d/y",
+              "time_formats": "H:M"
+            },
+            {
+              "dataset": "ex_b_raw",
+              "date_variable": "DOSE_DATE",
+              "time_variable": "DOSE_TIME",
+              "date_formats": "dd-mmm-yyyy",
+              "time_formats": "H:M"
+            }
+          ]
+        }
+      }
+    ],
+    "recommendation_score": 1,
+    "reason": "专家金标准种子。",
+    "uncertainties": "不是真实模型结果，不能用于评价模型准确率。",
+    "status": "proposed",
+    "review_required": true,
+    "provenance": "reference_seed",
+    "group_id": "dm_connected_01"
+  },
+  {
+    "concept_id": "DM_CONSENT",
+    "candidate_rank": 1,
+    "target_domain": "DM",
+    "categories": "date_time_conversion",
+    "steps": [
+      {
+        "transform_id": "to_iso8601_date",
+        "source_keys": "dm_subject.IC_DT",
+        "target_variables": "RFICDTC",
+        "parameters": {
+          "formats": "m/d/y"
+        }
+      }
+    ],
+    "recommendation_score": 1,
+    "reason": "专家金标准种子。",
+    "uncertainties": "不是真实模型结果，不能用于评价模型准确率。",
+    "status": "proposed",
+    "review_required": true,
+    "provenance": "reference_seed",
+    "group_id": "dm_connected_01"
+  },
+  {
+    "concept_id": "DM_DEMOGRAPHICS",
+    "candidate_rank": 1,
+    "target_domain": "DM",
+    "categories": ["direct_assignment", "controlled_terminology"],
+    "steps": [
+      {
+        "transform_id": "assign_no_ct",
+        "source_keys": "dm_subject.AGE",
+        "target_variables": "AGE",
+        "parameters": {}
+      },
+      {
+        "transform_id": "hardcode_ct",
+        "source_keys": [],
+        "target_variables": "AGEU",
+        "parameters": {
+          "value": "YEARS",
+          "codelist_id": "AGEU"
+        }
+      },
+      {
+        "transform_id": "assign_ct",
+        "source_keys": "dm_subject.SEX",
+        "target_variables": "SEX",
+        "parameters": {
+          "codelist_id": "SEX"
+        }
+      },
+      {
+        "transform_id": "assign_ct",
+        "source_keys": "dm_subject.ETHNIC",
+        "target_variables": "ETHNIC",
+        "parameters": {
+          "codelist_id": "ETHNIC"
+        }
+      },
+      {
+        "transform_id": "assign_ct",
+        "source_keys": "dm_subject.RACE",
+        "target_variables": "RACE",
+        "parameters": {
+          "codelist_id": "RACE"
+        }
+      },
+      {
+        "transform_id": "assign_no_ct",
+        "source_keys": "dm_subject.COUNTRY",
+        "target_variables": "COUNTRY",
+        "parameters": {}
+      }
+    ],
+    "recommendation_score": 1,
+    "reason": "专家金标准种子。",
+    "uncertainties": "不是真实模型结果，不能用于评价模型准确率。",
+    "status": "proposed",
+    "review_required": true,
+    "provenance": "reference_seed",
+    "group_id": "dm_connected_01"
+  },
+  {
+    "concept_id": "DM_TREATMENT",
+    "candidate_rank": 1,
+    "target_domain": "DM",
+    "categories": "direct_assignment",
+    "steps": [
+      {
+        "transform_id": "assign_no_ct",
+        "source_keys": "dm_subject.PLANNED_ARMCD",
+        "target_variables": "ARMCD",
+        "parameters": {}
+      },
+      {
+        "transform_id": "assign_no_ct",
+        "source_keys": "dm_subject.PLANNED_ARM",
+        "target_variables": "ARM",
+        "parameters": {}
+      },
+      {
+        "transform_id": "assign_no_ct",
+        "source_keys": "dm_subject.ACTUAL_ARMCD",
+        "target_variables": "ACTARMCD",
+        "parameters": {}
+      },
+      {
+        "transform_id": "assign_no_ct",
+        "source_keys": "dm_subject.ACTUAL_ARM",
+        "target_variables": "ACTARM",
+        "parameters": {}
+      }
+    ],
+    "recommendation_score": 1,
+    "reason": "专家金标准种子。",
+    "uncertainties": "不是真实模型结果，不能用于评价模型准确率。",
+    "status": "proposed",
+    "review_required": true,
+    "provenance": "reference_seed",
+    "group_id": "dm_connected_01"
+  },
+  {
+    "concept_id": "AE_SOURCE_INTEGRATION",
+    "candidate_rank": 1,
+    "target_domain": "AE",
+    "categories": "source_integration",
+    "steps": [
+      {
+        "transform_id": "merge_sources",
+        "source_keys": ["ae_main.STUDY", "ae_main.PATNUM", "ae_main.AEID", "sae_detail.STUDY", "sae_detail.PATNUM", "sae_detail.AEID", "sae_detail.AESHOSP"],
+        "target_variables": [],
+        "parameters": {
+          "left_dataset": "ae_main",
+          "right_dataset": "sae_detail",
+          "output_dataset": "ae_merged",
+          "by": {
+            "STUDY": "STUDY",
+            "PATNUM": "PATNUM",
+            "AEID": "AEID"
+          },
+          "relationship": "one-to-one",
+          "join_type": "left",
+          "select": "AESHOSP",
+          "conflict_policy": "error"
+        }
+      }
+    ],
+    "recommendation_score": 1,
+    "reason": "专家金标准种子。",
+    "uncertainties": "不是真实模型结果，不能用于评价模型准确率。",
+    "status": "proposed",
+    "review_required": true,
+    "provenance": "reference_seed",
+    "group_id": "ae_connected_01"
+  },
+  {
+    "concept_id": "AE_CORE",
+    "candidate_rank": 1,
+    "target_domain": "AE",
+    "categories": ["direct_assignment", "field_combination"],
+    "steps": [
+      {
+        "transform_id": "assign_no_ct",
+        "source_keys": "ae_merged.STUDY",
+        "target_variables": "STUDYID",
+        "parameters": {}
+      },
+      {
+        "transform_id": "hardcode_no_ct",
+        "source_keys": [],
+        "target_variables": "DOMAIN",
+        "parameters": {
+          "value": "AE"
+        }
+      },
+      {
+        "transform_id": "derive_usubjid",
+        "source_keys": ["ae_merged.STUDY", "ae_merged.PATNUM"],
+        "target_variables": "USUBJID",
+        "parameters": {
+          "separator": "-"
+        }
+      }
+    ],
+    "recommendation_score": 1,
+    "reason": "专家金标准种子。",
+    "uncertainties": "不是真实模型结果，不能用于评价模型准确率。",
+    "status": "proposed",
+    "review_required": true,
+    "provenance": "reference_seed",
+    "group_id": "ae_connected_01"
+  },
+  {
+    "concept_id": "AE_TERMS",
+    "candidate_rank": 1,
+    "target_domain": "AE",
+    "categories": ["direct_assignment", "character_normalization"],
+    "steps": [
+      {
+        "transform_id": "assign_no_ct",
+        "source_keys": "ae_merged.AETERM",
+        "target_variables": "AETERM",
+        "parameters": {}
+      },
+      {
+        "transform_id": "assign_no_ct",
+        "source_keys": "ae_merged.AEDECOD",
+        "target_variables": "AEDECOD",
+        "parameters": {}
+      },
+      {
+        "transform_id": "normalize_case",
+        "source_keys": "ae_merged.AEBODSYS",
+        "target_variables": "AEBODSYS",
+        "parameters": {
+          "case": "upper"
+        }
+      }
+    ],
+    "recommendation_score": 1,
+    "reason": "专家金标准种子。",
+    "uncertainties": "不是真实模型结果，不能用于评价模型准确率。",
+    "status": "proposed",
+    "review_required": true,
+    "provenance": "reference_seed",
+    "group_id": "ae_connected_01"
+  },
+  {
+    "concept_id": "AE_SAFETY",
+    "candidate_rank": 1,
+    "target_domain": "AE",
+    "categories": "controlled_terminology",
+    "steps": [
+      {
+        "transform_id": "assign_ct",
+        "source_keys": "ae_merged.AESEV",
+        "target_variables": "AESEV",
+        "parameters": {
+          "codelist_id": "AESEV"
+        }
+      },
+      {
+        "transform_id": "assign_ct",
+        "source_keys": "ae_merged.AESER",
+        "target_variables": "AESER",
+        "parameters": {
+          "codelist_id": "NY"
+        }
+      },
+      {
+        "transform_id": "assign_ct",
+        "source_keys": "ae_merged.AESHOSP",
+        "target_variables": "AESHOSP",
+        "parameters": {
+          "codelist_id": "NY"
+        }
+      }
+    ],
+    "recommendation_score": 1,
+    "reason": "专家金标准种子。",
+    "uncertainties": "不是真实模型结果，不能用于评价模型准确率。",
+    "status": "proposed",
+    "review_required": true,
+    "provenance": "reference_seed",
+    "group_id": "ae_connected_01"
+  },
+  {
+    "concept_id": "AE_REL_OUTCOME",
+    "candidate_rank": 1,
+    "target_domain": "AE",
+    "categories": "controlled_terminology",
+    "steps": [
+      {
+        "transform_id": "assign_ct",
+        "source_keys": "ae_merged.AEREL",
+        "target_variables": "AEREL",
+        "parameters": {
+          "codelist_id": "AEREL"
+        }
+      },
+      {
+        "transform_id": "assign_ct",
+        "source_keys": "ae_merged.AEOUTCOME",
+        "target_variables": "AEOUT",
+        "parameters": {
+          "codelist_id": "AEOUT"
+        }
+      }
+    ],
+    "recommendation_score": 1,
+    "reason": "专家金标准种子。",
+    "uncertainties": "不是真实模型结果，不能用于评价模型准确率。",
+    "status": "proposed",
+    "review_required": true,
+    "provenance": "reference_seed",
+    "group_id": "ae_connected_01"
+  },
+  {
+    "concept_id": "AE_START",
+    "candidate_rank": 1,
+    "target_domain": "AE",
+    "categories": ["date_time_conversion", "temporal_derivation"],
+    "steps": [
+      {
+        "transform_id": "to_iso8601_partial_datetime",
+        "source_keys": ["ae_merged.AESTDAT", "ae_merged.AESTTIM"],
+        "target_variables": "AESTDTC",
+        "parameters": {
+          "formats": ["dd-mmm-yyyy", "H:M"],
+          "unknown_tokens": ["UNK", "UN"]
+        }
+      },
+      {
+        "transform_id": "derive_study_day",
+        "source_keys": [],
+        "target_variables": "AESTDY",
+        "parameters": {
+          "target_date": "AESTDTC",
+          "reference_date": "RFSTDTC"
+        }
+      }
+    ],
+    "recommendation_score": 1,
+    "reason": "专家金标准种子。",
+    "uncertainties": "不是真实模型结果，不能用于评价模型准确率。",
+    "status": "proposed",
+    "review_required": true,
+    "provenance": "reference_seed",
+    "group_id": "ae_connected_01"
+  },
+  {
+    "concept_id": "AE_END",
+    "candidate_rank": 1,
+    "target_domain": "AE",
+    "categories": ["date_time_conversion", "conditional_derivation", "temporal_derivation"],
+    "steps": [
+      {
+        "transform_id": "to_iso8601_partial_datetime",
+        "source_keys": ["ae_merged.AEENDDAT", "ae_merged.AEENDTIM"],
+        "target_variables": "AEENDTC",
+        "parameters": {
+          "formats": ["dd-mmm-yyyy", "H:M"],
+          "unknown_tokens": ["UNK", "UN"]
+        }
+      },
+      {
+        "transform_id": "derive_ongoing_flag",
+        "source_keys": ["ae_merged.AEENDDAT", "ae_merged.AEONGO"],
+        "target_variables": "AEENRF",
+        "parameters": {
+          "ongoing_value": "ONGOING",
+          "affirmative_values": ["Y", "Yes"]
+        }
+      },
+      {
+        "transform_id": "derive_study_day",
+        "source_keys": [],
+        "target_variables": "AEENDY",
+        "parameters": {
+          "target_date": "AEENDTC",
+          "reference_date": "RFSTDTC"
+        }
+      }
+    ],
+    "recommendation_score": 1,
+    "reason": "专家金标准种子。",
+    "uncertainties": "不是真实模型结果，不能用于评价模型准确率。",
+    "status": "proposed",
+    "review_required": true,
+    "provenance": "reference_seed",
+    "group_id": "ae_connected_01"
+  },
+  {
+    "concept_id": "AE_SEQUENCE",
+    "candidate_rank": 1,
+    "target_domain": "AE",
+    "categories": "temporal_derivation",
+    "steps": [
+      {
+        "transform_id": "derive_sequence",
+        "source_keys": [],
+        "target_variables": "AESEQ",
+        "parameters": {
+          "record_variables": ["STUDYID", "USUBJID", "AESTDTC", "AETERM", "AEDECOD", ".SOURCE_ROW"],
+          "start_at": 1
+        }
+      }
+    ],
+    "recommendation_score": 1,
+    "reason": "专家金标准种子。",
+    "uncertainties": "不是真实模型结果，不能用于评价模型准确率。",
+    "status": "proposed",
+    "review_required": true,
+    "provenance": "reference_seed",
+    "group_id": "ae_connected_01"
+  },
+  {
+    "concept_id": "VS_CORE",
+    "candidate_rank": 1,
+    "target_domain": "VS",
+    "categories": ["direct_assignment", "field_combination", "date_time_conversion", "controlled_terminology", "temporal_derivation"],
+    "steps": [
+      {
+        "transform_id": "assign_no_ct",
+        "source_keys": "vs_mixed.STUDY",
+        "target_variables": "STUDYID",
+        "parameters": {}
+      },
+      {
+        "transform_id": "hardcode_no_ct",
+        "source_keys": [],
+        "target_variables": "DOMAIN",
+        "parameters": {
+          "value": "VS"
+        }
+      },
+      {
+        "transform_id": "derive_usubjid",
+        "source_keys": ["vs_mixed.STUDY", "vs_mixed.PATNUM"],
+        "target_variables": "USUBJID",
+        "parameters": {
+          "separator": "-"
+        }
+      },
+      {
+        "transform_id": "assign_no_ct",
+        "source_keys": "vs_mixed.INSTANCE",
+        "target_variables": "VISIT",
+        "parameters": {}
+      },
+      {
+        "transform_id": "to_iso8601_datetime",
+        "source_keys": ["vs_mixed.VTLD", "vs_mixed.VSTIM"],
+        "target_variables": "VSDTC",
+        "parameters": {
+          "formats": ["dd-mmm-yyyy", "H:M"],
+          "unknown_tokens": ["UNK", "UN"]
+        }
+      },
+      {
+        "transform_id": "assign_ct",
+        "source_keys": "vs_mixed.SUBPOS",
+        "target_variables": "VSPOS",
+        "parameters": {
+          "codelist_id": "VSPOS"
+        }
+      },
+      {
+        "transform_id": "derive_visitnum",
+        "source_keys": "vs_mixed.INSTANCE",
+        "target_variables": "VISITNUM",
+        "parameters": {
+          "visit_map_id": "trace_visits_v1"
+        }
+      }
+    ],
+    "recommendation_score": 1,
+    "reason": "专家金标准种子。",
+    "uncertainties": "不是真实模型结果，不能用于评价模型准确率。",
+    "status": "proposed",
+    "review_required": true,
+    "provenance": "reference_seed",
+    "group_id": "vs_connected_01"
+  },
+  {
+    "concept_id": "VS_HEIGHT",
+    "candidate_rank": 1,
+    "target_domain": "VS",
+    "categories": ["record_transposition", "unit_conversion"],
+    "steps": [
+      {
+        "transform_id": "transpose_findings",
+        "source_keys": ["vs_mixed.HEIGHT", "vs_mixed.HEIGHTU"],
+        "target_variables": ["VSTESTCD", "VSTEST", "VSORRES", "VSORRESU"],
+        "parameters": {
+          "test_code": "HEIGHT",
+          "test_name": "Height",
+          "original_unit": null,
+          "unit_source": "HEIGHTU"
+        }
+      },
+      {
+        "transform_id": "standardize_unit",
+        "source_keys": ["vs_mixed.HEIGHT", "vs_mixed.HEIGHTU"],
+        "target_variables": ["VSSTRESC", "VSSTRESN", "VSSTRESU"],
+        "parameters": {
+          "conversion_set_id": "vs_standard_v1",
+          "target_unit": "cm"
+        }
+      }
+    ],
+    "recommendation_score": 1,
+    "reason": "专家金标准种子。",
+    "uncertainties": "不是真实模型结果，不能用于评价模型准确率。",
+    "status": "proposed",
+    "review_required": true,
+    "provenance": "reference_seed",
+    "group_id": "vs_connected_01"
+  },
+  {
+    "concept_id": "VS_WEIGHT",
+    "candidate_rank": 1,
+    "target_domain": "VS",
+    "categories": ["record_transposition", "unit_conversion"],
+    "steps": [
+      {
+        "transform_id": "transpose_findings",
+        "source_keys": ["vs_mixed.WEIGHT", "vs_mixed.WEIGHTU"],
+        "target_variables": ["VSTESTCD", "VSTEST", "VSORRES", "VSORRESU"],
+        "parameters": {
+          "test_code": "WEIGHT",
+          "test_name": "Weight",
+          "original_unit": null,
+          "unit_source": "WEIGHTU"
+        }
+      },
+      {
+        "transform_id": "standardize_unit",
+        "source_keys": ["vs_mixed.WEIGHT", "vs_mixed.WEIGHTU"],
+        "target_variables": ["VSSTRESC", "VSSTRESN", "VSSTRESU"],
+        "parameters": {
+          "conversion_set_id": "vs_standard_v1",
+          "target_unit": "kg"
+        }
+      }
+    ],
+    "recommendation_score": 1,
+    "reason": "专家金标准种子。",
+    "uncertainties": "不是真实模型结果，不能用于评价模型准确率。",
+    "status": "proposed",
+    "review_required": true,
+    "provenance": "reference_seed",
+    "group_id": "vs_connected_01"
+  },
+  {
+    "concept_id": "VS_TEMP",
+    "candidate_rank": 1,
+    "target_domain": "VS",
+    "categories": ["record_transposition", "unit_conversion"],
+    "steps": [
+      {
+        "transform_id": "transpose_findings",
+        "source_keys": ["vs_mixed.TEMP", "vs_mixed.TEMPU"],
+        "target_variables": ["VSTESTCD", "VSTEST", "VSORRES", "VSORRESU"],
+        "parameters": {
+          "test_code": "TEMP",
+          "test_name": "Temperature",
+          "original_unit": null,
+          "unit_source": "TEMPU"
+        }
+      },
+      {
+        "transform_id": "standardize_unit",
+        "source_keys": ["vs_mixed.TEMP", "vs_mixed.TEMPU"],
+        "target_variables": ["VSSTRESC", "VSSTRESN", "VSSTRESU"],
+        "parameters": {
+          "conversion_set_id": "vs_standard_v1",
+          "target_unit": "C"
+        }
+      }
+    ],
+    "recommendation_score": 1,
+    "reason": "专家金标准种子。",
+    "uncertainties": "不是真实模型结果，不能用于评价模型准确率。",
+    "status": "proposed",
+    "review_required": true,
+    "provenance": "reference_seed",
+    "group_id": "vs_connected_01"
+  },
+  {
+    "concept_id": "VS_SYSBP",
+    "candidate_rank": 1,
+    "target_domain": "VS",
+    "categories": ["record_transposition", "unit_conversion"],
+    "steps": [
+      {
+        "transform_id": "transpose_findings",
+        "source_keys": ["vs_mixed.SYS_BP", "vs_mixed.SYS_BPU"],
+        "target_variables": ["VSTESTCD", "VSTEST", "VSORRES", "VSORRESU"],
+        "parameters": {
+          "test_code": "SYSBP",
+          "test_name": "Systolic Blood Pressure",
+          "original_unit": null,
+          "unit_source": "SYS_BPU"
+        }
+      },
+      {
+        "transform_id": "standardize_unit",
+        "source_keys": ["vs_mixed.SYS_BP", "vs_mixed.SYS_BPU"],
+        "target_variables": ["VSSTRESC", "VSSTRESN", "VSSTRESU"],
+        "parameters": {
+          "conversion_set_id": "vs_standard_v1",
+          "target_unit": "mmHg"
+        }
+      }
+    ],
+    "recommendation_score": 1,
+    "reason": "专家金标准种子。",
+    "uncertainties": "不是真实模型结果，不能用于评价模型准确率。",
+    "status": "proposed",
+    "review_required": true,
+    "provenance": "reference_seed",
+    "group_id": "vs_connected_01"
+  },
+  {
+    "concept_id": "VS_DIABP",
+    "candidate_rank": 1,
+    "target_domain": "VS",
+    "categories": ["record_transposition", "unit_conversion"],
+    "steps": [
+      {
+        "transform_id": "transpose_findings",
+        "source_keys": ["vs_mixed.DIA_BP", "vs_mixed.DIA_BPU"],
+        "target_variables": ["VSTESTCD", "VSTEST", "VSORRES", "VSORRESU"],
+        "parameters": {
+          "test_code": "DIABP",
+          "test_name": "Diastolic Blood Pressure",
+          "original_unit": null,
+          "unit_source": "DIA_BPU"
+        }
+      },
+      {
+        "transform_id": "standardize_unit",
+        "source_keys": ["vs_mixed.DIA_BP", "vs_mixed.DIA_BPU"],
+        "target_variables": ["VSSTRESC", "VSSTRESN", "VSSTRESU"],
+        "parameters": {
+          "conversion_set_id": "vs_standard_v1",
+          "target_unit": "mmHg"
+        }
+      }
+    ],
+    "recommendation_score": 1,
+    "reason": "专家金标准种子。",
+    "uncertainties": "不是真实模型结果，不能用于评价模型准确率。",
+    "status": "proposed",
+    "review_required": true,
+    "provenance": "reference_seed",
+    "group_id": "vs_connected_01"
+  },
+  {
+    "concept_id": "VS_PULSE",
+    "candidate_rank": 1,
+    "target_domain": "VS",
+    "categories": ["record_transposition", "unit_conversion"],
+    "steps": [
+      {
+        "transform_id": "transpose_findings",
+        "source_keys": ["vs_mixed.PULSE", "vs_mixed.PULSEU"],
+        "target_variables": ["VSTESTCD", "VSTEST", "VSORRES", "VSORRESU"],
+        "parameters": {
+          "test_code": "PULSE",
+          "test_name": "Pulse Rate",
+          "original_unit": null,
+          "unit_source": "PULSEU"
+        }
+      },
+      {
+        "transform_id": "standardize_unit",
+        "source_keys": ["vs_mixed.PULSE", "vs_mixed.PULSEU"],
+        "target_variables": ["VSSTRESC", "VSSTRESN", "VSSTRESU"],
+        "parameters": {
+          "conversion_set_id": "vs_standard_v1",
+          "target_unit": "beats/min"
+        }
+      }
+    ],
+    "recommendation_score": 1,
+    "reason": "专家金标准种子。",
+    "uncertainties": "不是真实模型结果，不能用于评价模型准确率。",
+    "status": "proposed",
+    "review_required": true,
+    "provenance": "reference_seed",
+    "group_id": "vs_connected_01"
+  },
+  {
+    "concept_id": "VS_POST_DERIVATIONS",
+    "candidate_rank": 1,
+    "target_domain": "VS",
+    "categories": "temporal_derivation",
+    "steps": [
+      {
+        "transform_id": "derive_sequence",
+        "source_keys": [],
+        "target_variables": "VSSEQ",
+        "parameters": {
+          "record_variables": ["STUDYID", "USUBJID", "VSDTC", "VSTESTCD", "VSPOS", "VISITNUM", ".SOURCE_ROW"],
+          "start_at": 1
+        }
+      },
+      {
+        "transform_id": "derive_study_day",
+        "source_keys": [],
+        "target_variables": "VSDY",
+        "parameters": {
+          "target_date": "VSDTC",
+          "reference_date": "RFSTDTC"
+        }
+      },
+      {
+        "transform_id": "derive_baseline_flag",
+        "source_keys": [],
+        "target_variables": "VSBLFL",
+        "parameters": {
+          "reference_date": "RFSTDTC",
+          "baseline_visits": "Screening 1",
+          "baseline_timepoints": []
+        }
+      }
+    ],
+    "recommendation_score": 1,
+    "reason": "专家金标准种子。",
+    "uncertainties": "不是真实模型结果，不能用于评价模型准确率。",
+    "status": "proposed",
+    "review_required": true,
+    "provenance": "reference_seed",
+    "group_id": "vs_connected_01"
+  }
+]

@@ -1,0 +1,164 @@
+[
+  {
+    "concept_id": "DM_CORE",
+    "categories": ["direct_assignment", "field_combination"],
+    "classification_score": 1,
+    "evidence": "专家金标准种子。",
+    "uncertainties": "不是真实模型结果。",
+    "status": "proposed",
+    "group_id": "dm_connected_01"
+  },
+  {
+    "concept_id": "DM_DATES",
+    "categories": "date_time_conversion",
+    "classification_score": 1,
+    "evidence": "专家金标准种子。",
+    "uncertainties": "不是真实模型结果。",
+    "status": "proposed",
+    "group_id": "dm_connected_01"
+  },
+  {
+    "concept_id": "DM_DEMOGRAPHICS",
+    "categories": ["direct_assignment", "controlled_terminology"],
+    "classification_score": 1,
+    "evidence": "专家金标准种子。",
+    "uncertainties": "不是真实模型结果。",
+    "status": "proposed",
+    "group_id": "dm_connected_01"
+  },
+  {
+    "concept_id": "DM_TREATMENT",
+    "categories": "direct_assignment",
+    "classification_score": 1,
+    "evidence": "专家金标准种子。",
+    "uncertainties": "不是真实模型结果。",
+    "status": "proposed",
+    "group_id": "dm_connected_01"
+  },
+  {
+    "concept_id": "AE_CORE",
+    "categories": ["direct_assignment", "field_combination"],
+    "classification_score": 1,
+    "evidence": "专家金标准种子。",
+    "uncertainties": "不是真实模型结果。",
+    "status": "proposed",
+    "group_id": "ae_connected_01"
+  },
+  {
+    "concept_id": "AE_TERMS",
+    "categories": ["direct_assignment", "character_normalization"],
+    "classification_score": 1,
+    "evidence": "专家金标准种子。",
+    "uncertainties": "不是真实模型结果。",
+    "status": "proposed",
+    "group_id": "ae_connected_01"
+  },
+  {
+    "concept_id": "AE_SAFETY",
+    "categories": "controlled_terminology",
+    "classification_score": 1,
+    "evidence": "专家金标准种子。",
+    "uncertainties": "不是真实模型结果。",
+    "status": "proposed",
+    "group_id": "ae_connected_01"
+  },
+  {
+    "concept_id": "AE_REL_OUTCOME",
+    "categories": "controlled_terminology",
+    "classification_score": 1,
+    "evidence": "专家金标准种子。",
+    "uncertainties": "不是真实模型结果。",
+    "status": "proposed",
+    "group_id": "ae_connected_01"
+  },
+  {
+    "concept_id": "AE_DATES",
+    "categories": ["date_time_conversion", "conditional_derivation", "temporal_derivation"],
+    "classification_score": 1,
+    "evidence": "专家金标准种子。",
+    "uncertainties": "不是真实模型结果。",
+    "status": "proposed",
+    "group_id": "ae_connected_01"
+  },
+  {
+    "concept_id": "AE_SEQUENCE",
+    "categories": "temporal_derivation",
+    "classification_score": 1,
+    "evidence": "专家金标准种子。",
+    "uncertainties": "不是真实模型结果。",
+    "status": "proposed",
+    "group_id": "ae_connected_01"
+  },
+  {
+    "concept_id": "VS_CORE",
+    "categories": ["direct_assignment", "field_combination", "date_time_conversion", "controlled_terminology", "temporal_derivation"],
+    "classification_score": 1,
+    "evidence": "专家金标准种子。",
+    "uncertainties": "不是真实模型结果。",
+    "status": "proposed",
+    "group_id": "vs_connected_01"
+  },
+  {
+    "concept_id": "VS_HEIGHT",
+    "categories": ["record_transposition", "unit_conversion"],
+    "classification_score": 1,
+    "evidence": "专家金标准种子。",
+    "uncertainties": "不是真实模型结果。",
+    "status": "proposed",
+    "group_id": "vs_connected_01"
+  },
+  {
+    "concept_id": "VS_WEIGHT",
+    "categories": ["record_transposition", "unit_conversion"],
+    "classification_score": 1,
+    "evidence": "专家金标准种子。",
+    "uncertainties": "不是真实模型结果。",
+    "status": "proposed",
+    "group_id": "vs_connected_01"
+  },
+  {
+    "concept_id": "VS_TEMP",
+    "categories": ["record_transposition", "unit_conversion"],
+    "classification_score": 1,
+    "evidence": "专家金标准种子。",
+    "uncertainties": "不是真实模型结果。",
+    "status": "proposed",
+    "group_id": "vs_connected_01"
+  },
+  {
+    "concept_id": "VS_SYSBP",
+    "categories": ["record_transposition", "unit_conversion"],
+    "classification_score": 1,
+    "evidence": "专家金标准种子。",
+    "uncertainties": "不是真实模型结果。",
+    "status": "proposed",
+    "group_id": "vs_connected_01"
+  },
+  {
+    "concept_id": "VS_DIABP",
+    "categories": ["record_transposition", "unit_conversion"],
+    "classification_score": 1,
+    "evidence": "专家金标准种子。",
+    "uncertainties": "不是真实模型结果。",
+    "status": "proposed",
+    "group_id": "vs_connected_01"
+  },
+  {
+    "concept_id": "VS_PULSE",
+    "categories": ["record_transposition", "unit_conversion"],
+    "classification_score": 1,
+    "evidence": "专家金标准种子。",
+    "uncertainties": "不是真实模型结果。",
+    "status": "proposed",
+    "group_id": "vs_connected_01"
+  },
+  {
+    "concept_id": "VS_POST_DERIVATIONS",
+    "categories": "temporal_derivation",
+    "classification_score": 1,
+    "evidence": "专家金标准种子。",
+    "uncertainties": "不是真实模型结果。",
+    "status": "proposed",
+    "group_id": "vs_connected_01"
+  }
+]

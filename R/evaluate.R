@@ -138,3 +138,173 @@ evaluate_recommendations <- function(config = load_project_config()) {
     summary = summary
   ))
 }
+
+# -----------------------------------------------------------------------------
+# 0.2：分别评价类别、函数、目标变量集合、参数和完整函数链。
+
+plan_signature_v02 <- function(steps, registry) {
+  index <- registry_index(registry)
+  list(
+    categories = unique(vapply(steps, function(step) index[[step$transform_id]]$category, character(1))),
+    functions = vapply(steps, `[[`, character(1), "transform_id"),
+    sources = lapply(steps, function(step) unname(unlist(step$source_keys %||% character(), use.names = FALSE))),
+    targets = unique(unlist(lapply(steps, step_target_variables), use.names = FALSE)),
+    parameters = lapply(steps, function(step) step$parameters %||% list()),
+    exact = canonical_steps_v02(steps)
+  )
+}
+
+concept_complexity_v02 <- function(steps, registry) {
+  categories <- plan_signature_v02(steps, registry)$categories
+  advanced <- c("source_integration", "record_transposition", "unit_conversion")
+  if (any(categories %in% advanced) || length(steps) >= 4L) return("complex")
+  if (length(steps) >= 2L || any(categories %in% c("datetime_conversion", "temporal_derivation"))) return("moderate")
+  "simple"
+}
+
+candidate_evaluation_rows_v02 <- function(candidates, specification, gold, registry) {
+  concepts <- concept_lookup(specification)
+  purrr::pmap_dfr(candidates, function(concept_id, candidate_rank, target_domain, categories,
+                                      plan_json, recommendation_score, reason, uncertainties,
+                                      status, review_required, provenance, group_id, ...) {
+    concept <- concepts[[concept_id]]
+    proposed <- from_json_text(plan_json)$steps %||% list()
+    expected <- gold_plan_steps(gold$plans[[concept_id]])
+    proposed_signature <- plan_signature_v02(proposed, registry)
+    gold_signature <- plan_signature_v02(expected, registry)
+    missing_targets <- setdiff(gold_signature$targets, proposed_signature$targets)
+    extra_targets <- setdiff(proposed_signature$targets, gold_signature$targets)
+    target_correct <- length(missing_targets) == 0L && length(extra_targets) == 0L
+    function_correct <- identical(proposed_signature$functions, gold_signature$functions)
+    source_correct <- identical(proposed_signature$sources, gold_signature$sources)
+    parameter_correct <- function_correct && identical(
+      registry_json(lapply(proposed_signature$parameters, sort_json_object)),
+      registry_json(lapply(gold_signature$parameters, sort_json_object))
+    )
+    tibble::tibble(
+      concept_id = concept_id,
+      candidate_rank = as.integer(candidate_rank),
+      target_domain = target_domain,
+      form_name = concept$form_name,
+      complexity = concept_complexity_v02(expected, registry),
+      gold_categories = paste(gold_signature$categories, collapse = " | "),
+      proposed_categories = paste(proposed_signature$categories, collapse = " | "),
+      category_chain_correct = identical(proposed_signature$categories, gold_signature$categories),
+      function_chain_correct = function_correct,
+      source_chain_correct = source_correct,
+      target_set_complete = target_correct,
+      missing_targets = paste(missing_targets, collapse = " | "),
+      extra_targets = paste(extra_targets, collapse = " | "),
+      parameter_values_correct = parameter_correct,
+      complete_plan_correct = all(c(function_correct, source_correct, target_correct, parameter_correct)),
+      parameter_schema_valid = TRUE,
+      recommendation_score = as.numeric(recommendation_score),
+      status = status,
+      provenance = provenance,
+      group_id = group_id
+    )
+  })
+}
+
+evaluate_recommendations <- function(config = load_project_config()) {
+  candidate_path <- trace_path(config$paths$recommendation_dir, "candidate_plans.csv")
+  classification_path <- trace_path(config$paths$recommendation_dir, "category_classifications.csv")
+  if (!file.exists(candidate_path) || !file.exists(classification_path)) {
+    summary <- list(status = "not_available", reason = "尚未生成 0.2 候选方案。")
+    write_json(summary, trace_path(config$paths$recommendation_dir, "mapping_evaluation_summary.json"))
+    return(invisible(list(detail = tibble::tibble(), summary = summary)))
+  }
+  candidates <- readr::read_csv(candidate_path, show_col_types = FALSE)
+  classifications <- readr::read_csv(classification_path, show_col_types = FALSE)
+  specification <- load_mapping_template(config)
+  gold <- load_gold_specification(config)
+  registry <- load_transform_registry(config)
+  detail <- candidate_evaluation_rows_v02(candidates, specification, gold, registry)
+  top1 <- dplyr::filter(detail, candidate_rank == 1L)
+  concept_ids <- vapply(specification$concepts, `[[`, character(1), "concept_id")
+  top3 <- detail |>
+    dplyr::filter(candidate_rank <= 3L) |>
+    dplyr::group_by(concept_id) |>
+    dplyr::summarise(
+      category_top3_hit = any(category_chain_correct),
+      function_top3_hit = any(function_chain_correct),
+      complete_plan_top3_hit = any(complete_plan_correct),
+      .groups = "drop"
+    ) |>
+    dplyr::right_join(tibble::tibble(concept_id = concept_ids), by = "concept_id") |>
+    dplyr::mutate(dplyr::across(dplyr::ends_with("_hit"), ~ tidyr::replace_na(.x, FALSE)))
+
+  gold_categories <- purrr::map_dfr(specification$concepts, function(concept) tibble::tibble(
+    concept_id = concept$concept_id,
+    gold_categories = paste(plan_signature_v02(gold_plan_steps(gold$plans[[concept$concept_id]]), registry)$categories, collapse = " | ")
+  ))
+  class_detail <- dplyr::left_join(classifications, gold_categories, by = "concept_id") |>
+    dplyr::mutate(classification_correct = categories == gold_categories)
+  review_path <- trace_path(config$paths$review_dir, "concept_review_audit.csv")
+  review <- if (file.exists(review_path)) readr::read_csv(review_path, show_col_types = FALSE) else NULL
+  model_run <- read_optional_json(trace_path(config$paths$recommendation_dir, "model_run.json"), list(status = "unknown", provenance = "unknown"))
+  valid_scores <- !is.na(candidates$recommendation_score) & candidates$recommendation_score >= 0 & candidates$recommendation_score <= 1
+
+  summary <- list(
+    status = model_run$status %||% "unknown",
+    provenance = model_run$provenance %||% "unknown",
+    evaluated_concepts = length(concept_ids),
+    concepts_with_candidate = length(unique(candidates$concept_id[candidates$candidate_rank == 1L])),
+    candidate_count = nrow(candidates),
+    stage1_category_correct = sum(class_detail$classification_correct, na.rm = TRUE),
+    stage1_category_denominator = nrow(class_detail),
+    category_top1_correct = sum(top1$category_chain_correct, na.rm = TRUE),
+    category_top3_hit = sum(top3$category_top3_hit, na.rm = TRUE),
+    function_correct_given_category_correct = sum(top1$function_chain_correct & top1$category_chain_correct, na.rm = TRUE),
+    function_given_category_denominator = sum(top1$category_chain_correct, na.rm = TRUE),
+    target_set_complete = sum(top1$target_set_complete, na.rm = TRUE),
+    target_set_denominator = nrow(top1),
+    target_omission_concepts = sum(nzchar(top1$missing_targets)),
+    target_overreport_concepts = sum(nzchar(top1$extra_targets)),
+    complete_plan_top1_correct = sum(top1$complete_plan_correct, na.rm = TRUE),
+    complete_plan_top3_hit = sum(top3$complete_plan_top3_hit, na.rm = TRUE),
+    parameter_schema_first_pass = sum(detail$parameter_schema_valid),
+    parameter_schema_denominator = nrow(detail),
+    score_in_unit_interval = sum(valid_scores),
+    score_denominator = length(valid_scores),
+    accepted = if (is.null(review)) NA_integer_ else sum(review$decision == "accept"),
+    modified = if (is.null(review)) NA_integer_ else sum(review$decision == "modify"),
+    rejected = if (is.null(review)) NA_integer_ else sum(review$decision == "reject"),
+    needs_information = if (is.null(review)) NA_integer_ else sum(review$decision == "needs_information"),
+    disclaimer = if (identical(model_run$provenance, "reference_seed")) "参考种子不是模型运行，指标仅验证评价程序。" else "指标来自实际模型运行及当前金标准。"
+  )
+  by_domain <- top1 |>
+    dplyr::group_by(target_domain) |>
+    dplyr::summarise(
+      category_correct = sum(category_chain_correct), function_correct = sum(function_chain_correct),
+      target_complete = sum(target_set_complete), complete_plan_correct = sum(complete_plan_correct),
+      total = dplyr::n(), .groups = "drop"
+    )
+  by_form <- top1 |>
+    dplyr::group_by(target_domain, form_name) |>
+    dplyr::summarise(complete_plan_correct = sum(complete_plan_correct), total = dplyr::n(), .groups = "drop")
+  by_complexity <- top1 |>
+    dplyr::group_by(complexity) |>
+    dplyr::summarise(complete_plan_correct = sum(complete_plan_correct), total = dplyr::n(), .groups = "drop")
+  by_category <- top1 |>
+    tidyr::separate_rows(gold_categories, sep = " \\| ") |>
+    dplyr::group_by(gold_categories) |>
+    dplyr::summarise(function_correct = sum(function_chain_correct), complete_plan_correct = sum(complete_plan_correct), total = dplyr::n(), .groups = "drop")
+  advanced_features <- top1 |>
+    dplyr::filter(grepl("source_integration|datetime_conversion|unit_conversion|record_transposition", gold_categories)) |>
+    dplyr::select(concept_id, target_domain, gold_categories, function_chain_correct, target_set_complete, complete_plan_correct)
+
+  write_csv(detail, trace_path(config$paths$recommendation_dir, "mapping_evaluation.csv"))
+  write_csv(class_detail, trace_path(config$paths$recommendation_dir, "classification_evaluation.csv"))
+  write_csv(by_domain, trace_path(config$paths$recommendation_dir, "mapping_evaluation_by_domain.csv"))
+  write_csv(by_form, trace_path(config$paths$recommendation_dir, "mapping_evaluation_by_form.csv"))
+  write_csv(by_complexity, trace_path(config$paths$recommendation_dir, "mapping_evaluation_by_complexity.csv"))
+  write_csv(by_category, trace_path(config$paths$recommendation_dir, "mapping_evaluation_by_category.csv"))
+  write_csv(advanced_features, trace_path(config$paths$recommendation_dir, "mapping_evaluation_advanced_features.csv"))
+  write_json(summary, trace_path(config$paths$recommendation_dir, "mapping_evaluation_summary.json"))
+  invisible(list(
+    detail = detail, classifications = class_detail, by_domain = by_domain, by_form = by_form,
+    by_complexity = by_complexity, by_category = by_category, advanced_features = advanced_features,
+    summary = summary
+  ))
+}

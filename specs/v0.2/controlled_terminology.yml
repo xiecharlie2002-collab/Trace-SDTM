@@ -1,0 +1,62 @@
+version: '1.0.0'
+codelists:
+  AGEU:
+    YEARS: YEARS
+  SEX:
+    Female: F
+    Male: M
+    Unknown: U
+    Undifferentiated: UNDIFFERENTIATED
+  ETHNIC:
+    Hispanic or Latino: HISPANIC OR LATINO
+    Not Hispanic or Latino: NOT HISPANIC OR LATINO
+    Not Reported: NOT REPORTED
+    Unknown: UNKNOWN
+  RACE:
+    White: WHITE
+    Asian: ASIAN
+    Black or African American: BLACK OR AFRICAN AMERICAN
+    American Indian or Alaska Native: AMERICAN INDIAN OR ALASKA NATIVE
+    Multiple: MULTIPLE
+    Not Reported: NOT REPORTED
+    Unknown: UNKNOWN
+  NY:
+    'Yes': 'Y'
+    'No': 'N'
+    Y: 'Y'
+    N: 'N'
+  AESEV:
+    Mild Adverse Event: MILD
+    Moderate Adverse Event: MODERATE
+    Severe Adverse Event: SEVERE
+    MILD: MILD
+    MODERATE: MODERATE
+    SEVERE: SEVERE
+  AEREL:
+    Probably Related: PROBABLE
+    Possibly Related: POSSIBLE
+    Unlikely Related: UNLIKELY
+    Not Related: NOT RELATED
+  AEOUT:
+    Recovered/Resolved: RECOVERED/RESOLVED
+    Recovering/Resolving: RECOVERING/RESOLVING
+    Not Recovered/not Resolved: NOT RECOVERED/NOT RESOLVED
+    Recovered/Resolved with Sequelae: RECOVERED/RESOLVED WITH SEQUELAE
+    Fatal: FATAL
+    Unknown: UNKNOWN
+  AEENRF:
+    ONGOING: ONGOING
+  VSPOS:
+    Supine: SUPINE
+    Sitting: SITTING
+    Standing: STANDING
+    SUPINE: SUPINE
+    SITTING: SITTING
+    STANDING: STANDING
+  VSBLFL:
+    Y: Y
+visit_maps:
+  trace_visits_v1:
+    Screening 1: -1
+    Baseline: 0
+    Week 2: 2

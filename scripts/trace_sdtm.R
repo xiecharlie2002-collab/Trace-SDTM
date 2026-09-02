@@ -15,6 +15,7 @@ if (!renv_active && dir.exists(project_library)) .libPaths(c(project_library, .l
 source_order <- c(
   "utils.R",
   "config.R",
+  "registry.R",
   "profile.R",
   "recommend.R",
   "review.R",

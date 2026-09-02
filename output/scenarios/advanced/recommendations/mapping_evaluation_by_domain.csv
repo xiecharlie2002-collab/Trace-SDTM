@@ -1,0 +1,4 @@
+target_domain,category_correct,function_correct,target_complete,complete_plan_correct,total
+AE,8,8,8,8,8
+DM,5,5,5,5,5
+VS,8,8,8,8,8

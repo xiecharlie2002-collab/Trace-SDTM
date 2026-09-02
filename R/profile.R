@@ -69,13 +69,59 @@ profile_one_dataset <- function(domain, domain_spec, config) {
 profile_sources <- function(config = load_project_config()) {
   ensure_output_directories(config)
   specification <- load_mapping_template(config)
-  dictionary <- purrr::imap_dfr(
-    specification$domains,
-    ~ profile_one_dataset(.y, .x, config)
-  )
-  dictionary <- dplyr::arrange(dictionary, source_domain, source_variable)
+  concepts <- specification$concepts %||% list()
+  dictionary <- purrr::imap_dfr(specification$source_catalog, function(source, dataset) {
+    if (isTRUE(source$derived)) return(tibble::tibble())
+    path <- trace_path(config$paths$raw_dir, source$file)
+    if (!file.exists(path)) trace_abort(sprintf("缺少原始数据：%s", path))
+    data <- read_raw_csv(path)
+    domains <- unique(vapply(Filter(function(concept) any(vapply(concept_source_refs(concept), function(ref) identical(ref$dataset, dataset), logical(1))), concepts), function(concept) concept$target_domain, character(1)))
+    purrr::map_dfr(names(data), function(variable) {
+      values <- data[[variable]]
+      observed <- unique(as.character(stats::na.omit(values)))
+      roles <- unique(unlist(lapply(concepts, function(concept) {
+        refs <- Filter(function(ref) identical(ref$dataset, dataset) && identical(ref$variable, variable), concept_source_refs(concept))
+        vapply(refs, function(ref) as.character(ref$role %||% ""), character(1))
+      })))
+      character_values <- as.character(stats::na.omit(values))
+      partial_tokens <- unique(unlist(stringr::str_extract_all(character_values, stringr::regex("UNK|\\bUN\\b", ignore_case = TRUE))))
+      formats <- character()
+      if (any(grepl("^\\d{1,2}/\\d{1,2}/\\d{4}$", character_values))) formats <- c(formats, "m/d/y_or_d/m/y")
+      if (any(grepl("^(UNK|UN|\\d{1,2})-[A-Za-z]{3}-(UNK|UN|\\d{4})$", character_values, ignore.case = TRUE))) formats <- c(formats, "dd-mmm-yyyy")
+      if (any(grepl("^\\d{4}-\\d{2}-\\d{2}", character_values))) formats <- c(formats, "y-m-d")
+      if (any(grepl("^\\d{1,2}:\\d{2}", character_values))) formats <- c(formats, "H:M")
+      tibble::tibble(
+        source_domain = paste(domains, collapse = " | "),
+        source_dataset = dataset,
+        source_variable = variable,
+        label = infer_source_label(variable),
+        data_type = class(values)[1],
+        example_values = compact_value(utils::head(observed, 5L)),
+        missing_rate = mean(is.na(values)),
+        unique_count = length(observed),
+        form_name = source$form_name,
+        grain = source$grain,
+        keys = paste(unlist(source$keys), collapse = " | "),
+        concept_roles = paste(roles[nzchar(roles)], collapse = " | "),
+        format_candidates = paste(unique(formats), collapse = " | "),
+        partial_tokens = paste(partial_tokens, collapse = " | "),
+        record_count = nrow(data)
+      )
+    })
+  })
+  dictionary <- dplyr::arrange(dictionary, source_dataset, source_variable)
   output <- trace_path(config$paths$profile_dir, "source_dictionary.csv")
   write_csv(dictionary, output)
+
+  relationships <- purrr::imap_dfr(specification$source_catalog, function(source, dataset) tibble::tibble(
+    source_dataset = dataset,
+    file = source$file %||% "",
+    derived = isTRUE(source$derived),
+    form_name = source$form_name,
+    grain = source$grain,
+    keys = paste(unlist(source$keys), collapse = " | ")
+  ))
+  write_csv(relationships, trace_path(config$paths$profile_dir, "source_relationships.csv"))
 
   summary <- list(
     generated_at = utc_now(),

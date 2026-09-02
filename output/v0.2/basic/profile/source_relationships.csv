@@ -1,0 +1,4 @@
+source_dataset,file,derived,form_name,grain,keys
+dm_raw,dm_raw.csv,FALSE,Demographics,one_record_per_subject,STUDY | PATNUM
+ae_raw,ae_raw.csv,FALSE,Adverse Events,one_record_per_event,STUDY | PATNUM
+vs_raw,vs_raw.csv,FALSE,Vital Signs,one_record_per_subject_visit,STUDY | PATNUM | INSTANCE

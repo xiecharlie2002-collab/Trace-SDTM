@@ -335,3 +335,378 @@ save_recommendations <- function(recommendations, config, source, model = NA_cha
   trace_info("已生成 %s 条候选映射，来源：%s。", nrow(recommendations), source)
   invisible(recommendations)
 }
+
+# -----------------------------------------------------------------------------
+# 0.2：临床概念分组和两阶段推荐。下列同名函数覆盖上方保留的 0.1 实现；
+# 旧实现仅用于通过 v0.1-mvp 标签复现历史结果。
+
+concept_lookup <- function(specification) {
+  stats::setNames(specification$concepts, vapply(specification$concepts, `[[`, character(1), "concept_id"))
+}
+
+gold_plan_steps <- function(plan) {
+  if (is.null(plan)) return(list())
+  plan$steps %||% plan
+}
+
+concept_context <- function(concept, specification, dictionary) {
+  keys <- vapply(concept_source_refs(concept), source_ref_key, character(1))
+  source_rows <- if (length(keys)) {
+    dplyr::filter(dictionary, paste0(source_dataset, ".", source_variable) %in% keys)
+  } else {
+    dictionary[0, , drop = FALSE]
+  }
+  datasets <- unique(vapply(concept_source_refs(concept), function(ref) as.character(ref$dataset), character(1)))
+  list(
+    concept_id = concept$concept_id,
+    target_domain = concept$target_domain,
+    form_name = concept$form_name,
+    expected_cardinality = concept$expected_cardinality,
+    required = isTRUE(concept$required),
+    depends_on = unname(unlist(concept$depends_on %||% character())),
+    source_refs = concept$source_refs %||% list(),
+    source_catalog = specification$source_catalog[intersect(datasets, names(specification$source_catalog))],
+    field_profiles = as.data.frame(source_rows)
+  )
+}
+
+recommendation_groups <- function(specification, dictionary, config = load_project_config()) {
+  concepts <- specification$concepts
+  domains <- unique(vapply(concepts, `[[`, character(1), "target_domain"))
+  groups <- list()
+  for (domain in domains) {
+    members <- Filter(function(concept) identical(concept$target_domain, domain), concepts)
+    group_id <- paste0(tolower(domain), "_connected_01")
+    payload <- lapply(members, concept_context, specification = specification, dictionary = dictionary)
+    size <- nchar(registry_json(payload), type = "bytes")
+    limit <- as.integer(config$model$max_group_characters %||% 45000L)
+    if (size > limit) {
+      trace_abort(sprintf(
+        "%s 域依赖连通组约 %s 个字符，超过当前上限 %s。为避免拆开依赖关系，已停止推荐。",
+        domain, size, limit
+      ))
+    }
+    groups[[group_id]] <- list(group_id = group_id, target_domain = domain, concepts = members, context = payload)
+  }
+  groups
+}
+
+category_catalog_for_model <- function(registry) {
+  purrr::imap(registry$categories, function(value, category) list(
+    category = category,
+    name = value$name,
+    description = value$description,
+    stage_order = value$stage_order
+  ))
+}
+
+classification_prompt_v02 <- function(group, metadata, registry, config = load_project_config()) {
+  target_meta <- metadata$domains[[group$target_domain]]$variables
+  paste(
+    "你是临床数据标准映射助手。第一阶段只判断每个临床概念需要的转换类别链，不选择具体函数。",
+    "不得发明来源字段、数据集或连接键，不得生成程序、公式、正则表达式或自由条件。",
+    "若日期格式有歧义、连接键不足、基数关系不明确或单位不能识别，status 必须为 needs_information。",
+    "返回 JSON 对象，顶层键 classifications。每个概念恰好一条记录，字段为 concept_id、categories、classification_score、evidence、uncertainties、status。",
+    "categories 是按执行顺序排列的类别编号数组；classification_score 必须在 0 到 1 之间；status 只能是 proposed 或 needs_information。",
+    "转换类别目录：", registry_json(category_catalog_for_model(registry)),
+    "目标域专业上下文：", registry_json(list(domain = group$target_domain, variables = target_meta)),
+    "临床概念及来源上下文：", registry_json(group$context),
+    sep = "\n"
+  )
+}
+
+function_cards_for_model <- function(registry, categories) {
+  lapply(registry_model_entries(registry, categories), function(entry) list(
+    transform_id = entry$transform_id,
+    category = entry$category,
+    name = entry$name,
+    description = entry$description,
+    execution_stage = entry$execution_stage,
+    source_contract = list(
+      minimum = entry$source_contract$minimum, maximum = entry$source_contract$maximum,
+      minimum_datasets = entry$source_contract$minimum_datasets, maximum_datasets = entry$source_contract$maximum_datasets,
+      types = as.list(unlist(entry$source_contract$types, use.names = FALSE))
+    ),
+    target_contract = list(
+      domains = as.list(unlist(entry$target_contract$domains, use.names = FALSE)),
+      patterns = as.list(unlist(entry$target_contract$patterns, use.names = FALSE)),
+      output_mode = entry$target_contract$output_mode
+    ),
+    parameter_schema = prepare_json_schema(entry$parameter_schema),
+    preconditions = as.list(unlist(entry$preconditions, use.names = FALSE)),
+    not_allowed_when = as.list(unlist(entry$not_allowed_when, use.names = FALSE)),
+    composability = lapply(entry$composability, function(value) as.list(unlist(value, use.names = FALSE))),
+    examples = entry$examples
+  ))
+}
+
+selection_prompt_v02 <- function(group, classifications, metadata, registry, config = load_project_config()) {
+  categories <- unique(unlist(lapply(classifications, `[[`, "categories"), use.names = FALSE))
+  paste(
+    "你是临床数据标准映射助手。第二阶段在第一阶段选定的类别内，选择登记过的函数和严格参数。",
+    "每个概念返回一到三个完整候选方案；候选必须覆盖该临床概念所需的全部目标变量，步骤按执行顺序排列。",
+    "只能使用下方函数卡中的 transform_id。参数名、类型和枚举必须严格符合 parameter_schema，additionalProperties 为 false。",
+    "source_keys 只能引用该概念 source_refs 中的 dataset.variable；无需来源的后续派生可使用空数组。",
+    "不得生成或嵌入 R 代码、单位公式、正则表达式、连接键或自由条件。单位换算只能选择 conversion_set_id 和 target_unit。",
+    "若信息不足，返回 status=needs_information、steps=[] 并说明待确认信息，不得猜测。所有候选都必须 review_required=true。",
+    "返回 JSON 对象，顶层键 recommendations。每条含 concept_id、candidate_rank、target_domain、steps、recommendation_score、reason、uncertainties、status、review_required。",
+    "每个 step 必须含 transform_id、source_keys、target_variables、parameters。candidate_rank 为 1 到 3，分值为 0 到 1。",
+    "第一阶段分类：", registry_json(classifications),
+    "本次唯一可见的函数卡：", registry_json(function_cards_for_model(registry, categories)),
+    "目标域专业上下文：", registry_json(list(domain = group$target_domain, variables = metadata$domains[[group$target_domain]]$variables)),
+    "临床概念及来源上下文：", registry_json(group$context),
+    sep = "\n"
+  )
+}
+
+parse_classifications_v02 <- function(records, group, registry) {
+  if (!is.list(records) || !length(records)) trace_abort(sprintf("%s 第一阶段没有返回分类。", group$group_id))
+  known_ids <- vapply(group$concepts, `[[`, character(1), "concept_id")
+  known_categories <- names(registry$categories)
+  parsed <- lapply(records, function(record) {
+    required <- c("concept_id", "categories", "classification_score", "evidence", "uncertainties", "status")
+    missing <- setdiff(required, names(record))
+    if (length(missing)) trace_abort(sprintf("第一阶段分类缺少字段：%s", paste(missing, collapse = ", ")))
+    categories <- unname(unlist(record$categories, use.names = FALSE))
+    score <- as.numeric(record$classification_score)
+    status <- as.character(record$status)
+    if (!as.character(record$concept_id) %in% known_ids) trace_abort(sprintf("第一阶段返回未知概念：%s", record$concept_id))
+    if (!length(categories) || any(!categories %in% known_categories)) trace_abort(sprintf("%s 返回未知或空类别链。", record$concept_id))
+    if (anyDuplicated(categories)) trace_abort(sprintf("%s 的类别链存在重复类别。", record$concept_id))
+    orders <- vapply(categories, function(category) registry$categories[[category]]$stage_order, integer(1))
+    if (is.unsorted(orders, strictly = FALSE)) trace_abort(sprintf("%s 的类别链顺序无效。", record$concept_id))
+    if (length(score) != 1L || is.na(score) || score < 0 || score > 1) trace_abort(sprintf("%s 的分类分值超出 0 到 1。", record$concept_id))
+    if (!status %in% c("proposed", "needs_information")) trace_abort(sprintf("%s 的分类状态无效。", record$concept_id))
+    list(
+      concept_id = as.character(record$concept_id), categories = categories,
+      classification_score = score, evidence = recommendation_text(record, "evidence"),
+      uncertainties = recommendation_text(record, "uncertainties"), status = status,
+      group_id = group$group_id
+    )
+  })
+  ids <- vapply(parsed, `[[`, character(1), "concept_id")
+  if (anyDuplicated(ids)) trace_abort(sprintf("%s 第一阶段出现重复概念。", group$group_id))
+  missing_ids <- setdiff(known_ids, ids)
+  if (length(missing_ids)) trace_abort(sprintf("%s 第一阶段遗漏概念：%s", group$group_id, paste(missing_ids, collapse = ", ")))
+  parsed[match(known_ids, ids)]
+}
+
+validate_candidate_plan_v02 <- function(record, classification, concept, specification, metadata, registry, group_id, provenance) {
+  required <- c("concept_id", "candidate_rank", "target_domain", "steps", "recommendation_score", "reason", "uncertainties", "status", "review_required")
+  missing <- setdiff(required, names(record))
+  if (length(missing)) trace_abort(sprintf("第二阶段候选缺少字段：%s", paste(missing, collapse = ", ")))
+  rank <- as.integer(record$candidate_rank)
+  score <- as.numeric(record$recommendation_score)
+  status <- as.character(record$status)
+  if (is.na(rank) || rank < 1L || rank > 3L) trace_abort(sprintf("%s 的候选序号必须为 1 到 3。", concept$concept_id))
+  if (is.na(score) || score < 0 || score > 1) trace_abort(sprintf("%s 的推荐分值超出 0 到 1。", concept$concept_id))
+  if (!status %in% c("proposed", "needs_information")) trace_abort(sprintf("%s 的推荐状态无效。", concept$concept_id))
+  if (!identical(as.character(record$target_domain), concept$target_domain)) trace_abort(sprintf("%s 试图改写目标域。", concept$concept_id))
+  if (!isTRUE(record$review_required)) trace_abort(sprintf("%s 必须要求人工审核。", concept$concept_id))
+  steps <- record$steps %||% list()
+  if (status == "needs_information" && length(steps)) trace_abort(sprintf("%s 信息不足时不能附带可执行步骤。", concept$concept_id))
+  if (status == "proposed" && !length(steps)) trace_abort(sprintf("%s proposed 候选缺少转换步骤。", concept$concept_id))
+  if (length(steps)) {
+    candidate_categories <- vapply(steps, function(step) registry_entry(step$transform_id, registry)$category, character(1))
+    if (any(!candidate_categories %in% classification$categories)) trace_abort(sprintf("%s 使用了第一阶段未选类别中的函数。", concept$concept_id))
+    proposal <- concept
+    proposal$steps <- steps
+    validate_concept_plan(proposal, specification, metadata, registry)
+  }
+  list(
+    concept_id = concept$concept_id,
+    candidate_rank = rank,
+    target_domain = concept$target_domain,
+    categories = classification$categories,
+    steps = steps,
+    recommendation_score = score,
+    reason = recommendation_text(record, "reason"),
+    uncertainties = recommendation_text(record, "uncertainties"),
+    status = status,
+    review_required = TRUE,
+    provenance = provenance,
+    group_id = group_id
+  )
+}
+
+parse_candidate_plans_v02 <- function(records, classifications, group, specification, metadata, registry, provenance = "model") {
+  if (!is.list(records) || !length(records)) trace_abort(sprintf("%s 第二阶段没有返回候选方案。", group$group_id))
+  concepts <- stats::setNames(group$concepts, vapply(group$concepts, `[[`, character(1), "concept_id"))
+  classes <- stats::setNames(classifications, vapply(classifications, `[[`, character(1), "concept_id"))
+  parsed <- lapply(records, function(record) {
+    id <- as.character(record$concept_id %||% "")
+    if (is.null(concepts[[id]])) trace_abort(sprintf("第二阶段返回未知概念：%s", id))
+    validate_candidate_plan_v02(record, classes[[id]], concepts[[id]], specification, metadata, registry, group$group_id, provenance)
+  })
+  keys <- vapply(parsed, function(x) paste(x$concept_id, x$candidate_rank), character(1))
+  if (anyDuplicated(keys)) trace_abort(sprintf("%s 第二阶段出现重复候选序号。", group$group_id))
+  top_ids <- vapply(Filter(function(x) x$candidate_rank == 1L, parsed), `[[`, character(1), "concept_id")
+  missing_top <- setdiff(names(concepts), top_ids)
+  if (length(missing_top)) trace_abort(sprintf("%s 缺少首选方案：%s", group$group_id, paste(missing_top, collapse = ", ")))
+  parsed
+}
+
+classifications_table_v02 <- function(classifications) {
+  purrr::map_dfr(classifications, function(x) tibble::tibble(
+    concept_id = x$concept_id,
+    categories = paste(x$categories, collapse = " | "),
+    classification_score = x$classification_score,
+    evidence = x$evidence,
+    uncertainties = x$uncertainties,
+    status = x$status,
+    group_id = x$group_id
+  ))
+}
+
+candidate_table_v02 <- function(candidates) {
+  purrr::map_dfr(candidates, function(x) tibble::tibble(
+    concept_id = x$concept_id,
+    candidate_rank = x$candidate_rank,
+    target_domain = x$target_domain,
+    categories = paste(x$categories, collapse = " | "),
+    plan_json = as.character(registry_json(list(steps = lapply(x$steps, function(step) {
+      step$source_keys <- as.list(unlist(step$source_keys %||% character(), use.names = FALSE))
+      step$target_variables <- as.list(unlist(step$target_variables %||% character(), use.names = FALSE))
+      step
+    })))),
+    recommendation_score = x$recommendation_score,
+    reason = x$reason,
+    uncertainties = x$uncertainties,
+    status = x$status,
+    review_required = x$review_required,
+    provenance = x$provenance,
+    group_id = x$group_id
+  ))
+}
+
+save_recommendations_v02 <- function(classifications, candidates, config, source, model = NA_character_, group_runs = list()) {
+  ensure_output_directories(config)
+  class_table <- classifications_table_v02(classifications)
+  candidate_table <- candidate_table_v02(candidates)
+  write_csv(class_table, trace_path(config$paths$recommendation_dir, "category_classifications.csv"))
+  write_json(classifications, trace_path(config$paths$recommendation_dir, "category_classifications.json"))
+  write_csv(candidate_table, trace_path(config$paths$recommendation_dir, "candidate_plans.csv"))
+  write_json(candidates, trace_path(config$paths$recommendation_dir, "candidate_plans.json"))
+  write_json(list(
+    status = if (identical(source, "model")) "completed" else "reference_seed",
+    schema_version = "0.2",
+    scenario = config$project$scenario,
+    provenance = source,
+    model = model,
+    prompt_design = "concept_grouped_two_stage_registry_v02",
+    generated_at = utc_now(),
+    concept_count = length(unique(candidate_table$concept_id)),
+    candidate_count = nrow(candidate_table),
+    group_runs = group_runs,
+    api_key_logged = FALSE
+  ), trace_path(config$paths$recommendation_dir, "model_run.json"))
+  create_review_workbook(candidate_table, config, preapprove = identical(source, "reference_seed"))
+  trace_info("已生成 %d 个概念的 %d 套候选方案，来源：%s。", length(unique(candidate_table$concept_id)), nrow(candidate_table), source)
+  invisible(candidate_table)
+}
+
+seed_recommendations <- function(config = load_project_config()) {
+  specification <- load_mapping_template(config)
+  gold <- load_gold_specification(config)
+  metadata <- load_metadata(config)
+  registry <- load_transform_registry(config)
+  validate_specification_v02(specification, config)
+  dictionary_path <- trace_path(config$paths$profile_dir, "source_dictionary.csv")
+  if (!file.exists(dictionary_path)) profile_sources(config)
+  dictionary <- readr::read_csv(dictionary_path, show_col_types = FALSE)
+  groups <- recommendation_groups(specification, dictionary, config)
+  plans <- gold$plans
+  classifications <- list()
+  candidates <- list()
+  for (group in groups) {
+    for (concept in group$concepts) {
+      steps <- gold_plan_steps(plans[[concept$concept_id]])
+      proposal <- concept
+      proposal$steps <- steps
+      validate_concept_plan(proposal, specification, metadata, registry)
+      categories <- unique(vapply(steps, function(step) registry_entry(step$transform_id, registry)$category, character(1)))
+      classification <- list(
+        concept_id = concept$concept_id, categories = categories, classification_score = 1,
+        evidence = "专家金标准种子。", uncertainties = "不是真实模型结果。", status = "proposed", group_id = group$group_id
+      )
+      classifications[[length(classifications) + 1L]] <- classification
+      candidates[[length(candidates) + 1L]] <- validate_candidate_plan_v02(
+        list(
+          concept_id = concept$concept_id, candidate_rank = 1L, target_domain = concept$target_domain,
+          steps = steps, recommendation_score = 1, reason = "专家金标准种子。",
+          uncertainties = "不是真实模型结果，不能用于评价模型准确率。", status = "proposed", review_required = TRUE
+        ), classification, concept, specification, metadata, registry, group$group_id, "reference_seed"
+      )
+    }
+  }
+  save_recommendations_v02(classifications, candidates, config, "reference_seed")
+}
+
+request_json_v02 <- function(prompt, endpoint, api_key, model, config, label) {
+  response <- perform_mapping_request(prompt, endpoint, api_key, model, config)
+  body <- httr2::resp_body_json(response, simplifyVector = FALSE)
+  content <- body$choices[[1]]$message$content %||% ""
+  if (!nzchar(trimws(content))) trace_abort(sprintf("%s 模型响应为空。", label))
+  parsed <- tryCatch(
+    jsonlite::fromJSON(extract_json_content(content), simplifyVector = FALSE),
+    error = function(error) trace_abort(sprintf("%s 不是有效 JSON：%s", label, conditionMessage(error)))
+  )
+  list(parsed = parsed, content_sha256 = digest::digest(content, algo = "sha256"))
+}
+
+call_mapping_model <- function(config = load_project_config()) {
+  api_key <- Sys.getenv("TRACE_SDTM_API_KEY", unset = "")
+  base_url <- Sys.getenv("TRACE_SDTM_BASE_URL", unset = "")
+  model <- Sys.getenv("TRACE_SDTM_MODEL", unset = "")
+  if (!nzchar(api_key) || !nzchar(base_url) || !nzchar(model)) {
+    trace_abort("未配置 TRACE_SDTM_API_KEY、TRACE_SDTM_BASE_URL 和 TRACE_SDTM_MODEL。可用 recommend --seed 生成明确标记的离线参考种子。")
+  }
+  specification <- load_mapping_template(config)
+  validate_specification_v02(specification, config)
+  metadata <- load_metadata(config)
+  registry <- load_transform_registry(config)
+  dictionary_path <- trace_path(config$paths$profile_dir, "source_dictionary.csv")
+  if (!file.exists(dictionary_path)) profile_sources(config)
+  dictionary <- readr::read_csv(dictionary_path, show_col_types = FALSE)
+  groups <- recommendation_groups(specification, dictionary, config)
+  endpoint <- paste0(sub("/$", "", base_url), config$model$endpoint_suffix)
+  all_classifications <- list()
+  all_candidates <- list()
+  group_runs <- list()
+  group_dir <- ensure_dir(trace_path(config$paths$recommendation_dir, "groups"))
+
+  for (group in groups) {
+    trace_info("正在进行 %s 的第一阶段类别判断（%d 个临床概念）。", group$group_id, length(group$concepts))
+    stage1_prompt <- classification_prompt_v02(group, metadata, registry, config)
+    stage1 <- request_json_v02(stage1_prompt, endpoint, api_key, model, config, paste0(group$group_id, " 第一阶段"))
+    classifications <- parse_classifications_v02(stage1$parsed$classifications %||% stage1$parsed, group, registry)
+    trace_info("正在进行 %s 的第二阶段函数选择。", group$group_id)
+    stage2_prompt <- selection_prompt_v02(group, classifications, metadata, registry, config)
+    stage2 <- request_json_v02(stage2_prompt, endpoint, api_key, model, config, paste0(group$group_id, " 第二阶段"))
+    candidates <- parse_candidate_plans_v02(
+      stage2$parsed$recommendations %||% stage2$parsed, classifications, group,
+      specification, metadata, registry, provenance = "model"
+    )
+    group_path <- ensure_dir(file.path(group_dir, group$group_id))
+    write_json(group$context, file.path(group_path, "source_context.json"))
+    write_json(classifications, file.path(group_path, "classifications.json"))
+    write_json(candidates, file.path(group_path, "candidate_plans.json"))
+    run <- list(
+      group_id = group$group_id,
+      concept_ids = vapply(group$concepts, `[[`, character(1), "concept_id"),
+      stage1_prompt_sha256 = digest::digest(stage1_prompt, algo = "sha256"),
+      stage1_response_sha256 = stage1$content_sha256,
+      stage2_prompt_sha256 = digest::digest(stage2_prompt, algo = "sha256"),
+      stage2_response_sha256 = stage2$content_sha256,
+      visible_transform_ids = vapply(
+        function_cards_for_model(registry, unique(unlist(lapply(classifications, `[[`, "categories"), use.names = FALSE))),
+        `[[`, character(1), "transform_id"
+      )
+    )
+    write_json(run, file.path(group_path, "run_metadata.json"))
+    group_runs[[length(group_runs) + 1L]] <- run
+    all_classifications <- c(all_classifications, classifications)
+    all_candidates <- c(all_candidates, candidates)
+  }
+  save_recommendations_v02(all_classifications, all_candidates, config, "model", model, group_runs)
+}
