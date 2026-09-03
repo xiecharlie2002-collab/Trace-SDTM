@@ -1,5 +1,23 @@
 if (!exists("trace_root", mode = "function")) {
-  root <- normalizePath(file.path(getwd()), winslash = "/", mustWork = TRUE)
+  configured_root <- Sys.getenv("TRACE_SDTM_ROOT", unset = "")
+  root_candidates <- unique(c(
+    configured_root,
+    getwd(),
+    file.path(getwd(), ".."),
+    file.path(getwd(), "..", "..")
+  ))
+  root_candidates <- root_candidates[nzchar(root_candidates)]
+  root_candidates <- root_candidates[
+    vapply(
+      root_candidates,
+      function(path) file.exists(file.path(path, "DESCRIPTION")) && dir.exists(file.path(path, "R")),
+      logical(1)
+    )
+  ]
+  if (length(root_candidates) == 0L) {
+    stop("Unable to locate the TraceSDTM project root for tests.", call. = FALSE)
+  }
+  root <- normalizePath(root_candidates[[1]], winslash = "/", mustWork = TRUE)
   Sys.setenv(TRACE_SDTM_ROOT = root)
   files <- c(
     "utils.R", "config.R", "studio_projects.R", "registry.R", "profile.R", "recommend.R", "review.R", "review_v04.R", "studio_review.R",
