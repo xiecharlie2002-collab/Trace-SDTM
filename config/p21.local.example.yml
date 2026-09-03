@@ -1,0 +1,7 @@
+# Copy this file to config/p21.local.yml and adjust the four paths.
+# The local file is ignored by Git.
+community:
+  executable: 'C:\Path\To\Pinnacle\Pinnacle 21 Community.exe'
+  java: 'C:\Path\To\Pinnacle\resources\app.asar.unpacked\components\java64\bin\java.exe'
+  client_jar: 'C:\Path\To\Pinnacle\resources\app.asar.unpacked\components\lib\p21-client.jar'
+  config_root: 'C:\Path\To\Pinnacle\resources\app.asar.unpacked\components\lib\configs'

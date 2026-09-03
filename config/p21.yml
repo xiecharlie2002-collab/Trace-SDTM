@@ -1,10 +1,10 @@
 community:
   expected_version: 4.2.0.5013
-  executable: 'D:\Pinnacle\Pinnacle 21 Community.exe'
-  java: 'D:\Pinnacle\resources\app.asar.unpacked\components\java64\bin\java.exe'
-  client_jar: 'D:\Pinnacle\resources\app.asar.unpacked\components\lib\p21-client-1.0.9.jar'
+  executable: ''
+  java: ''
+  client_jar: ''
   client_version: 1.0.9
-  config_root: 'D:\Pinnacle\resources\app.asar.unpacked\components\lib\configs'
+  config_root: ''
 validation:
   engine_version: 2508.1
   engine_name: FDA 2508.1

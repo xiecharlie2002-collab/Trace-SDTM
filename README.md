@@ -94,6 +94,8 @@ $env:TRACE_SDTM_EXPERIMENT_ID = 'model-20260902'
 Rscript scripts/trace_sdtm.R recommend --scenario advanced
 ```
 
+接口密钥只应在当前终端会话中设置，不得写入源码、配置、日志或报告。如果确实需要本地持久化，可以复制 `.Renviron.example` 为 `.Renviron`；本地文件已被 Git 忽略。任何曾出现在聊天记录、终端记录或提交中的密钥都应立即撤销。完整要求见 [安全说明](SECURITY.md)。
+
 常规模型实验产物写入 `output/benchmark/v2/<场景>/experiments/<实验编号>/`，不会覆盖基线。`recommend-targets`、`recommend-functions`、`recommend-parameters` 和 `assemble-recommendations` 也可分别运行，便于恢复和定位错误。打开实验目录中的 `review/mapping_review.xlsx` 完成人工审核后运行：
 
 ```powershell
@@ -121,7 +123,13 @@ Rscript scripts/trace_sdtm.R approve --scenario advanced
 
 ## Pinnacle 21
 
-默认本机配置位于 `config/p21.yml`：
+共享配置位于 `config/p21.yml`，只保存版本和验证规则。本机安装路径使用不提交的 `config/p21.local.yml`：
+
+```powershell
+Copy-Item config/p21.local.example.yml config/p21.local.yml
+```
+
+复制后修改其中四个路径。本项目完成验证时使用的本机环境为：
 
 ```text
 Community：4.2.0.5013
@@ -137,6 +145,8 @@ Community：4.2.0.5013
 ```powershell
 Rscript scripts/trace_sdtm.R import-p21 --file '<报告路径>' --scenario advanced
 ```
+
+还可以使用 `TRACE_SDTM_P21_CONFIG` 指定其他本地配置文件，或分别设置 `TRACE_SDTM_P21_EXECUTABLE`、`TRACE_SDTM_P21_JAVA`、`TRACE_SDTM_P21_CLIENT_JAR` 和 `TRACE_SDTM_P21_CONFIG_ROOT`。未安装 Pinnacle 21 时，外部环境测试会明确跳过，不影响本地转换和规则测试。
 
 ## 依赖复现
 
@@ -155,8 +165,12 @@ Rscript -e "renv::restore()"
 - `output/benchmark/v2/<场景>/sdtm/xpt`：供 Pinnacle 21 验证的 XPT。
 - `output/benchmark/v2/<场景>/lineage/field_lineage.csv`：字段级追溯。
 
+`output/` 默认忽略新生成文件，避免先导实验、日志和重复输出被批量提交。当前 Git 标签已经保存正式基线；以后若要保存新的正式报告或冻结实验，应逐项复核后使用 `git add -f <明确路径>`，不要执行 `git add .`。
+
 ## 边界
 
 本项目不包含 Define-XML、aCRF、完整试验设计域、ADaM、TLF、电子签名、多用户权限、法规申报级系统验证或 CDISC CORE。所有输出仍需合格的临床数据标准专家审核。
+
+仓库中的数据均为公开示例数据的改编版本或模拟数据，不对应真实受试者。数据使用边界见 [数据来源说明](DATA_SOURCES.md)，软件许可见 [MIT许可证](LICENSE)。
 
 五分钟演示见 `docs/demo.md`，v0.4 评价设计见 `docs/v04_three_stage_benchmark.md`。0.1 阶段的真实 DeepSeek 盲评记录保留在 `docs/deepseek_v4_flash_blind_experiment.md`。

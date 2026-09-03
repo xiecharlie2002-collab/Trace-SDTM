@@ -55,8 +55,36 @@ apply_experiment_paths <- function(config, experiment_id) {
   config
 }
 
-load_p21_config <- function() {
-  yaml::read_yaml(trace_path("config", "p21.yml"))
+load_p21_config <- function(local_path = Sys.getenv(
+  "TRACE_SDTM_P21_CONFIG",
+  unset = trace_path("config", "p21.local.yml")
+)) {
+  config <- yaml::read_yaml(trace_path("config", "p21.yml"))
+
+  if (nzchar(local_path)) {
+    is_absolute <- grepl("^([A-Za-z]:[\\\\/]|/|\\\\\\\\)", local_path)
+    resolved_local_path <- if (is_absolute) local_path else trace_path(local_path)
+    if (file.exists(resolved_local_path)) {
+      local_config <- yaml::read_yaml(resolved_local_path)
+      if (!is.list(local_config)) trace_abort("Pinnacle 21 本地配置必须是 YAML 对象。")
+      config <- utils::modifyList(config, local_config, keep.null = TRUE)
+    }
+  }
+
+  environment_overrides <- list(
+    TRACE_SDTM_P21_EXECUTABLE = c("community", "executable"),
+    TRACE_SDTM_P21_JAVA = c("community", "java"),
+    TRACE_SDTM_P21_CLIENT_JAR = c("community", "client_jar"),
+    TRACE_SDTM_P21_CONFIG_ROOT = c("community", "config_root")
+  )
+  for (variable in names(environment_overrides)) {
+    value <- Sys.getenv(variable, unset = "")
+    if (!nzchar(value)) next
+    path <- environment_overrides[[variable]]
+    config[[path[[1L]]]][[path[[2L]]]] <- value
+  }
+
+  config
 }
 
 load_metadata <- function(config = load_project_config()) {

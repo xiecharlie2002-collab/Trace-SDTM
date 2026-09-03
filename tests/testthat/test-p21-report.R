@@ -1,6 +1,45 @@
 test_that("Pinnacle 21 4.2.0 环境检查通过", {
+  p21 <- load_p21_config()
+  required_paths <- unlist(p21$community[c("executable", "java", "client_jar", "config_root")], use.names = FALSE)
+  skip_if_not(
+    all(nzchar(required_paths)) && all(file.exists(required_paths)),
+    "需要先创建 config/p21.local.yml 并安装 Pinnacle 21 Community"
+  )
   checks <- doctor_p21(load_project_config("advanced"))
   expect_true(all(checks$passed))
+})
+
+test_that("Pinnacle 21 共享配置不包含本机路径", {
+  shared <- yaml::read_yaml(trace_path("config", "p21.yml"))
+  expect_identical(shared$community$executable, "")
+  expect_identical(shared$community$java, "")
+  expect_identical(shared$community$client_jar, "")
+  expect_identical(shared$community$config_root, "")
+})
+
+test_that("Pinnacle 21 路径可以通过环境变量覆盖", {
+  overrides <- c(
+    TRACE_SDTM_P21_EXECUTABLE = "C:/portable/p21.exe",
+    TRACE_SDTM_P21_JAVA = "C:/portable/java.exe",
+    TRACE_SDTM_P21_CLIENT_JAR = "C:/portable/p21-client.jar",
+    TRACE_SDTM_P21_CONFIG_ROOT = "C:/portable/configs"
+  )
+  old_values <- Sys.getenv(names(overrides), unset = NA_character_)
+  on.exit({
+    for (variable in names(overrides)) {
+      if (is.na(old_values[[variable]])) {
+        Sys.unsetenv(variable)
+      } else {
+        do.call(Sys.setenv, stats::setNames(list(old_values[[variable]]), variable))
+      }
+    }
+  }, add = TRUE)
+  do.call(Sys.setenv, as.list(overrides))
+  p21 <- load_p21_config(local_path = "")
+  expect_identical(p21$community$executable, "C:/portable/p21.exe")
+  expect_identical(p21$community$java, "C:/portable/java.exe")
+  expect_identical(p21$community$client_jar, "C:/portable/p21-client.jar")
+  expect_identical(p21$community$config_root, "C:/portable/configs")
 })
 
 test_that("Pinnacle 21 报告的五类工作表可以解析", {

@@ -2,12 +2,12 @@ Package: TraceSDTM
 Type: Project
 Title: Traceable Human-in-the-Loop SDTM Automation Demonstration
 Version: 0.4.0
-Authors@R: person("Portfolio", "Author", role = c("aut", "cre"), email = "portfolio@example.com")
+Authors@R: person("Jiacheng", "Xie", role = c("aut", "cre"), email = "xiecharlie2002@gmail.com")
 Description: A reproducible demonstration of metadata profiling, three-stage
     constrained mapping recommendation, deterministic parameter injection,
     human approval, deterministic SDTM generation,
     local validation, Pinnacle 21 Community validation, and field-level lineage.
-License: MIT
+License: MIT + file LICENSE
 Encoding: UTF-8
 Depends: R (>= 4.5.0)
 Imports:

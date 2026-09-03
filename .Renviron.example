@@ -1,0 +1,8 @@
+# Copy this file to .Renviron only when persistent local settings are needed.
+# Never commit the copied .Renviron file or a real API key.
+LC_ALL=C
+LANG=C
+TRACE_SDTM_API_KEY=
+TRACE_SDTM_BASE_URL=
+TRACE_SDTM_MODEL=
+TRACE_SDTM_REVIEWER=
