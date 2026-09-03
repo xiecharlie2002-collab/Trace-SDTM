@@ -1,0 +1,261 @@
+{
+  "valid": {
+    "AE_SOURCE_INTEGRATION#1": {
+      "task_id": "AE_SOURCE_INTEGRATION",
+      "candidate_rank": 1,
+      "transform_id": "merge_sources",
+      "source_ref_ids": [
+        "ae_main__STUDY",
+        "ae_main__PATNUM",
+        "ae_main__AEID",
+        "sae_detail__STUDY",
+        "sae_detail__PATNUM",
+        "sae_detail__AEID",
+        "sae_detail__AESHOSP"
+      ],
+      "score": 1,
+      "reason": "该函数支持两个来源之间的一对一确定性连接并输出整合数据集，符合当前来源整合动作。",
+      "uncertainties": "",
+      "status": "proposed",
+      "review_required": true,
+      "structure_valid": true
+    },
+    "AE_STUDY_IDENTIFIER#1": {
+      "task_id": "AE_STUDY_IDENTIFIER",
+      "candidate_rank": 1,
+      "transform_id": "assign_no_ct",
+      "source_ref_ids": [
+        "ae_merged__STUDY"
+      ],
+      "score": 1,
+      "reason": "研究标识符可从已声明的整合来源字段直接赋值，且该映射不需要改变值的语义或格式。",
+      "uncertainties": "",
+      "status": "proposed",
+      "review_required": true,
+      "structure_valid": true
+    },
+    "AE_DOMAIN_CONSTANT#1": {
+      "task_id": "AE_DOMAIN_CONSTANT",
+      "candidate_rank": 1,
+      "transform_id": "hardcode_no_ct",
+      "source_ref_ids": [],
+      "score": 1,
+      "reason": "该动作要求设置不依赖记录条件的固定域值，且不需要来源字段。",
+      "uncertainties": "",
+      "status": "proposed",
+      "review_required": true,
+      "structure_valid": true
+    },
+    "AE_UNIQUE_SUBJECT_IDENTIFIER#1": {
+      "task_id": "AE_UNIQUE_SUBJECT_IDENTIFIER",
+      "candidate_rank": 1,
+      "transform_id": "derive_usubjid",
+      "source_ref_ids": [
+        "ae_merged__STUDY",
+        "ae_merged__PATNUM"
+      ],
+      "score": 1,
+      "reason": "项目政策已规定由研究编号和受试者编号按批准格式派生唯一受试者标识符。",
+      "uncertainties": "",
+      "status": "proposed",
+      "review_required": true,
+      "structure_valid": true
+    },
+    "AE_REPORTED_TERM#1": {
+      "task_id": "AE_REPORTED_TERM",
+      "candidate_rank": 1,
+      "transform_id": "assign_no_ct",
+      "source_ref_ids": [
+        "ae_merged__AETERM"
+      ],
+      "score": 1,
+      "reason": "报告的不良事件术语可从对应来源字段直接赋值，无需改变值的语义或格式。",
+      "uncertainties": "",
+      "status": "proposed",
+      "review_required": true,
+      "structure_valid": true
+    },
+    "AE_CODED_TERM#1": {
+      "task_id": "AE_CODED_TERM",
+      "candidate_rank": 1,
+      "transform_id": "assign_no_ct",
+      "source_ref_ids": [
+        "ae_merged__AEDECOD"
+      ],
+      "score": 1,
+      "reason": "来源字段已包含编码后的不良事件术语，可直接赋值。",
+      "uncertainties": "",
+      "status": "proposed",
+      "review_required": true,
+      "structure_valid": true
+    },
+    "AE_BODY_SYSTEM#1": {
+      "task_id": "AE_BODY_SYSTEM",
+      "candidate_rank": 1,
+      "transform_id": "normalize_case",
+      "source_ref_ids": [
+        "ae_merged__AEBODSYS"
+      ],
+      "score": 0.98,
+      "reason": "临床动作明确要求规范化身体系统字符值，大小写规范化函数与该原子动作相符。",
+      "uncertainties": "具体大小写方向需人工审核。",
+      "status": "proposed",
+      "review_required": true,
+      "structure_valid": true
+    },
+    "AE_SEVERITY#1": {
+      "task_id": "AE_SEVERITY",
+      "candidate_rank": 1,
+      "transform_id": "assign_ct",
+      "source_ref_ids": [
+        "ae_merged__AESEV"
+      ],
+      "score": 1,
+      "reason": "来源严重程度描述需要通过已登记术语表转换为目标受控术语。",
+      "uncertainties": "具体术语对应关系需人工审核。",
+      "status": "proposed",
+      "review_required": true,
+      "structure_valid": true
+    },
+    "AE_SERIOUS#1": {
+      "task_id": "AE_SERIOUS",
+      "candidate_rank": 1,
+      "transform_id": "assign_ct",
+      "source_ref_ids": [
+        "ae_merged__AESER"
+      ],
+      "score": 1,
+      "reason": "来源的是非值需要通过已登记术语表转换为目标受控术语。",
+      "uncertainties": "具体术语对应关系需人工审核。",
+      "status": "proposed",
+      "review_required": true,
+      "structure_valid": true
+    },
+    "AE_HOSPITALIZATION#1": {
+      "task_id": "AE_HOSPITALIZATION",
+      "candidate_rank": 1,
+      "transform_id": "assign_ct",
+      "source_ref_ids": [
+        "ae_merged__AESHOSP"
+      ],
+      "score": 1,
+      "reason": "来源住院指示值需要通过已登记术语表转换为目标受控术语。",
+      "uncertainties": "具体术语对应关系需人工审核。",
+      "status": "proposed",
+      "review_required": true,
+      "structure_valid": true
+    },
+    "AE_RELATIONSHIP#1": {
+      "task_id": "AE_RELATIONSHIP",
+      "candidate_rank": 1,
+      "transform_id": "assign_no_ct",
+      "source_ref_ids": [
+        "ae_merged__AEREL"
+      ],
+      "score": 1,
+      "reason": "因果关系可从对应来源字段直接赋值，无需改变值的语义或格式。",
+      "uncertainties": "",
+      "status": "proposed",
+      "review_required": true,
+      "structure_valid": true
+    },
+    "AE_OUTCOME#1": {
+      "task_id": "AE_OUTCOME",
+      "candidate_rank": 1,
+      "transform_id": "assign_ct",
+      "source_ref_ids": [
+        "ae_merged__AEOUTCOME"
+      ],
+      "score": 1,
+      "reason": "来源结局描述需要通过已登记术语表转换为目标受控术语。",
+      "uncertainties": "具体术语对应关系需人工审核。",
+      "status": "proposed",
+      "review_required": true,
+      "structure_valid": true
+    },
+    "AE_START_DATETIME#1": {
+      "task_id": "AE_START_DATETIME",
+      "candidate_rank": 1,
+      "transform_id": "to_iso8601_partial_datetime",
+      "source_ref_ids": [
+        "ae_merged__AESTDAT",
+        "ae_merged__AESTTIM"
+      ],
+      "score": 1,
+      "reason": "来源包含已登记未知标记的部分日期和可选时间，该函数可在不填补的情况下保留最大已知精度。",
+      "uncertainties": "",
+      "status": "proposed",
+      "review_required": true,
+      "structure_valid": true
+    },
+    "AE_START_STUDY_DAY#1": {
+      "task_id": "AE_START_STUDY_DAY",
+      "candidate_rank": 1,
+      "transform_id": "derive_study_day",
+      "source_ref_ids": [],
+      "score": 1,
+      "reason": "该函数根据完整目标日期和参考日期派生研究日，并且不会对不完整日期进行填补。",
+      "uncertainties": "",
+      "status": "proposed",
+      "review_required": true,
+      "structure_valid": true
+    },
+    "AE_END_DATETIME#1": {
+      "task_id": "AE_END_DATETIME",
+      "candidate_rank": 1,
+      "transform_id": "to_iso8601_partial_datetime",
+      "source_ref_ids": [
+        "ae_merged__AEENDDAT",
+        "ae_merged__AEENDTIM"
+      ],
+      "score": 1,
+      "reason": "来源包含已登记未知标记的部分结束日期和可选时间，该函数可在不填补的情况下保留最大已知精度。",
+      "uncertainties": "",
+      "status": "proposed",
+      "review_required": true,
+      "structure_valid": true
+    },
+    "AE_ONGOING_STATUS#1": {
+      "task_id": "AE_ONGOING_STATUS",
+      "candidate_rank": 1,
+      "transform_id": "derive_ongoing_flag",
+      "source_ref_ids": [
+        "ae_merged__AEENDDAT",
+        "ae_merged__AEONGO"
+      ],
+      "score": 1,
+      "reason": "该函数可依据结束日期状态和明确的持续指示派生持续事件参考值。",
+      "uncertainties": "",
+      "status": "proposed",
+      "review_required": true,
+      "structure_valid": true
+    },
+    "AE_END_STUDY_DAY#1": {
+      "task_id": "AE_END_STUDY_DAY",
+      "candidate_rank": 1,
+      "transform_id": "derive_study_day",
+      "source_ref_ids": [],
+      "score": 1,
+      "reason": "该函数根据完整目标结束日期和参考日期派生研究日，并且不会对不完整日期进行填补。",
+      "uncertainties": "",
+      "status": "proposed",
+      "review_required": true,
+      "structure_valid": true
+    },
+    "AE_SEQUENCE#1": {
+      "task_id": "AE_SEQUENCE",
+      "candidate_rank": 1,
+      "transform_id": "derive_sequence",
+      "source_ref_ids": [],
+      "score": 1,
+      "reason": "该函数用于按受试者和项目规定的稳定排序信息派生域内连续序号。",
+      "uncertainties": "稳定排序字段的完整性需人工审核。",
+      "status": "proposed",
+      "review_required": true,
+      "structure_valid": true
+    }
+  },
+  "failures": [],
+  "missing_task_ids": [],
+  "stage": "function_selection"
+}

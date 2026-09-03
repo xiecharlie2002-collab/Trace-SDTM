@@ -1,0 +1,228 @@
+{
+  "valid": {
+    "DM_STUDY_IDENTIFIER": {
+      "task_id": "DM_STUDY_IDENTIFIER",
+      "target_domain": "DM",
+      "output_kind": "variables",
+      "target_variables": [
+        "STUDYID"
+      ],
+      "score": 1,
+      "evidence": "条件评价给定正确目标。",
+      "uncertainties": "",
+      "status": "proposed",
+      "structure_valid": true
+    },
+    "DM_DOMAIN_CONSTANT": {
+      "task_id": "DM_DOMAIN_CONSTANT",
+      "target_domain": "DM",
+      "output_kind": "variables",
+      "target_variables": [
+        "DOMAIN"
+      ],
+      "score": 1,
+      "evidence": "条件评价给定正确目标。",
+      "uncertainties": "",
+      "status": "proposed",
+      "structure_valid": true
+    },
+    "DM_UNIQUE_SUBJECT_IDENTIFIER": {
+      "task_id": "DM_UNIQUE_SUBJECT_IDENTIFIER",
+      "target_domain": "DM",
+      "output_kind": "variables",
+      "target_variables": [
+        "USUBJID"
+      ],
+      "score": 1,
+      "evidence": "条件评价给定正确目标。",
+      "uncertainties": "",
+      "status": "proposed",
+      "structure_valid": true
+    },
+    "DM_SUBJECT_IDENTIFIER": {
+      "task_id": "DM_SUBJECT_IDENTIFIER",
+      "target_domain": "DM",
+      "output_kind": "variables",
+      "target_variables": [
+        "SUBJID"
+      ],
+      "score": 1,
+      "evidence": "条件评价给定正确目标。",
+      "uncertainties": "",
+      "status": "proposed",
+      "structure_valid": true
+    },
+    "DM_SITE_IDENTIFIER": {
+      "task_id": "DM_SITE_IDENTIFIER",
+      "target_domain": "DM",
+      "output_kind": "variables",
+      "target_variables": [
+        "SITEID"
+      ],
+      "score": 1,
+      "evidence": "条件评价给定正确目标。",
+      "uncertainties": "",
+      "status": "proposed",
+      "structure_valid": true
+    },
+    "DM_REFERENCE_START": {
+      "task_id": "DM_REFERENCE_START",
+      "target_domain": "DM",
+      "output_kind": "variables",
+      "target_variables": [
+        "RFSTDTC"
+      ],
+      "score": 1,
+      "evidence": "条件评价给定正确目标。",
+      "uncertainties": "",
+      "status": "proposed",
+      "structure_valid": true
+    },
+    "DM_CONSENT": {
+      "task_id": "DM_CONSENT",
+      "target_domain": "DM",
+      "output_kind": "variables",
+      "target_variables": [
+        "RFICDTC"
+      ],
+      "score": 1,
+      "evidence": "条件评价给定正确目标。",
+      "uncertainties": "",
+      "status": "proposed",
+      "structure_valid": true
+    },
+    "DM_AGE": {
+      "task_id": "DM_AGE",
+      "target_domain": "DM",
+      "output_kind": "variables",
+      "target_variables": [
+        "AGE"
+      ],
+      "score": 1,
+      "evidence": "条件评价给定正确目标。",
+      "uncertainties": "",
+      "status": "proposed",
+      "structure_valid": true
+    },
+    "DM_AGE_UNIT": {
+      "task_id": "DM_AGE_UNIT",
+      "target_domain": "DM",
+      "output_kind": "variables",
+      "target_variables": [
+        "AGEU"
+      ],
+      "score": 1,
+      "evidence": "条件评价给定正确目标。",
+      "uncertainties": "",
+      "status": "proposed",
+      "structure_valid": true
+    },
+    "DM_SEX": {
+      "task_id": "DM_SEX",
+      "target_domain": "DM",
+      "output_kind": "variables",
+      "target_variables": [
+        "SEX"
+      ],
+      "score": 1,
+      "evidence": "条件评价给定正确目标。",
+      "uncertainties": "",
+      "status": "proposed",
+      "structure_valid": true
+    },
+    "DM_ETHNICITY": {
+      "task_id": "DM_ETHNICITY",
+      "target_domain": "DM",
+      "output_kind": "variables",
+      "target_variables": [
+        "ETHNIC"
+      ],
+      "score": 1,
+      "evidence": "条件评价给定正确目标。",
+      "uncertainties": "",
+      "status": "proposed",
+      "structure_valid": true
+    },
+    "DM_RACE": {
+      "task_id": "DM_RACE",
+      "target_domain": "DM",
+      "output_kind": "variables",
+      "target_variables": [
+        "RACE"
+      ],
+      "score": 1,
+      "evidence": "条件评价给定正确目标。",
+      "uncertainties": "",
+      "status": "proposed",
+      "structure_valid": true
+    },
+    "DM_COUNTRY": {
+      "task_id": "DM_COUNTRY",
+      "target_domain": "DM",
+      "output_kind": "variables",
+      "target_variables": [
+        "COUNTRY"
+      ],
+      "score": 1,
+      "evidence": "条件评价给定正确目标。",
+      "uncertainties": "",
+      "status": "proposed",
+      "structure_valid": true
+    },
+    "DM_PLANNED_ARM_CODE": {
+      "task_id": "DM_PLANNED_ARM_CODE",
+      "target_domain": "DM",
+      "output_kind": "variables",
+      "target_variables": [
+        "ARMCD"
+      ],
+      "score": 1,
+      "evidence": "条件评价给定正确目标。",
+      "uncertainties": "",
+      "status": "proposed",
+      "structure_valid": true
+    },
+    "DM_PLANNED_ARM": {
+      "task_id": "DM_PLANNED_ARM",
+      "target_domain": "DM",
+      "output_kind": "variables",
+      "target_variables": [
+        "ARM"
+      ],
+      "score": 1,
+      "evidence": "条件评价给定正确目标。",
+      "uncertainties": "",
+      "status": "proposed",
+      "structure_valid": true
+    },
+    "DM_ACTUAL_ARM_CODE": {
+      "task_id": "DM_ACTUAL_ARM_CODE",
+      "target_domain": "DM",
+      "output_kind": "variables",
+      "target_variables": [
+        "ACTARMCD"
+      ],
+      "score": 1,
+      "evidence": "条件评价给定正确目标。",
+      "uncertainties": "",
+      "status": "proposed",
+      "structure_valid": true
+    },
+    "DM_ACTUAL_ARM": {
+      "task_id": "DM_ACTUAL_ARM",
+      "target_domain": "DM",
+      "output_kind": "variables",
+      "target_variables": [
+        "ACTARM"
+      ],
+      "score": 1,
+      "evidence": "条件评价给定正确目标。",
+      "uncertainties": "",
+      "status": "proposed",
+      "structure_valid": true
+    }
+  },
+  "failures": [],
+  "missing_task_ids": [],
+  "stage": "target_identification"
+}

@@ -1,0 +1,1222 @@
+[
+  {
+    "task_id": "VS_STUDY_IDENTIFIER",
+    "assembly_group_id": "VS_CORE",
+    "target_domain": "VS",
+    "clinical_action": "Map the study identifier to VS.",
+    "form_name": "Vital Signs",
+    "expected_cardinality": null,
+    "required": true,
+    "depends_on": [
+      "DM_STUDY_IDENTIFIER"
+    ],
+    "source_refs": [
+      {
+        "ref_id": "vs_mixed__STUDY",
+        "dataset": "vs_mixed",
+        "variable": "STUDY",
+        "role": "study_identifier"
+      }
+    ],
+    "field_profiles": [
+      {
+        "declared_source_key": "vs_mixed.STUDY",
+        "role": "study_identifier",
+        "resolution": "direct",
+        "evidence": [
+          {
+            "source_dataset": "vs_mixed",
+            "source_variable": "STUDY",
+            "label": "Study identifier",
+            "data_type": "character",
+            "example_values": "TRACE002",
+            "missing_rate": 0,
+            "unique_count": 1,
+            "form_name": "Vital Signs",
+            "grain": "one_record_per_subject_visit",
+            "format_candidates": "",
+            "partial_tokens": "",
+            "record_count": 8
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "task_id": "VS_DOMAIN_CONSTANT",
+    "assembly_group_id": "VS_CORE",
+    "target_domain": "VS",
+    "clinical_action": "Set the VS domain constant.",
+    "form_name": "Vital Signs",
+    "expected_cardinality": null,
+    "required": true,
+    "depends_on": [],
+    "source_refs": [],
+    "field_profiles": []
+  },
+  {
+    "task_id": "VS_UNIQUE_SUBJECT_IDENTIFIER",
+    "assembly_group_id": "VS_CORE",
+    "target_domain": "VS",
+    "clinical_action": "Derive the unique subject identifier for VS.",
+    "form_name": "Vital Signs",
+    "expected_cardinality": null,
+    "required": true,
+    "depends_on": [
+      "DM_UNIQUE_SUBJECT_IDENTIFIER"
+    ],
+    "source_refs": [
+      {
+        "ref_id": "vs_mixed__STUDY",
+        "dataset": "vs_mixed",
+        "variable": "STUDY",
+        "role": "study_identifier"
+      },
+      {
+        "ref_id": "vs_mixed__PATNUM",
+        "dataset": "vs_mixed",
+        "variable": "PATNUM",
+        "role": "subject_identifier"
+      }
+    ],
+    "field_profiles": [
+      {
+        "declared_source_key": "vs_mixed.STUDY",
+        "role": "study_identifier",
+        "resolution": "direct",
+        "evidence": [
+          {
+            "source_dataset": "vs_mixed",
+            "source_variable": "STUDY",
+            "label": "Study identifier",
+            "data_type": "character",
+            "example_values": "TRACE002",
+            "missing_rate": 0,
+            "unique_count": 1,
+            "form_name": "Vital Signs",
+            "grain": "one_record_per_subject_visit",
+            "format_candidates": "",
+            "partial_tokens": "",
+            "record_count": 8
+          }
+        ]
+      },
+      {
+        "declared_source_key": "vs_mixed.PATNUM",
+        "role": "subject_identifier",
+        "resolution": "direct",
+        "evidence": [
+          {
+            "source_dataset": "vs_mixed",
+            "source_variable": "PATNUM",
+            "label": "Subject identifier",
+            "data_type": "character",
+            "example_values": "701-2001 | 701-2002 | 702-2003 | 702-2004",
+            "missing_rate": 0,
+            "unique_count": 4,
+            "form_name": "Vital Signs",
+            "grain": "one_record_per_subject_visit",
+            "format_candidates": "",
+            "partial_tokens": "",
+            "record_count": 8
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "task_id": "VS_VISIT",
+    "assembly_group_id": "VS_CORE",
+    "target_domain": "VS",
+    "clinical_action": "Map the visit name.",
+    "form_name": "Vital Signs",
+    "expected_cardinality": null,
+    "required": true,
+    "depends_on": [
+      "VS_UNIQUE_SUBJECT_IDENTIFIER"
+    ],
+    "source_refs": [
+      {
+        "ref_id": "vs_mixed__INSTANCE",
+        "dataset": "vs_mixed",
+        "variable": "INSTANCE",
+        "role": "visit"
+      }
+    ],
+    "field_profiles": [
+      {
+        "declared_source_key": "vs_mixed.INSTANCE",
+        "role": "visit",
+        "resolution": "direct",
+        "evidence": [
+          {
+            "source_dataset": "vs_mixed",
+            "source_variable": "INSTANCE",
+            "label": "Visit name",
+            "data_type": "character",
+            "example_values": "Screening 1 | Week 2",
+            "missing_rate": 0,
+            "unique_count": 2,
+            "form_name": "Vital Signs",
+            "grain": "one_record_per_subject_visit",
+            "format_candidates": "",
+            "partial_tokens": "",
+            "record_count": 8
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "task_id": "VS_VISIT_NUMBER",
+    "assembly_group_id": "VS_CORE",
+    "target_domain": "VS",
+    "clinical_action": "Derive the numeric visit value from the approved visit table.",
+    "form_name": "Vital Signs",
+    "expected_cardinality": null,
+    "required": true,
+    "depends_on": [
+      "VS_VISIT"
+    ],
+    "source_refs": [
+      {
+        "ref_id": "vs_mixed__INSTANCE",
+        "dataset": "vs_mixed",
+        "variable": "INSTANCE",
+        "role": "visit"
+      }
+    ],
+    "field_profiles": [
+      {
+        "declared_source_key": "vs_mixed.INSTANCE",
+        "role": "visit",
+        "resolution": "direct",
+        "evidence": [
+          {
+            "source_dataset": "vs_mixed",
+            "source_variable": "INSTANCE",
+            "label": "Visit name",
+            "data_type": "character",
+            "example_values": "Screening 1 | Week 2",
+            "missing_rate": 0,
+            "unique_count": 2,
+            "form_name": "Vital Signs",
+            "grain": "one_record_per_subject_visit",
+            "format_candidates": "",
+            "partial_tokens": "",
+            "record_count": 8
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "task_id": "VS_DATETIME",
+    "assembly_group_id": "VS_CORE",
+    "target_domain": "VS",
+    "clinical_action": "Combine vital signs date and time as ISO 8601 datetime.",
+    "form_name": "Vital Signs",
+    "expected_cardinality": null,
+    "required": true,
+    "depends_on": [
+      "VS_UNIQUE_SUBJECT_IDENTIFIER"
+    ],
+    "source_refs": [
+      {
+        "ref_id": "vs_mixed__VTLD",
+        "dataset": "vs_mixed",
+        "variable": "VTLD",
+        "role": "date"
+      },
+      {
+        "ref_id": "vs_mixed__VSTIM",
+        "dataset": "vs_mixed",
+        "variable": "VSTIM",
+        "role": "time"
+      }
+    ],
+    "field_profiles": [
+      {
+        "declared_source_key": "vs_mixed.VTLD",
+        "role": "date",
+        "resolution": "direct",
+        "evidence": [
+          {
+            "source_dataset": "vs_mixed",
+            "source_variable": "VTLD",
+            "label": "Vital signs date",
+            "data_type": "character",
+            "example_values": "20-Dec-2024 | 19-Jan-2025 | 21-Dec-2024 | 22-Dec-2024 | 20-Jan-2025",
+            "missing_rate": 0,
+            "unique_count": 6,
+            "form_name": "Vital Signs",
+            "grain": "one_record_per_subject_visit",
+            "format_candidates": "dd-mmm-yyyy",
+            "partial_tokens": "",
+            "record_count": 8
+          }
+        ]
+      },
+      {
+        "declared_source_key": "vs_mixed.VSTIM",
+        "role": "time",
+        "resolution": "direct",
+        "evidence": [
+          {
+            "source_dataset": "vs_mixed",
+            "source_variable": "VSTIM",
+            "label": "VSTIM",
+            "data_type": "hms",
+            "example_values": "09:00 | 09:15 | 10:00 | 10:10 | 08:30",
+            "missing_rate": 0,
+            "unique_count": 8,
+            "form_name": "Vital Signs",
+            "grain": "one_record_per_subject_visit",
+            "format_candidates": "H:M",
+            "partial_tokens": "",
+            "record_count": 8
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "task_id": "VS_POSITION",
+    "assembly_group_id": "VS_CORE",
+    "target_domain": "VS",
+    "clinical_action": "Map body position using controlled terminology.",
+    "form_name": "Vital Signs",
+    "expected_cardinality": null,
+    "required": true,
+    "depends_on": [
+      "VS_UNIQUE_SUBJECT_IDENTIFIER"
+    ],
+    "source_refs": [
+      {
+        "ref_id": "vs_mixed__SUBPOS",
+        "dataset": "vs_mixed",
+        "variable": "SUBPOS",
+        "role": "body_position"
+      }
+    ],
+    "field_profiles": [
+      {
+        "declared_source_key": "vs_mixed.SUBPOS",
+        "role": "body_position",
+        "resolution": "direct",
+        "evidence": [
+          {
+            "source_dataset": "vs_mixed",
+            "source_variable": "SUBPOS",
+            "label": "Body position",
+            "data_type": "character",
+            "example_values": "Supine | Sitting | Standing",
+            "missing_rate": 0,
+            "unique_count": 3,
+            "form_name": "Vital Signs",
+            "grain": "one_record_per_subject_visit",
+            "format_candidates": "",
+            "partial_tokens": "",
+            "record_count": 8
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "task_id": "VS_HEIGHT_RECORD",
+    "assembly_group_id": "VS_HEIGHT",
+    "target_domain": "VS",
+    "clinical_action": "Expand height and its original unit into one VS finding record.",
+    "form_name": "Vital Signs",
+    "expected_cardinality": null,
+    "required": true,
+    "depends_on": [
+      "VS_DATETIME"
+    ],
+    "source_refs": [
+      {
+        "ref_id": "vs_mixed__HEIGHT",
+        "dataset": "vs_mixed",
+        "variable": "HEIGHT",
+        "role": "result"
+      },
+      {
+        "ref_id": "vs_mixed__HEIGHTU",
+        "dataset": "vs_mixed",
+        "variable": "HEIGHTU",
+        "role": "original_unit"
+      }
+    ],
+    "field_profiles": [
+      {
+        "declared_source_key": "vs_mixed.HEIGHT",
+        "role": "result",
+        "resolution": "direct",
+        "evidence": [
+          {
+            "source_dataset": "vs_mixed",
+            "source_variable": "HEIGHT",
+            "label": "HEIGHT",
+            "data_type": "numeric",
+            "example_values": "70 | 181 | 62.6 | 174",
+            "missing_rate": 0.5,
+            "unique_count": 4,
+            "form_name": "Vital Signs",
+            "grain": "one_record_per_subject_visit",
+            "format_candidates": "",
+            "partial_tokens": "",
+            "record_count": 8
+          }
+        ]
+      },
+      {
+        "declared_source_key": "vs_mixed.HEIGHTU",
+        "role": "original_unit",
+        "resolution": "direct",
+        "evidence": [
+          {
+            "source_dataset": "vs_mixed",
+            "source_variable": "HEIGHTU",
+            "label": "HEIGHTU",
+            "data_type": "character",
+            "example_values": "in | cm",
+            "missing_rate": 0.5,
+            "unique_count": 2,
+            "form_name": "Vital Signs",
+            "grain": "one_record_per_subject_visit",
+            "format_candidates": "",
+            "partial_tokens": "",
+            "record_count": 8
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "task_id": "VS_HEIGHT_STANDARDIZATION",
+    "assembly_group_id": "VS_HEIGHT",
+    "target_domain": "VS",
+    "clinical_action": "Standardize height to the registered standard unit.",
+    "form_name": "Vital Signs",
+    "expected_cardinality": null,
+    "required": true,
+    "depends_on": [
+      "VS_HEIGHT_RECORD"
+    ],
+    "source_refs": [
+      {
+        "ref_id": "vs_mixed__HEIGHT",
+        "dataset": "vs_mixed",
+        "variable": "HEIGHT",
+        "role": "result"
+      },
+      {
+        "ref_id": "vs_mixed__HEIGHTU",
+        "dataset": "vs_mixed",
+        "variable": "HEIGHTU",
+        "role": "original_unit"
+      }
+    ],
+    "field_profiles": [
+      {
+        "declared_source_key": "vs_mixed.HEIGHT",
+        "role": "result",
+        "resolution": "direct",
+        "evidence": [
+          {
+            "source_dataset": "vs_mixed",
+            "source_variable": "HEIGHT",
+            "label": "HEIGHT",
+            "data_type": "numeric",
+            "example_values": "70 | 181 | 62.6 | 174",
+            "missing_rate": 0.5,
+            "unique_count": 4,
+            "form_name": "Vital Signs",
+            "grain": "one_record_per_subject_visit",
+            "format_candidates": "",
+            "partial_tokens": "",
+            "record_count": 8
+          }
+        ]
+      },
+      {
+        "declared_source_key": "vs_mixed.HEIGHTU",
+        "role": "original_unit",
+        "resolution": "direct",
+        "evidence": [
+          {
+            "source_dataset": "vs_mixed",
+            "source_variable": "HEIGHTU",
+            "label": "HEIGHTU",
+            "data_type": "character",
+            "example_values": "in | cm",
+            "missing_rate": 0.5,
+            "unique_count": 2,
+            "form_name": "Vital Signs",
+            "grain": "one_record_per_subject_visit",
+            "format_candidates": "",
+            "partial_tokens": "",
+            "record_count": 8
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "task_id": "VS_WEIGHT_RECORD",
+    "assembly_group_id": "VS_WEIGHT",
+    "target_domain": "VS",
+    "clinical_action": "Expand weight and its original unit into one VS finding record.",
+    "form_name": "Vital Signs",
+    "expected_cardinality": null,
+    "required": true,
+    "depends_on": [
+      "VS_DATETIME"
+    ],
+    "source_refs": [
+      {
+        "ref_id": "vs_mixed__WEIGHT",
+        "dataset": "vs_mixed",
+        "variable": "WEIGHT",
+        "role": "result"
+      },
+      {
+        "ref_id": "vs_mixed__WEIGHTU",
+        "dataset": "vs_mixed",
+        "variable": "WEIGHTU",
+        "role": "original_unit"
+      }
+    ],
+    "field_profiles": [
+      {
+        "declared_source_key": "vs_mixed.WEIGHT",
+        "role": "result",
+        "resolution": "direct",
+        "evidence": [
+          {
+            "source_dataset": "vs_mixed",
+            "source_variable": "WEIGHT",
+            "label": "WEIGHT",
+            "data_type": "numeric",
+            "example_values": "180 | 81.2 | 86 | 188 | 132",
+            "missing_rate": 0,
+            "unique_count": 8,
+            "form_name": "Vital Signs",
+            "grain": "one_record_per_subject_visit",
+            "format_candidates": "",
+            "partial_tokens": "",
+            "record_count": 8
+          }
+        ]
+      },
+      {
+        "declared_source_key": "vs_mixed.WEIGHTU",
+        "role": "original_unit",
+        "resolution": "direct",
+        "evidence": [
+          {
+            "source_dataset": "vs_mixed",
+            "source_variable": "WEIGHTU",
+            "label": "WEIGHTU",
+            "data_type": "character",
+            "example_values": "lb | kg",
+            "missing_rate": 0,
+            "unique_count": 2,
+            "form_name": "Vital Signs",
+            "grain": "one_record_per_subject_visit",
+            "format_candidates": "",
+            "partial_tokens": "",
+            "record_count": 8
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "task_id": "VS_WEIGHT_STANDARDIZATION",
+    "assembly_group_id": "VS_WEIGHT",
+    "target_domain": "VS",
+    "clinical_action": "Standardize weight to the registered standard unit.",
+    "form_name": "Vital Signs",
+    "expected_cardinality": null,
+    "required": true,
+    "depends_on": [
+      "VS_WEIGHT_RECORD"
+    ],
+    "source_refs": [
+      {
+        "ref_id": "vs_mixed__WEIGHT",
+        "dataset": "vs_mixed",
+        "variable": "WEIGHT",
+        "role": "result"
+      },
+      {
+        "ref_id": "vs_mixed__WEIGHTU",
+        "dataset": "vs_mixed",
+        "variable": "WEIGHTU",
+        "role": "original_unit"
+      }
+    ],
+    "field_profiles": [
+      {
+        "declared_source_key": "vs_mixed.WEIGHT",
+        "role": "result",
+        "resolution": "direct",
+        "evidence": [
+          {
+            "source_dataset": "vs_mixed",
+            "source_variable": "WEIGHT",
+            "label": "WEIGHT",
+            "data_type": "numeric",
+            "example_values": "180 | 81.2 | 86 | 188 | 132",
+            "missing_rate": 0,
+            "unique_count": 8,
+            "form_name": "Vital Signs",
+            "grain": "one_record_per_subject_visit",
+            "format_candidates": "",
+            "partial_tokens": "",
+            "record_count": 8
+          }
+        ]
+      },
+      {
+        "declared_source_key": "vs_mixed.WEIGHTU",
+        "role": "original_unit",
+        "resolution": "direct",
+        "evidence": [
+          {
+            "source_dataset": "vs_mixed",
+            "source_variable": "WEIGHTU",
+            "label": "WEIGHTU",
+            "data_type": "character",
+            "example_values": "lb | kg",
+            "missing_rate": 0,
+            "unique_count": 2,
+            "form_name": "Vital Signs",
+            "grain": "one_record_per_subject_visit",
+            "format_candidates": "",
+            "partial_tokens": "",
+            "record_count": 8
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "task_id": "VS_TEMP_RECORD",
+    "assembly_group_id": "VS_TEMP",
+    "target_domain": "VS",
+    "clinical_action": "Expand temperature and its original unit into one VS finding record.",
+    "form_name": "Vital Signs",
+    "expected_cardinality": null,
+    "required": true,
+    "depends_on": [
+      "VS_DATETIME"
+    ],
+    "source_refs": [
+      {
+        "ref_id": "vs_mixed__TEMP",
+        "dataset": "vs_mixed",
+        "variable": "TEMP",
+        "role": "result"
+      },
+      {
+        "ref_id": "vs_mixed__TEMPU",
+        "dataset": "vs_mixed",
+        "variable": "TEMPU",
+        "role": "original_unit"
+      }
+    ],
+    "field_profiles": [
+      {
+        "declared_source_key": "vs_mixed.TEMP",
+        "role": "result",
+        "resolution": "direct",
+        "evidence": [
+          {
+            "source_dataset": "vs_mixed",
+            "source_variable": "TEMP",
+            "label": "TEMP",
+            "data_type": "numeric",
+            "example_values": "98.6 | 37.1 | 36.5 | 98.2 | 99.1",
+            "missing_rate": 0,
+            "unique_count": 8,
+            "form_name": "Vital Signs",
+            "grain": "one_record_per_subject_visit",
+            "format_candidates": "",
+            "partial_tokens": "",
+            "record_count": 8
+          }
+        ]
+      },
+      {
+        "declared_source_key": "vs_mixed.TEMPU",
+        "role": "original_unit",
+        "resolution": "direct",
+        "evidence": [
+          {
+            "source_dataset": "vs_mixed",
+            "source_variable": "TEMPU",
+            "label": "TEMPU",
+            "data_type": "character",
+            "example_values": "F | C",
+            "missing_rate": 0,
+            "unique_count": 2,
+            "form_name": "Vital Signs",
+            "grain": "one_record_per_subject_visit",
+            "format_candidates": "",
+            "partial_tokens": "",
+            "record_count": 8
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "task_id": "VS_TEMP_STANDARDIZATION",
+    "assembly_group_id": "VS_TEMP",
+    "target_domain": "VS",
+    "clinical_action": "Standardize temperature to the registered standard unit.",
+    "form_name": "Vital Signs",
+    "expected_cardinality": null,
+    "required": true,
+    "depends_on": [
+      "VS_TEMP_RECORD"
+    ],
+    "source_refs": [
+      {
+        "ref_id": "vs_mixed__TEMP",
+        "dataset": "vs_mixed",
+        "variable": "TEMP",
+        "role": "result"
+      },
+      {
+        "ref_id": "vs_mixed__TEMPU",
+        "dataset": "vs_mixed",
+        "variable": "TEMPU",
+        "role": "original_unit"
+      }
+    ],
+    "field_profiles": [
+      {
+        "declared_source_key": "vs_mixed.TEMP",
+        "role": "result",
+        "resolution": "direct",
+        "evidence": [
+          {
+            "source_dataset": "vs_mixed",
+            "source_variable": "TEMP",
+            "label": "TEMP",
+            "data_type": "numeric",
+            "example_values": "98.6 | 37.1 | 36.5 | 98.2 | 99.1",
+            "missing_rate": 0,
+            "unique_count": 8,
+            "form_name": "Vital Signs",
+            "grain": "one_record_per_subject_visit",
+            "format_candidates": "",
+            "partial_tokens": "",
+            "record_count": 8
+          }
+        ]
+      },
+      {
+        "declared_source_key": "vs_mixed.TEMPU",
+        "role": "original_unit",
+        "resolution": "direct",
+        "evidence": [
+          {
+            "source_dataset": "vs_mixed",
+            "source_variable": "TEMPU",
+            "label": "TEMPU",
+            "data_type": "character",
+            "example_values": "F | C",
+            "missing_rate": 0,
+            "unique_count": 2,
+            "form_name": "Vital Signs",
+            "grain": "one_record_per_subject_visit",
+            "format_candidates": "",
+            "partial_tokens": "",
+            "record_count": 8
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "task_id": "VS_SYSBP_RECORD",
+    "assembly_group_id": "VS_SYSBP",
+    "target_domain": "VS",
+    "clinical_action": "Expand systolic blood pressure and its original unit into one VS finding record.",
+    "form_name": "Vital Signs",
+    "expected_cardinality": null,
+    "required": true,
+    "depends_on": [
+      "VS_DATETIME"
+    ],
+    "source_refs": [
+      {
+        "ref_id": "vs_mixed__SYS_BP",
+        "dataset": "vs_mixed",
+        "variable": "SYS_BP",
+        "role": "result"
+      },
+      {
+        "ref_id": "vs_mixed__SYS_BPU",
+        "dataset": "vs_mixed",
+        "variable": "SYS_BPU",
+        "role": "original_unit"
+      }
+    ],
+    "field_profiles": [
+      {
+        "declared_source_key": "vs_mixed.SYS_BP",
+        "role": "result",
+        "resolution": "direct",
+        "evidence": [
+          {
+            "source_dataset": "vs_mixed",
+            "source_variable": "SYS_BP",
+            "label": "Systolic blood pressure",
+            "data_type": "numeric",
+            "example_values": "122 | 120 | 130 | 126 | 116",
+            "missing_rate": 0,
+            "unique_count": 8,
+            "form_name": "Vital Signs",
+            "grain": "one_record_per_subject_visit",
+            "format_candidates": "",
+            "partial_tokens": "",
+            "record_count": 8
+          }
+        ]
+      },
+      {
+        "declared_source_key": "vs_mixed.SYS_BPU",
+        "role": "original_unit",
+        "resolution": "direct",
+        "evidence": [
+          {
+            "source_dataset": "vs_mixed",
+            "source_variable": "SYS_BPU",
+            "label": "SYS BPU",
+            "data_type": "character",
+            "example_values": "mmHg",
+            "missing_rate": 0,
+            "unique_count": 1,
+            "form_name": "Vital Signs",
+            "grain": "one_record_per_subject_visit",
+            "format_candidates": "",
+            "partial_tokens": "",
+            "record_count": 8
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "task_id": "VS_SYSBP_STANDARDIZATION",
+    "assembly_group_id": "VS_SYSBP",
+    "target_domain": "VS",
+    "clinical_action": "Normalize systolic blood pressure through the registered identity conversion.",
+    "form_name": "Vital Signs",
+    "expected_cardinality": null,
+    "required": true,
+    "depends_on": [
+      "VS_SYSBP_RECORD"
+    ],
+    "source_refs": [
+      {
+        "ref_id": "vs_mixed__SYS_BP",
+        "dataset": "vs_mixed",
+        "variable": "SYS_BP",
+        "role": "result"
+      },
+      {
+        "ref_id": "vs_mixed__SYS_BPU",
+        "dataset": "vs_mixed",
+        "variable": "SYS_BPU",
+        "role": "original_unit"
+      }
+    ],
+    "field_profiles": [
+      {
+        "declared_source_key": "vs_mixed.SYS_BP",
+        "role": "result",
+        "resolution": "direct",
+        "evidence": [
+          {
+            "source_dataset": "vs_mixed",
+            "source_variable": "SYS_BP",
+            "label": "Systolic blood pressure",
+            "data_type": "numeric",
+            "example_values": "122 | 120 | 130 | 126 | 116",
+            "missing_rate": 0,
+            "unique_count": 8,
+            "form_name": "Vital Signs",
+            "grain": "one_record_per_subject_visit",
+            "format_candidates": "",
+            "partial_tokens": "",
+            "record_count": 8
+          }
+        ]
+      },
+      {
+        "declared_source_key": "vs_mixed.SYS_BPU",
+        "role": "original_unit",
+        "resolution": "direct",
+        "evidence": [
+          {
+            "source_dataset": "vs_mixed",
+            "source_variable": "SYS_BPU",
+            "label": "SYS BPU",
+            "data_type": "character",
+            "example_values": "mmHg",
+            "missing_rate": 0,
+            "unique_count": 1,
+            "form_name": "Vital Signs",
+            "grain": "one_record_per_subject_visit",
+            "format_candidates": "",
+            "partial_tokens": "",
+            "record_count": 8
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "task_id": "VS_DIABP_RECORD",
+    "assembly_group_id": "VS_DIABP",
+    "target_domain": "VS",
+    "clinical_action": "Expand diastolic blood pressure and its original unit into one VS finding record.",
+    "form_name": "Vital Signs",
+    "expected_cardinality": null,
+    "required": true,
+    "depends_on": [
+      "VS_DATETIME"
+    ],
+    "source_refs": [
+      {
+        "ref_id": "vs_mixed__DIA_BP",
+        "dataset": "vs_mixed",
+        "variable": "DIA_BP",
+        "role": "result"
+      },
+      {
+        "ref_id": "vs_mixed__DIA_BPU",
+        "dataset": "vs_mixed",
+        "variable": "DIA_BPU",
+        "role": "original_unit"
+      }
+    ],
+    "field_profiles": [
+      {
+        "declared_source_key": "vs_mixed.DIA_BP",
+        "role": "result",
+        "resolution": "direct",
+        "evidence": [
+          {
+            "source_dataset": "vs_mixed",
+            "source_variable": "DIA_BP",
+            "label": "Diastolic blood pressure",
+            "data_type": "numeric",
+            "example_values": "78 | 76 | 82 | 80 | 74",
+            "missing_rate": 0,
+            "unique_count": 8,
+            "form_name": "Vital Signs",
+            "grain": "one_record_per_subject_visit",
+            "format_candidates": "",
+            "partial_tokens": "",
+            "record_count": 8
+          }
+        ]
+      },
+      {
+        "declared_source_key": "vs_mixed.DIA_BPU",
+        "role": "original_unit",
+        "resolution": "direct",
+        "evidence": [
+          {
+            "source_dataset": "vs_mixed",
+            "source_variable": "DIA_BPU",
+            "label": "DIA BPU",
+            "data_type": "character",
+            "example_values": "mmHg",
+            "missing_rate": 0,
+            "unique_count": 1,
+            "form_name": "Vital Signs",
+            "grain": "one_record_per_subject_visit",
+            "format_candidates": "",
+            "partial_tokens": "",
+            "record_count": 8
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "task_id": "VS_DIABP_STANDARDIZATION",
+    "assembly_group_id": "VS_DIABP",
+    "target_domain": "VS",
+    "clinical_action": "Normalize diastolic blood pressure through the registered identity conversion.",
+    "form_name": "Vital Signs",
+    "expected_cardinality": null,
+    "required": true,
+    "depends_on": [
+      "VS_DIABP_RECORD"
+    ],
+    "source_refs": [
+      {
+        "ref_id": "vs_mixed__DIA_BP",
+        "dataset": "vs_mixed",
+        "variable": "DIA_BP",
+        "role": "result"
+      },
+      {
+        "ref_id": "vs_mixed__DIA_BPU",
+        "dataset": "vs_mixed",
+        "variable": "DIA_BPU",
+        "role": "original_unit"
+      }
+    ],
+    "field_profiles": [
+      {
+        "declared_source_key": "vs_mixed.DIA_BP",
+        "role": "result",
+        "resolution": "direct",
+        "evidence": [
+          {
+            "source_dataset": "vs_mixed",
+            "source_variable": "DIA_BP",
+            "label": "Diastolic blood pressure",
+            "data_type": "numeric",
+            "example_values": "78 | 76 | 82 | 80 | 74",
+            "missing_rate": 0,
+            "unique_count": 8,
+            "form_name": "Vital Signs",
+            "grain": "one_record_per_subject_visit",
+            "format_candidates": "",
+            "partial_tokens": "",
+            "record_count": 8
+          }
+        ]
+      },
+      {
+        "declared_source_key": "vs_mixed.DIA_BPU",
+        "role": "original_unit",
+        "resolution": "direct",
+        "evidence": [
+          {
+            "source_dataset": "vs_mixed",
+            "source_variable": "DIA_BPU",
+            "label": "DIA BPU",
+            "data_type": "character",
+            "example_values": "mmHg",
+            "missing_rate": 0,
+            "unique_count": 1,
+            "form_name": "Vital Signs",
+            "grain": "one_record_per_subject_visit",
+            "format_candidates": "",
+            "partial_tokens": "",
+            "record_count": 8
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "task_id": "VS_PULSE_RECORD",
+    "assembly_group_id": "VS_PULSE",
+    "target_domain": "VS",
+    "clinical_action": "Expand pulse rate and its original unit into one VS finding record.",
+    "form_name": "Vital Signs",
+    "expected_cardinality": null,
+    "required": true,
+    "depends_on": [
+      "VS_DATETIME"
+    ],
+    "source_refs": [
+      {
+        "ref_id": "vs_mixed__PULSE",
+        "dataset": "vs_mixed",
+        "variable": "PULSE",
+        "role": "result"
+      },
+      {
+        "ref_id": "vs_mixed__PULSEU",
+        "dataset": "vs_mixed",
+        "variable": "PULSEU",
+        "role": "original_unit"
+      }
+    ],
+    "field_profiles": [
+      {
+        "declared_source_key": "vs_mixed.PULSE",
+        "role": "result",
+        "resolution": "direct",
+        "evidence": [
+          {
+            "source_dataset": "vs_mixed",
+            "source_variable": "PULSE",
+            "label": "Pulse rate",
+            "data_type": "numeric",
+            "example_values": "64 | 62 | 72 | 70 | 68",
+            "missing_rate": 0,
+            "unique_count": 8,
+            "form_name": "Vital Signs",
+            "grain": "one_record_per_subject_visit",
+            "format_candidates": "",
+            "partial_tokens": "",
+            "record_count": 8
+          }
+        ]
+      },
+      {
+        "declared_source_key": "vs_mixed.PULSEU",
+        "role": "original_unit",
+        "resolution": "direct",
+        "evidence": [
+          {
+            "source_dataset": "vs_mixed",
+            "source_variable": "PULSEU",
+            "label": "PULSEU",
+            "data_type": "character",
+            "example_values": "beats/min",
+            "missing_rate": 0,
+            "unique_count": 1,
+            "form_name": "Vital Signs",
+            "grain": "one_record_per_subject_visit",
+            "format_candidates": "",
+            "partial_tokens": "",
+            "record_count": 8
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "task_id": "VS_PULSE_STANDARDIZATION",
+    "assembly_group_id": "VS_PULSE",
+    "target_domain": "VS",
+    "clinical_action": "Normalize pulse rate through the registered identity conversion.",
+    "form_name": "Vital Signs",
+    "expected_cardinality": null,
+    "required": true,
+    "depends_on": [
+      "VS_PULSE_RECORD"
+    ],
+    "source_refs": [
+      {
+        "ref_id": "vs_mixed__PULSE",
+        "dataset": "vs_mixed",
+        "variable": "PULSE",
+        "role": "result"
+      },
+      {
+        "ref_id": "vs_mixed__PULSEU",
+        "dataset": "vs_mixed",
+        "variable": "PULSEU",
+        "role": "original_unit"
+      }
+    ],
+    "field_profiles": [
+      {
+        "declared_source_key": "vs_mixed.PULSE",
+        "role": "result",
+        "resolution": "direct",
+        "evidence": [
+          {
+            "source_dataset": "vs_mixed",
+            "source_variable": "PULSE",
+            "label": "Pulse rate",
+            "data_type": "numeric",
+            "example_values": "64 | 62 | 72 | 70 | 68",
+            "missing_rate": 0,
+            "unique_count": 8,
+            "form_name": "Vital Signs",
+            "grain": "one_record_per_subject_visit",
+            "format_candidates": "",
+            "partial_tokens": "",
+            "record_count": 8
+          }
+        ]
+      },
+      {
+        "declared_source_key": "vs_mixed.PULSEU",
+        "role": "original_unit",
+        "resolution": "direct",
+        "evidence": [
+          {
+            "source_dataset": "vs_mixed",
+            "source_variable": "PULSEU",
+            "label": "PULSEU",
+            "data_type": "character",
+            "example_values": "beats/min",
+            "missing_rate": 0,
+            "unique_count": 1,
+            "form_name": "Vital Signs",
+            "grain": "one_record_per_subject_visit",
+            "format_candidates": "",
+            "partial_tokens": "",
+            "record_count": 8
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "task_id": "VS_SEQUENCE",
+    "assembly_group_id": "VS_POST_DERIVATIONS",
+    "target_domain": "VS",
+    "clinical_action": "Derive a stable within-subject VS sequence.",
+    "form_name": "Vital Signs",
+    "expected_cardinality": null,
+    "required": true,
+    "depends_on": [
+      "VS_HEIGHT_RECORD",
+      "VS_WEIGHT_RECORD",
+      "VS_TEMP_RECORD",
+      "VS_SYSBP_RECORD",
+      "VS_DIABP_RECORD",
+      "VS_PULSE_RECORD"
+    ],
+    "source_refs": [],
+    "field_profiles": []
+  },
+  {
+    "task_id": "VS_STUDY_DAY",
+    "assembly_group_id": "VS_POST_DERIVATIONS",
+    "target_domain": "VS",
+    "clinical_action": "Derive the vital signs study day.",
+    "form_name": "Vital Signs",
+    "expected_cardinality": null,
+    "required": true,
+    "depends_on": [
+      "VS_DATETIME",
+      "DM_REFERENCE_START"
+    ],
+    "source_refs": [],
+    "field_profiles": []
+  },
+  {
+    "task_id": "VS_BASELINE_FLAG",
+    "assembly_group_id": "VS_POST_DERIVATIONS",
+    "target_domain": "VS",
+    "clinical_action": "Flag the last valid Screening 1 result before the subject reference start.",
+    "form_name": "Vital Signs",
+    "expected_cardinality": null,
+    "required": true,
+    "depends_on": [
+      "VS_DATETIME",
+      "VS_VISIT",
+      "DM_REFERENCE_START",
+      "VS_HEIGHT_RECORD",
+      "VS_WEIGHT_RECORD",
+      "VS_TEMP_RECORD",
+      "VS_SYSBP_RECORD",
+      "VS_DIABP_RECORD",
+      "VS_PULSE_RECORD"
+    ],
+    "source_refs": [],
+    "field_profiles": []
+  }
+]

@@ -1,0 +1,17 @@
+{
+  "schema_version": "0.4",
+  "scenario": "advanced",
+  "task_count": 57,
+  "assembly_group_count": 21,
+  "semantic_correct": 57,
+  "structural_correct": 57,
+  "complete_plan_top1_correct": 57,
+  "complete_plan_top3_correct": 57,
+  "parameters_total": 90,
+  "parameters_injected": 89,
+  "parameters_requested_from_model": 1,
+  "parameters_completed_by_model": 1,
+  "model_parameter_completions_correct": 1,
+  "parameter_conflicts": 0,
+  "generated_at": "2026-09-03T07:25:33Z"
+}

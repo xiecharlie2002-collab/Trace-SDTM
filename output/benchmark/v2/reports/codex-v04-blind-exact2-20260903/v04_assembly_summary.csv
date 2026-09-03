@@ -1,0 +1,7 @@
+evaluation_mode,scenario,level,assembly_groups,semantic_correct,structural_correct,complete_plan_correct,complete_plan_top3
+cascade,advanced,高级,21,21,21,20,20
+cascade,basic,基础,18,18,18,18,18
+cascade,intermediate,中等,20,20,20,18,18
+conditional,advanced,高级,21,21,21,20,20
+conditional,basic,基础,18,18,18,18,18
+conditional,intermediate,中等,20,20,20,19,19

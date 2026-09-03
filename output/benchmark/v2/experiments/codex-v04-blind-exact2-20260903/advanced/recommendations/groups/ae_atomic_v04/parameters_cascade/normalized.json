@@ -1,0 +1,434 @@
+{
+  "valid": {
+    "AE_BODY_SYSTEM#1": {
+      "task_id": "AE_BODY_SYSTEM",
+      "candidate_rank": 1,
+      "status": "proposed",
+      "uncertainties": "",
+      "parameters": {
+        "case": "upper"
+      },
+      "parameter_sources": {
+        "case": {
+          "source": "model",
+          "reference": "parameter_completion_v04"
+        }
+      }
+    }
+  },
+  "failures": [],
+  "missing_candidate_keys": [],
+  "stage": "parameter_completion",
+  "provider": "codex_subagent",
+  "resolutions": {
+    "valid": {
+      "AE_SOURCE_INTEGRATION#1": {
+        "task_id": "AE_SOURCE_INTEGRATION",
+        "candidate_rank": 1,
+        "transform_id": "merge_sources",
+        "injected_parameters": {
+          "left_dataset": "ae_main",
+          "right_dataset": "sae_detail",
+          "output_dataset": "ae_merged",
+          "by": {
+            "STUDY": "STUDY",
+            "PATNUM": "PATNUM",
+            "AEID": "AEID"
+          },
+          "relationship": "one-to-one",
+          "join_type": "left",
+          "select": [
+            "AESHOSP"
+          ],
+          "conflict_policy": "error"
+        },
+        "parameter_sources": {
+          "left_dataset": {
+            "source": "derived",
+            "reference": "resolver:source_relationship"
+          },
+          "right_dataset": {
+            "source": "derived",
+            "reference": "resolver:source_relationship"
+          },
+          "output_dataset": {
+            "source": "policy",
+            "reference": "resolver:source_relationship"
+          },
+          "by": {
+            "source": "policy",
+            "reference": "resolver:source_relationship"
+          },
+          "relationship": {
+            "source": "policy",
+            "reference": "resolver:source_relationship"
+          },
+          "join_type": {
+            "source": "registry",
+            "reference": "resolver:source_relationship"
+          },
+          "select": {
+            "source": "derived",
+            "reference": "resolver:source_relationship"
+          },
+          "conflict_policy": {
+            "source": "registry",
+            "reference": "resolver:source_relationship"
+          }
+        },
+        "unresolved_parameters": [],
+        "parameter_options": {},
+        "unavailable_parameters": [],
+        "fully_resolved": true,
+        "status": "ready"
+      },
+      "AE_STUDY_IDENTIFIER#1": {
+        "task_id": "AE_STUDY_IDENTIFIER",
+        "candidate_rank": 1,
+        "transform_id": "assign_no_ct",
+        "injected_parameters": {},
+        "parameter_sources": {},
+        "unresolved_parameters": [],
+        "parameter_options": [],
+        "unavailable_parameters": [],
+        "fully_resolved": true,
+        "status": "ready"
+      },
+      "AE_DOMAIN_CONSTANT#1": {
+        "task_id": "AE_DOMAIN_CONSTANT",
+        "candidate_rank": 1,
+        "transform_id": "hardcode_no_ct",
+        "injected_parameters": {
+          "value": "AE"
+        },
+        "parameter_sources": {
+          "value": {
+            "source": "policy",
+            "reference": "resolver:target_constant"
+          }
+        },
+        "unresolved_parameters": [],
+        "parameter_options": {},
+        "unavailable_parameters": [],
+        "fully_resolved": true,
+        "status": "ready"
+      },
+      "AE_UNIQUE_SUBJECT_IDENTIFIER#1": {
+        "task_id": "AE_UNIQUE_SUBJECT_IDENTIFIER",
+        "candidate_rank": 1,
+        "transform_id": "derive_usubjid",
+        "injected_parameters": {
+          "separator": "-"
+        },
+        "parameter_sources": {
+          "separator": {
+            "source": "policy",
+            "reference": "resolver:identifier_policy"
+          }
+        },
+        "unresolved_parameters": [],
+        "parameter_options": {},
+        "unavailable_parameters": [],
+        "fully_resolved": true,
+        "status": "ready"
+      },
+      "AE_REPORTED_TERM#1": {
+        "task_id": "AE_REPORTED_TERM",
+        "candidate_rank": 1,
+        "transform_id": "assign_no_ct",
+        "injected_parameters": {},
+        "parameter_sources": {},
+        "unresolved_parameters": [],
+        "parameter_options": [],
+        "unavailable_parameters": [],
+        "fully_resolved": true,
+        "status": "ready"
+      },
+      "AE_CODED_TERM#1": {
+        "task_id": "AE_CODED_TERM",
+        "candidate_rank": 1,
+        "transform_id": "assign_no_ct",
+        "injected_parameters": {},
+        "parameter_sources": {},
+        "unresolved_parameters": [],
+        "parameter_options": [],
+        "unavailable_parameters": [],
+        "fully_resolved": true,
+        "status": "ready"
+      },
+      "AE_BODY_SYSTEM#1": {
+        "task_id": "AE_BODY_SYSTEM",
+        "candidate_rank": 1,
+        "transform_id": "normalize_case",
+        "injected_parameters": {},
+        "parameter_sources": {},
+        "unresolved_parameters": "case",
+        "parameter_options": {
+          "case": [
+            "upper",
+            "lower"
+          ]
+        },
+        "unavailable_parameters": [],
+        "fully_resolved": false,
+        "status": "ready"
+      },
+      "AE_SEVERITY#1": {
+        "task_id": "AE_SEVERITY",
+        "candidate_rank": 1,
+        "transform_id": "assign_ct",
+        "injected_parameters": {
+          "codelist_id": "AESEV"
+        },
+        "parameter_sources": {
+          "codelist_id": {
+            "source": "resource",
+            "reference": "resolver:target_codelist"
+          }
+        },
+        "unresolved_parameters": [],
+        "parameter_options": {},
+        "unavailable_parameters": [],
+        "fully_resolved": true,
+        "status": "ready"
+      },
+      "AE_SERIOUS#1": {
+        "task_id": "AE_SERIOUS",
+        "candidate_rank": 1,
+        "transform_id": "assign_ct",
+        "injected_parameters": {
+          "codelist_id": "NY"
+        },
+        "parameter_sources": {
+          "codelist_id": {
+            "source": "resource",
+            "reference": "resolver:target_codelist"
+          }
+        },
+        "unresolved_parameters": [],
+        "parameter_options": {},
+        "unavailable_parameters": [],
+        "fully_resolved": true,
+        "status": "ready"
+      },
+      "AE_HOSPITALIZATION#1": {
+        "task_id": "AE_HOSPITALIZATION",
+        "candidate_rank": 1,
+        "transform_id": "assign_ct",
+        "injected_parameters": {
+          "codelist_id": "NY"
+        },
+        "parameter_sources": {
+          "codelist_id": {
+            "source": "resource",
+            "reference": "resolver:target_codelist"
+          }
+        },
+        "unresolved_parameters": [],
+        "parameter_options": {},
+        "unavailable_parameters": [],
+        "fully_resolved": true,
+        "status": "ready"
+      },
+      "AE_RELATIONSHIP#1": {
+        "task_id": "AE_RELATIONSHIP",
+        "candidate_rank": 1,
+        "transform_id": "assign_no_ct",
+        "injected_parameters": {},
+        "parameter_sources": {},
+        "unresolved_parameters": [],
+        "parameter_options": [],
+        "unavailable_parameters": [],
+        "fully_resolved": true,
+        "status": "ready"
+      },
+      "AE_OUTCOME#1": {
+        "task_id": "AE_OUTCOME",
+        "candidate_rank": 1,
+        "transform_id": "assign_ct",
+        "injected_parameters": {
+          "codelist_id": "AEOUT"
+        },
+        "parameter_sources": {
+          "codelist_id": {
+            "source": "resource",
+            "reference": "resolver:target_codelist"
+          }
+        },
+        "unresolved_parameters": [],
+        "parameter_options": {},
+        "unavailable_parameters": [],
+        "fully_resolved": true,
+        "status": "ready"
+      },
+      "AE_START_DATETIME#1": {
+        "task_id": "AE_START_DATETIME",
+        "candidate_rank": 1,
+        "transform_id": "to_iso8601_partial_datetime",
+        "injected_parameters": {
+          "formats": [
+            "dd-mmm-yyyy",
+            "H:M"
+          ],
+          "unknown_tokens": [
+            "UNK",
+            "UN"
+          ]
+        },
+        "parameter_sources": {
+          "formats": {
+            "source": "policy",
+            "reference": "resolver:approved_formats"
+          },
+          "unknown_tokens": {
+            "source": "policy",
+            "reference": "resolver:partial_date_tokens"
+          }
+        },
+        "unresolved_parameters": [],
+        "parameter_options": {},
+        "unavailable_parameters": [],
+        "fully_resolved": true,
+        "status": "ready"
+      },
+      "AE_START_STUDY_DAY#1": {
+        "task_id": "AE_START_STUDY_DAY",
+        "candidate_rank": 1,
+        "transform_id": "derive_study_day",
+        "injected_parameters": {
+          "target_date": "AESTDTC",
+          "reference_date": "RFSTDTC"
+        },
+        "parameter_sources": {
+          "target_date": {
+            "source": "derived",
+            "reference": "resolver:study_day_policy"
+          },
+          "reference_date": {
+            "source": "policy",
+            "reference": "resolver:study_day_policy"
+          }
+        },
+        "unresolved_parameters": [],
+        "parameter_options": {},
+        "unavailable_parameters": [],
+        "fully_resolved": true,
+        "status": "ready"
+      },
+      "AE_END_DATETIME#1": {
+        "task_id": "AE_END_DATETIME",
+        "candidate_rank": 1,
+        "transform_id": "to_iso8601_partial_datetime",
+        "injected_parameters": {
+          "formats": [
+            "dd-mmm-yyyy",
+            "H:M"
+          ],
+          "unknown_tokens": [
+            "UNK",
+            "UN"
+          ]
+        },
+        "parameter_sources": {
+          "formats": {
+            "source": "policy",
+            "reference": "resolver:approved_formats"
+          },
+          "unknown_tokens": {
+            "source": "policy",
+            "reference": "resolver:partial_date_tokens"
+          }
+        },
+        "unresolved_parameters": [],
+        "parameter_options": {},
+        "unavailable_parameters": [],
+        "fully_resolved": true,
+        "status": "ready"
+      },
+      "AE_ONGOING_STATUS#1": {
+        "task_id": "AE_ONGOING_STATUS",
+        "candidate_rank": 1,
+        "transform_id": "derive_ongoing_flag",
+        "injected_parameters": {
+          "ongoing_value": "ONGOING",
+          "affirmative_values": [
+            "Y",
+            "Yes"
+          ]
+        },
+        "parameter_sources": {
+          "ongoing_value": {
+            "source": "policy",
+            "reference": "resolver:ongoing_policy"
+          },
+          "affirmative_values": {
+            "source": "policy",
+            "reference": "resolver:ongoing_policy"
+          }
+        },
+        "unresolved_parameters": [],
+        "parameter_options": {},
+        "unavailable_parameters": [],
+        "fully_resolved": true,
+        "status": "ready"
+      },
+      "AE_END_STUDY_DAY#1": {
+        "task_id": "AE_END_STUDY_DAY",
+        "candidate_rank": 1,
+        "transform_id": "derive_study_day",
+        "injected_parameters": {
+          "target_date": "AEENDTC",
+          "reference_date": "RFSTDTC"
+        },
+        "parameter_sources": {
+          "target_date": {
+            "source": "derived",
+            "reference": "resolver:study_day_policy"
+          },
+          "reference_date": {
+            "source": "policy",
+            "reference": "resolver:study_day_policy"
+          }
+        },
+        "unresolved_parameters": [],
+        "parameter_options": {},
+        "unavailable_parameters": [],
+        "fully_resolved": true,
+        "status": "ready"
+      },
+      "AE_SEQUENCE#1": {
+        "task_id": "AE_SEQUENCE",
+        "candidate_rank": 1,
+        "transform_id": "derive_sequence",
+        "injected_parameters": {
+          "record_variables": [
+            "STUDYID",
+            "USUBJID",
+            "AESTDTC",
+            "AETERM",
+            "AEDECOD",
+            ".SOURCE_ROW"
+          ],
+          "start_at": 1
+        },
+        "parameter_sources": {
+          "record_variables": {
+            "source": "policy",
+            "reference": "resolver:sequence_policy"
+          },
+          "start_at": {
+            "source": "policy",
+            "reference": "resolver:sequence_policy"
+          }
+        },
+        "unresolved_parameters": [],
+        "parameter_options": {},
+        "unavailable_parameters": [],
+        "fully_resolved": true,
+        "status": "ready"
+      }
+    },
+    "failures": [],
+    "stage": "known_parameter_resolution"
+  }
+}

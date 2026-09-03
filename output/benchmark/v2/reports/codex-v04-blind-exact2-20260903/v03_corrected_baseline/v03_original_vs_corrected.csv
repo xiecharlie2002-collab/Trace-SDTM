@@ -1,0 +1,5 @@
+scenario,level,denominator,original_complete_plan_top1,corrected_complete_plan_top1,correction,interpretation
+basic,基础,18,15,18,3,冻结响应和金标准未变；仅使用注册表参数模式重新判定 JSON/YAML 等价性。
+intermediate,中等,20,4,5,1,冻结响应和金标准未变；仅使用注册表参数模式重新判定 JSON/YAML 等价性。
+advanced,高级,21,8,10,2,冻结响应和金标准未变；仅使用注册表参数模式重新判定 JSON/YAML 等价性。
+all,全部,59,27,33,6,冻结响应和金标准未变；仅使用注册表参数模式重新判定 JSON/YAML 等价性。

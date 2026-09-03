@@ -1,0 +1,2863 @@
+{
+  "plans": {
+    "DM_STUDY_IDENTIFIER#1": {
+      "task_id": "DM_STUDY_IDENTIFIER",
+      "assembly_group_id": "DM_CORE",
+      "target_domain": "DM",
+      "candidate_rank": 1,
+      "source_refs": [
+        {
+          "ref_id": "dm_intermediate__STUDY",
+          "dataset": "dm_intermediate",
+          "variable": "STUDY",
+          "role": "study_identifier"
+        }
+      ],
+      "depends_on": [],
+      "required": true,
+      "semantic_decision": {
+        "task_id": "DM_STUDY_IDENTIFIER",
+        "target_domain": "DM",
+        "output_kind": "variables",
+        "target_variables": [
+          "STUDYID"
+        ],
+        "score": 1,
+        "evidence": "临床动作要求映射研究标识符，且来源字段 STUDY 的角色为研究标识符。",
+        "uncertainties": "",
+        "status": "proposed",
+        "structure_valid": true
+      },
+      "steps": [
+        {
+          "step_id": "DM_STUDY_IDENTIFIER_STEP_01",
+          "transform_id": "assign_no_ct",
+          "source_ref_ids": [
+            "dm_intermediate__STUDY"
+          ],
+          "target_variables": [
+            "STUDYID"
+          ],
+          "parameters": {},
+          "parameter_sources": {}
+        }
+      ],
+      "recommendation_score": 1,
+      "reason": "研究标识符来自单一字符字段，目标不受受控术语约束且无需改变值的语义或格式。",
+      "uncertainties": "",
+      "status": "proposed",
+      "review_required": true
+    },
+    "DM_DOMAIN_CONSTANT#1": {
+      "task_id": "DM_DOMAIN_CONSTANT",
+      "assembly_group_id": "DM_CORE",
+      "target_domain": "DM",
+      "candidate_rank": 1,
+      "source_refs": [],
+      "depends_on": [],
+      "required": true,
+      "semantic_decision": {
+        "task_id": "DM_DOMAIN_CONSTANT",
+        "target_domain": "DM",
+        "output_kind": "variables",
+        "target_variables": [
+          "DOMAIN"
+        ],
+        "score": 1,
+        "evidence": "临床动作要求设置 DM 域常量，项目政策明确其值为 DM。",
+        "uncertainties": "",
+        "status": "proposed",
+        "structure_valid": true
+      },
+      "steps": [
+        {
+          "step_id": "DM_DOMAIN_CONSTANT_STEP_01",
+          "transform_id": "hardcode_no_ct",
+          "source_ref_ids": [],
+          "target_variables": [
+            "DOMAIN"
+          ],
+          "parameters": {
+            "value": "DM"
+          },
+          "parameter_sources": {
+            "value": {
+              "source": "policy",
+              "reference": "resolver:target_constant"
+            }
+          }
+        }
+      ],
+      "recommendation_score": 1,
+      "reason": "域变量需要赋项目政策明确规定的固定值，且目标不受受控术语约束。",
+      "uncertainties": "",
+      "status": "proposed",
+      "review_required": true
+    },
+    "DM_UNIQUE_SUBJECT_IDENTIFIER#1": {
+      "task_id": "DM_UNIQUE_SUBJECT_IDENTIFIER",
+      "assembly_group_id": "DM_CORE",
+      "target_domain": "DM",
+      "candidate_rank": 1,
+      "source_refs": [
+        {
+          "ref_id": "dm_intermediate__STUDY",
+          "dataset": "dm_intermediate",
+          "variable": "STUDY",
+          "role": "study_identifier"
+        },
+        {
+          "ref_id": "dm_intermediate__PATNUM",
+          "dataset": "dm_intermediate",
+          "variable": "PATNUM",
+          "role": "subject_identifier"
+        }
+      ],
+      "depends_on": [],
+      "required": true,
+      "semantic_decision": {
+        "task_id": "DM_UNIQUE_SUBJECT_IDENTIFIER",
+        "target_domain": "DM",
+        "output_kind": "variables",
+        "target_variables": [
+          "USUBJID"
+        ],
+        "score": 1,
+        "evidence": "临床动作要求派生唯一受试者标识符，项目政策明确由 STUDY 和 PATNUM 组成。",
+        "uncertainties": "",
+        "status": "proposed",
+        "structure_valid": true
+      },
+      "steps": [
+        {
+          "step_id": "DM_UNIQUE_SUBJECT_IDENTIFIER_STEP_01",
+          "transform_id": "derive_usubjid",
+          "source_ref_ids": [
+            "dm_intermediate__STUDY",
+            "dm_intermediate__PATNUM"
+          ],
+          "target_variables": [
+            "USUBJID"
+          ],
+          "parameters": {
+            "separator": "-"
+          },
+          "parameter_sources": {
+            "separator": {
+              "source": "policy",
+              "reference": "resolver:identifier_policy"
+            }
+          }
+        }
+      ],
+      "recommendation_score": 1,
+      "reason": "项目政策已明确唯一受试者标识符由研究标识符和受试者标识符按批准格式派生。",
+      "uncertainties": "",
+      "status": "proposed",
+      "review_required": true
+    },
+    "DM_SUBJECT_IDENTIFIER#1": {
+      "task_id": "DM_SUBJECT_IDENTIFIER",
+      "assembly_group_id": "DM_CORE",
+      "target_domain": "DM",
+      "candidate_rank": 1,
+      "source_refs": [
+        {
+          "ref_id": "dm_intermediate__PATNUM",
+          "dataset": "dm_intermediate",
+          "variable": "PATNUM",
+          "role": "subject_identifier"
+        }
+      ],
+      "depends_on": [],
+      "required": true,
+      "semantic_decision": {
+        "task_id": "DM_SUBJECT_IDENTIFIER",
+        "target_domain": "DM",
+        "output_kind": "variables",
+        "target_variables": [
+          "SUBJID"
+        ],
+        "score": 1,
+        "evidence": "临床动作要求映射申办方受试者标识符，项目政策明确来源为 PATNUM。",
+        "uncertainties": "",
+        "status": "proposed",
+        "structure_valid": true
+      },
+      "steps": [
+        {
+          "step_id": "DM_SUBJECT_IDENTIFIER_STEP_01",
+          "transform_id": "assign_no_ct",
+          "source_ref_ids": [
+            "dm_intermediate__PATNUM"
+          ],
+          "target_variables": [
+            "SUBJID"
+          ],
+          "parameters": {},
+          "parameter_sources": {}
+        }
+      ],
+      "recommendation_score": 1,
+      "reason": "申办方受试者标识符直接来自单一字符字段，且无需受控术语转换。",
+      "uncertainties": "",
+      "status": "proposed",
+      "review_required": true
+    },
+    "DM_SITE_IDENTIFIER#1": {
+      "task_id": "DM_SITE_IDENTIFIER",
+      "assembly_group_id": "DM_CORE",
+      "target_domain": "DM",
+      "candidate_rank": 1,
+      "source_refs": [
+        {
+          "ref_id": "dm_intermediate__PATNUM",
+          "dataset": "dm_intermediate",
+          "variable": "PATNUM",
+          "role": "site_and_subject_identifier"
+        }
+      ],
+      "depends_on": [],
+      "required": true,
+      "semantic_decision": {
+        "task_id": "DM_SITE_IDENTIFIER",
+        "target_domain": "DM",
+        "output_kind": "variables",
+        "target_variables": [
+          "SITEID"
+        ],
+        "score": 1,
+        "evidence": "临床动作要求从申办方受试者标识符提取研究中心标识符，项目政策明确 SITEID 来源于 PATNUM。",
+        "uncertainties": "",
+        "status": "proposed",
+        "structure_valid": true
+      },
+      "steps": [
+        {
+          "step_id": "DM_SITE_IDENTIFIER_STEP_01",
+          "transform_id": "extract_delimited_part",
+          "source_ref_ids": [
+            "dm_intermediate__PATNUM"
+          ],
+          "target_variables": [
+            "SITEID"
+          ],
+          "parameters": {
+            "separator": "-",
+            "position": 1
+          },
+          "parameter_sources": {
+            "separator": {
+              "source": "policy",
+              "reference": "resolver:site_identifier_policy"
+            },
+            "position": {
+              "source": "policy",
+              "reference": "resolver:site_identifier_policy"
+            }
+          }
+        }
+      ],
+      "recommendation_score": 1,
+      "reason": "项目政策已明确从受试者标识符的固定分隔结构中抽取研究中心标识符。",
+      "uncertainties": "",
+      "status": "proposed",
+      "review_required": true
+    },
+    "DM_REFERENCE_START#1": {
+      "task_id": "DM_REFERENCE_START",
+      "assembly_group_id": "DM_REFERENCE_START",
+      "target_domain": "DM",
+      "candidate_rank": 1,
+      "source_refs": [
+        {
+          "ref_id": "dm_intermediate__FIRST_DOSE_DATE",
+          "dataset": "dm_intermediate",
+          "variable": "FIRST_DOSE_DATE",
+          "role": "date"
+        },
+        {
+          "ref_id": "dm_intermediate__FIRST_DOSE_TIME",
+          "dataset": "dm_intermediate",
+          "variable": "FIRST_DOSE_TIME",
+          "role": "time"
+        }
+      ],
+      "depends_on": [
+        "DM_UNIQUE_SUBJECT_IDENTIFIER"
+      ],
+      "required": true,
+      "semantic_decision": {
+        "task_id": "DM_REFERENCE_START",
+        "target_domain": "DM",
+        "output_kind": "variables",
+        "target_variables": [
+          "RFSTDTC"
+        ],
+        "score": 1,
+        "evidence": "临床动作要求将首次给药日期和时间组合为受试者参考开始日期时间，目录中对应变量为 RFSTDTC。",
+        "uncertainties": "",
+        "status": "proposed",
+        "structure_valid": true
+      },
+      "steps": [
+        {
+          "step_id": "DM_REFERENCE_START_STEP_01",
+          "transform_id": "to_iso8601_datetime",
+          "source_ref_ids": [
+            "dm_intermediate__FIRST_DOSE_DATE",
+            "dm_intermediate__FIRST_DOSE_TIME"
+          ],
+          "target_variables": [
+            "RFSTDTC"
+          ],
+          "parameters": {
+            "formats": [
+              "dd-mmm-yyyy",
+              "H:M:S"
+            ]
+          },
+          "parameter_sources": {
+            "formats": {
+              "source": "policy",
+              "reference": "resolver:approved_formats"
+            }
+          }
+        }
+      ],
+      "recommendation_score": 1,
+      "reason": "首次给药日期和时间均为格式明确的完整信息，适合直接转换为完整 ISO 8601 日期时间。",
+      "uncertainties": "",
+      "status": "proposed",
+      "review_required": true
+    },
+    "DM_CONSENT#1": {
+      "task_id": "DM_CONSENT",
+      "assembly_group_id": "DM_CONSENT",
+      "target_domain": "DM",
+      "candidate_rank": 1,
+      "source_refs": [
+        {
+          "ref_id": "dm_intermediate__IC_DATE",
+          "dataset": "dm_intermediate",
+          "variable": "IC_DATE",
+          "role": "date"
+        }
+      ],
+      "depends_on": [
+        "DM_UNIQUE_SUBJECT_IDENTIFIER"
+      ],
+      "required": true,
+      "semantic_decision": {
+        "task_id": "DM_CONSENT",
+        "target_domain": "DM",
+        "output_kind": "variables",
+        "target_variables": [
+          "RFICDTC"
+        ],
+        "score": 1,
+        "evidence": "临床动作要求将知情同意日期转换为 ISO 8601，目录中对应变量为 RFICDTC。",
+        "uncertainties": "",
+        "status": "proposed",
+        "structure_valid": true
+      },
+      "steps": [
+        {
+          "step_id": "DM_CONSENT_STEP_01",
+          "transform_id": "to_iso8601_date",
+          "source_ref_ids": [
+            "dm_intermediate__IC_DATE"
+          ],
+          "target_variables": [
+            "RFICDTC"
+          ],
+          "parameters": {
+            "formats": [
+              "dd-mmm-yyyy"
+            ]
+          },
+          "parameter_sources": {
+            "formats": {
+              "source": "policy",
+              "reference": "resolver:approved_formats"
+            }
+          }
+        }
+      ],
+      "recommendation_score": 1,
+      "reason": "知情同意日期是格式明确的完整日期，适合转换为 ISO 8601 日期。",
+      "uncertainties": "",
+      "status": "proposed",
+      "review_required": true
+    },
+    "DM_AGE#1": {
+      "task_id": "DM_AGE",
+      "assembly_group_id": "DM_DEMOGRAPHICS",
+      "target_domain": "DM",
+      "candidate_rank": 1,
+      "source_refs": [
+        {
+          "ref_id": "dm_intermediate__AGE",
+          "dataset": "dm_intermediate",
+          "variable": "AGE",
+          "role": "age"
+        }
+      ],
+      "depends_on": [
+        "DM_UNIQUE_SUBJECT_IDENTIFIER"
+      ],
+      "required": true,
+      "semantic_decision": {
+        "task_id": "DM_AGE",
+        "target_domain": "DM",
+        "output_kind": "variables",
+        "target_variables": [
+          "AGE"
+        ],
+        "score": 1,
+        "evidence": "临床动作要求映射年龄，来源字段 AGE 的角色为年龄。",
+        "uncertainties": "",
+        "status": "proposed",
+        "structure_valid": true
+      },
+      "steps": [
+        {
+          "step_id": "DM_AGE_STEP_01",
+          "transform_id": "assign_no_ct",
+          "source_ref_ids": [
+            "dm_intermediate__AGE"
+          ],
+          "target_variables": [
+            "AGE"
+          ],
+          "parameters": {},
+          "parameter_sources": {}
+        }
+      ],
+      "recommendation_score": 1,
+      "reason": "年龄直接来自单一数值字段，且无需改变值的语义或格式。",
+      "uncertainties": "",
+      "status": "proposed",
+      "review_required": true
+    },
+    "DM_AGE_UNIT#1": {
+      "task_id": "DM_AGE_UNIT",
+      "assembly_group_id": "DM_DEMOGRAPHICS",
+      "target_domain": "DM",
+      "candidate_rank": 1,
+      "source_refs": [],
+      "depends_on": [
+        "DM_AGE"
+      ],
+      "required": true,
+      "semantic_decision": {
+        "task_id": "DM_AGE_UNIT",
+        "target_domain": "DM",
+        "output_kind": "variables",
+        "target_variables": [
+          "AGEU"
+        ],
+        "score": 1,
+        "evidence": "临床动作要求设置受控年龄单位，项目政策明确年龄单位为 YEARS。",
+        "uncertainties": "",
+        "status": "proposed",
+        "structure_valid": true
+      },
+      "steps": [
+        {
+          "step_id": "DM_AGE_UNIT_STEP_01",
+          "transform_id": "hardcode_ct",
+          "source_ref_ids": [],
+          "target_variables": [
+            "AGEU"
+          ],
+          "parameters": {
+            "value": "YEARS",
+            "codelist_id": "AGEU"
+          },
+          "parameter_sources": {
+            "value": {
+              "source": "policy",
+              "reference": "resolver:target_constant"
+            },
+            "codelist_id": {
+              "source": "resource",
+              "reference": "resolver:target_codelist"
+            }
+          }
+        }
+      ],
+      "recommendation_score": 1,
+      "reason": "年龄单位是受控术语目标，项目政策已提供经过术语表约束的固定值。",
+      "uncertainties": "",
+      "status": "proposed",
+      "review_required": true
+    },
+    "DM_SEX#1": {
+      "task_id": "DM_SEX",
+      "assembly_group_id": "DM_DEMOGRAPHICS",
+      "target_domain": "DM",
+      "candidate_rank": 1,
+      "source_refs": [
+        {
+          "ref_id": "dm_intermediate__SEX",
+          "dataset": "dm_intermediate",
+          "variable": "SEX",
+          "role": "sex"
+        }
+      ],
+      "depends_on": [
+        "DM_UNIQUE_SUBJECT_IDENTIFIER"
+      ],
+      "required": true,
+      "semantic_decision": {
+        "task_id": "DM_SEX",
+        "target_domain": "DM",
+        "output_kind": "variables",
+        "target_variables": [
+          "SEX"
+        ],
+        "score": 1,
+        "evidence": "临床动作要求使用受控术语映射性别，来源字段 SEX 的角色为性别。",
+        "uncertainties": "",
+        "status": "proposed",
+        "structure_valid": true
+      },
+      "steps": [
+        {
+          "step_id": "DM_SEX_STEP_01",
+          "transform_id": "assign_ct",
+          "source_ref_ids": [
+            "dm_intermediate__SEX"
+          ],
+          "target_variables": [
+            "SEX"
+          ],
+          "parameters": {
+            "codelist_id": "SEX"
+          },
+          "parameter_sources": {
+            "codelist_id": {
+              "source": "resource",
+              "reference": "resolver:target_codelist"
+            }
+          }
+        }
+      ],
+      "recommendation_score": 1,
+      "reason": "来源性别值需要映射到目标变量规定的受控术语。",
+      "uncertainties": "",
+      "status": "proposed",
+      "review_required": true
+    },
+    "DM_ETHNICITY#1": {
+      "task_id": "DM_ETHNICITY",
+      "assembly_group_id": "DM_DEMOGRAPHICS",
+      "target_domain": "DM",
+      "candidate_rank": 1,
+      "source_refs": [
+        {
+          "ref_id": "dm_intermediate__ETHNIC",
+          "dataset": "dm_intermediate",
+          "variable": "ETHNIC",
+          "role": "ethnicity"
+        }
+      ],
+      "depends_on": [
+        "DM_UNIQUE_SUBJECT_IDENTIFIER"
+      ],
+      "required": true,
+      "semantic_decision": {
+        "task_id": "DM_ETHNICITY",
+        "target_domain": "DM",
+        "output_kind": "variables",
+        "target_variables": [
+          "ETHNIC"
+        ],
+        "score": 1,
+        "evidence": "临床动作要求使用受控术语映射民族属性，来源字段 ETHNIC 的角色为民族属性。",
+        "uncertainties": "",
+        "status": "proposed",
+        "structure_valid": true
+      },
+      "steps": [
+        {
+          "step_id": "DM_ETHNICITY_STEP_01",
+          "transform_id": "assign_ct",
+          "source_ref_ids": [
+            "dm_intermediate__ETHNIC"
+          ],
+          "target_variables": [
+            "ETHNIC"
+          ],
+          "parameters": {
+            "codelist_id": "ETHNIC"
+          },
+          "parameter_sources": {
+            "codelist_id": {
+              "source": "resource",
+              "reference": "resolver:target_codelist"
+            }
+          }
+        }
+      ],
+      "recommendation_score": 1,
+      "reason": "来源民族属性值需要映射到目标变量规定的受控术语。",
+      "uncertainties": "",
+      "status": "proposed",
+      "review_required": true
+    },
+    "DM_RACE#1": {
+      "task_id": "DM_RACE",
+      "assembly_group_id": "DM_DEMOGRAPHICS",
+      "target_domain": "DM",
+      "candidate_rank": 1,
+      "source_refs": [
+        {
+          "ref_id": "dm_intermediate__RACE",
+          "dataset": "dm_intermediate",
+          "variable": "RACE",
+          "role": "race"
+        }
+      ],
+      "depends_on": [
+        "DM_UNIQUE_SUBJECT_IDENTIFIER"
+      ],
+      "required": true,
+      "semantic_decision": {
+        "task_id": "DM_RACE",
+        "target_domain": "DM",
+        "output_kind": "variables",
+        "target_variables": [
+          "RACE"
+        ],
+        "score": 1,
+        "evidence": "临床动作要求使用受控术语映射种族，来源字段 RACE 的角色为种族。",
+        "uncertainties": "",
+        "status": "proposed",
+        "structure_valid": true
+      },
+      "steps": [
+        {
+          "step_id": "DM_RACE_STEP_01",
+          "transform_id": "assign_ct",
+          "source_ref_ids": [
+            "dm_intermediate__RACE"
+          ],
+          "target_variables": [
+            "RACE"
+          ],
+          "parameters": {
+            "codelist_id": "RACE"
+          },
+          "parameter_sources": {
+            "codelist_id": {
+              "source": "resource",
+              "reference": "resolver:target_codelist"
+            }
+          }
+        }
+      ],
+      "recommendation_score": 1,
+      "reason": "来源种族值需要映射到目标变量规定的受控术语。",
+      "uncertainties": "",
+      "status": "proposed",
+      "review_required": true
+    },
+    "DM_COUNTRY#1": {
+      "task_id": "DM_COUNTRY",
+      "assembly_group_id": "DM_DEMOGRAPHICS",
+      "target_domain": "DM",
+      "candidate_rank": 1,
+      "source_refs": [
+        {
+          "ref_id": "dm_intermediate__COUNTRY",
+          "dataset": "dm_intermediate",
+          "variable": "COUNTRY",
+          "role": "country"
+        }
+      ],
+      "depends_on": [
+        "DM_UNIQUE_SUBJECT_IDENTIFIER"
+      ],
+      "required": true,
+      "semantic_decision": {
+        "task_id": "DM_COUNTRY",
+        "target_domain": "DM",
+        "output_kind": "variables",
+        "target_variables": [
+          "COUNTRY"
+        ],
+        "score": 1,
+        "evidence": "临床动作要求映射国家，来源字段 COUNTRY 的角色为国家。",
+        "uncertainties": "",
+        "status": "proposed",
+        "structure_valid": true
+      },
+      "steps": [
+        {
+          "step_id": "DM_COUNTRY_STEP_01",
+          "transform_id": "assign_no_ct",
+          "source_ref_ids": [
+            "dm_intermediate__COUNTRY"
+          ],
+          "target_variables": [
+            "COUNTRY"
+          ],
+          "parameters": {},
+          "parameter_sources": {}
+        }
+      ],
+      "recommendation_score": 1,
+      "reason": "国家直接来自单一字符字段，目标目录未规定受控术语转换。",
+      "uncertainties": "",
+      "status": "proposed",
+      "review_required": true
+    },
+    "DM_PLANNED_ARM_CODE#1": {
+      "task_id": "DM_PLANNED_ARM_CODE",
+      "assembly_group_id": "DM_TREATMENT",
+      "target_domain": "DM",
+      "candidate_rank": 1,
+      "source_refs": [
+        {
+          "ref_id": "dm_intermediate__PLANNED_ARMCD",
+          "dataset": "dm_intermediate",
+          "variable": "PLANNED_ARMCD",
+          "role": "planned_arm_code"
+        }
+      ],
+      "depends_on": [
+        "DM_UNIQUE_SUBJECT_IDENTIFIER"
+      ],
+      "required": true,
+      "semantic_decision": {
+        "task_id": "DM_PLANNED_ARM_CODE",
+        "target_domain": "DM",
+        "output_kind": "variables",
+        "target_variables": [
+          "ARMCD"
+        ],
+        "score": 1,
+        "evidence": "临床动作要求映射计划治疗组代码，来源字段 PLANNED_ARMCD 的角色为计划治疗组代码。",
+        "uncertainties": "",
+        "status": "proposed",
+        "structure_valid": true
+      },
+      "steps": [
+        {
+          "step_id": "DM_PLANNED_ARM_CODE_STEP_01",
+          "transform_id": "assign_no_ct",
+          "source_ref_ids": [
+            "dm_intermediate__PLANNED_ARMCD"
+          ],
+          "target_variables": [
+            "ARMCD"
+          ],
+          "parameters": {},
+          "parameter_sources": {}
+        }
+      ],
+      "recommendation_score": 1,
+      "reason": "计划治疗组代码直接来自对应的单一字符字段，且目标目录未规定受控术语。",
+      "uncertainties": "",
+      "status": "proposed",
+      "review_required": true
+    },
+    "DM_PLANNED_ARM#1": {
+      "task_id": "DM_PLANNED_ARM",
+      "assembly_group_id": "DM_TREATMENT",
+      "target_domain": "DM",
+      "candidate_rank": 1,
+      "source_refs": [
+        {
+          "ref_id": "dm_intermediate__PLANNED_ARM",
+          "dataset": "dm_intermediate",
+          "variable": "PLANNED_ARM",
+          "role": "planned_arm"
+        }
+      ],
+      "depends_on": [
+        "DM_UNIQUE_SUBJECT_IDENTIFIER"
+      ],
+      "required": true,
+      "semantic_decision": {
+        "task_id": "DM_PLANNED_ARM",
+        "target_domain": "DM",
+        "output_kind": "variables",
+        "target_variables": [
+          "ARM"
+        ],
+        "score": 1,
+        "evidence": "临床动作要求映射计划治疗组描述，来源字段 PLANNED_ARM 的角色为计划治疗组。",
+        "uncertainties": "",
+        "status": "proposed",
+        "structure_valid": true
+      },
+      "steps": [
+        {
+          "step_id": "DM_PLANNED_ARM_STEP_01",
+          "transform_id": "assign_no_ct",
+          "source_ref_ids": [
+            "dm_intermediate__PLANNED_ARM"
+          ],
+          "target_variables": [
+            "ARM"
+          ],
+          "parameters": {},
+          "parameter_sources": {}
+        }
+      ],
+      "recommendation_score": 1,
+      "reason": "计划治疗组描述直接来自对应的单一字符字段，且无需改变值的语义或格式。",
+      "uncertainties": "",
+      "status": "proposed",
+      "review_required": true
+    },
+    "DM_ACTUAL_ARM_CODE#1": {
+      "task_id": "DM_ACTUAL_ARM_CODE",
+      "assembly_group_id": "DM_TREATMENT",
+      "target_domain": "DM",
+      "candidate_rank": 1,
+      "source_refs": [
+        {
+          "ref_id": "dm_intermediate__ACTUAL_ARMCD",
+          "dataset": "dm_intermediate",
+          "variable": "ACTUAL_ARMCD",
+          "role": "actual_arm_code"
+        }
+      ],
+      "depends_on": [
+        "DM_UNIQUE_SUBJECT_IDENTIFIER"
+      ],
+      "required": true,
+      "semantic_decision": {
+        "task_id": "DM_ACTUAL_ARM_CODE",
+        "target_domain": "DM",
+        "output_kind": "variables",
+        "target_variables": [
+          "ACTARMCD"
+        ],
+        "score": 1,
+        "evidence": "临床动作要求映射实际治疗组代码，来源字段 ACTUAL_ARMCD 的角色为实际治疗组代码。",
+        "uncertainties": "",
+        "status": "proposed",
+        "structure_valid": true
+      },
+      "steps": [
+        {
+          "step_id": "DM_ACTUAL_ARM_CODE_STEP_01",
+          "transform_id": "assign_no_ct",
+          "source_ref_ids": [
+            "dm_intermediate__ACTUAL_ARMCD"
+          ],
+          "target_variables": [
+            "ACTARMCD"
+          ],
+          "parameters": {},
+          "parameter_sources": {}
+        }
+      ],
+      "recommendation_score": 1,
+      "reason": "实际治疗组代码直接来自对应的单一字符字段，且目标目录未规定受控术语。",
+      "uncertainties": "",
+      "status": "proposed",
+      "review_required": true
+    },
+    "DM_ACTUAL_ARM#1": {
+      "task_id": "DM_ACTUAL_ARM",
+      "assembly_group_id": "DM_TREATMENT",
+      "target_domain": "DM",
+      "candidate_rank": 1,
+      "source_refs": [
+        {
+          "ref_id": "dm_intermediate__ACTUAL_ARM",
+          "dataset": "dm_intermediate",
+          "variable": "ACTUAL_ARM",
+          "role": "actual_arm"
+        }
+      ],
+      "depends_on": [
+        "DM_UNIQUE_SUBJECT_IDENTIFIER"
+      ],
+      "required": true,
+      "semantic_decision": {
+        "task_id": "DM_ACTUAL_ARM",
+        "target_domain": "DM",
+        "output_kind": "variables",
+        "target_variables": [
+          "ACTARM"
+        ],
+        "score": 1,
+        "evidence": "临床动作要求映射实际治疗组描述，来源字段 ACTUAL_ARM 的角色为实际治疗组。",
+        "uncertainties": "",
+        "status": "proposed",
+        "structure_valid": true
+      },
+      "steps": [
+        {
+          "step_id": "DM_ACTUAL_ARM_STEP_01",
+          "transform_id": "assign_no_ct",
+          "source_ref_ids": [
+            "dm_intermediate__ACTUAL_ARM"
+          ],
+          "target_variables": [
+            "ACTARM"
+          ],
+          "parameters": {},
+          "parameter_sources": {}
+        }
+      ],
+      "recommendation_score": 1,
+      "reason": "实际治疗组描述直接来自对应的单一字符字段，且无需改变值的语义或格式。",
+      "uncertainties": "",
+      "status": "proposed",
+      "review_required": true
+    },
+    "AE_STUDY_IDENTIFIER#1": {
+      "task_id": "AE_STUDY_IDENTIFIER",
+      "assembly_group_id": "AE_CORE",
+      "target_domain": "AE",
+      "candidate_rank": 1,
+      "source_refs": [
+        {
+          "ref_id": "ae_intermediate__STUDY",
+          "dataset": "ae_intermediate",
+          "variable": "STUDY",
+          "role": "study_identifier"
+        }
+      ],
+      "depends_on": [
+        "DM_STUDY_IDENTIFIER"
+      ],
+      "required": true,
+      "semantic_decision": {
+        "task_id": "AE_STUDY_IDENTIFIER",
+        "target_domain": "AE",
+        "output_kind": "variables",
+        "target_variables": [
+          "STUDYID"
+        ],
+        "score": 1,
+        "evidence": "临床动作明确要求映射研究标识符，对应研究标识符变量。",
+        "uncertainties": "",
+        "status": "proposed",
+        "structure_valid": true
+      },
+      "steps": [
+        {
+          "step_id": "AE_STUDY_IDENTIFIER_STEP_01",
+          "transform_id": "assign_no_ct",
+          "source_ref_ids": [
+            "ae_intermediate__STUDY"
+          ],
+          "target_variables": [
+            "STUDYID"
+          ],
+          "parameters": {},
+          "parameter_sources": {}
+        }
+      ],
+      "recommendation_score": 0.99,
+      "reason": "来源字段直接表示研究标识符，且该动作不需要改变值的语义或格式。",
+      "uncertainties": "",
+      "status": "proposed",
+      "review_required": true
+    },
+    "AE_DOMAIN_CONSTANT#1": {
+      "task_id": "AE_DOMAIN_CONSTANT",
+      "assembly_group_id": "AE_CORE",
+      "target_domain": "AE",
+      "candidate_rank": 1,
+      "source_refs": [],
+      "depends_on": [],
+      "required": true,
+      "semantic_decision": {
+        "task_id": "AE_DOMAIN_CONSTANT",
+        "target_domain": "AE",
+        "output_kind": "variables",
+        "target_variables": [
+          "DOMAIN"
+        ],
+        "score": 1,
+        "evidence": "临床动作明确要求设置不良事件域常量，对应域缩写变量。",
+        "uncertainties": "",
+        "status": "proposed",
+        "structure_valid": true
+      },
+      "steps": [
+        {
+          "step_id": "AE_DOMAIN_CONSTANT_STEP_01",
+          "transform_id": "hardcode_no_ct",
+          "source_ref_ids": [],
+          "target_variables": [
+            "DOMAIN"
+          ],
+          "parameters": {
+            "value": "AE"
+          },
+          "parameter_sources": {
+            "value": {
+              "source": "policy",
+              "reference": "resolver:target_constant"
+            }
+          }
+        }
+      ],
+      "recommendation_score": 0.99,
+      "reason": "该动作要求设置固定的域缩写，项目政策已提供对应常量。",
+      "uncertainties": "",
+      "status": "proposed",
+      "review_required": true
+    },
+    "AE_UNIQUE_SUBJECT_IDENTIFIER#1": {
+      "task_id": "AE_UNIQUE_SUBJECT_IDENTIFIER",
+      "assembly_group_id": "AE_CORE",
+      "target_domain": "AE",
+      "candidate_rank": 1,
+      "source_refs": [
+        {
+          "ref_id": "ae_intermediate__STUDY",
+          "dataset": "ae_intermediate",
+          "variable": "STUDY",
+          "role": "study_identifier"
+        },
+        {
+          "ref_id": "ae_intermediate__PATNUM",
+          "dataset": "ae_intermediate",
+          "variable": "PATNUM",
+          "role": "subject_identifier"
+        }
+      ],
+      "depends_on": [
+        "DM_UNIQUE_SUBJECT_IDENTIFIER"
+      ],
+      "required": true,
+      "semantic_decision": {
+        "task_id": "AE_UNIQUE_SUBJECT_IDENTIFIER",
+        "target_domain": "AE",
+        "output_kind": "variables",
+        "target_variables": [
+          "USUBJID"
+        ],
+        "score": 1,
+        "evidence": "临床动作明确要求派生不良事件域的唯一受试者标识符。",
+        "uncertainties": "",
+        "status": "proposed",
+        "structure_valid": true
+      },
+      "steps": [
+        {
+          "step_id": "AE_UNIQUE_SUBJECT_IDENTIFIER_STEP_01",
+          "transform_id": "derive_usubjid",
+          "source_ref_ids": [
+            "ae_intermediate__STUDY",
+            "ae_intermediate__PATNUM"
+          ],
+          "target_variables": [
+            "USUBJID"
+          ],
+          "parameters": {
+            "separator": "-"
+          },
+          "parameter_sources": {
+            "separator": {
+              "source": "policy",
+              "reference": "resolver:identifier_policy"
+            }
+          }
+        }
+      ],
+      "recommendation_score": 1,
+      "reason": "项目政策明确规定由研究编号和受试者编号组成唯一受试者标识符。",
+      "uncertainties": "",
+      "status": "proposed",
+      "review_required": true
+    },
+    "AE_REPORTED_TERM#1": {
+      "task_id": "AE_REPORTED_TERM",
+      "assembly_group_id": "AE_TERMS",
+      "target_domain": "AE",
+      "candidate_rank": 1,
+      "source_refs": [
+        {
+          "ref_id": "ae_intermediate__AETERM",
+          "dataset": "ae_intermediate",
+          "variable": "AETERM",
+          "role": "reported_term"
+        }
+      ],
+      "depends_on": [
+        "AE_UNIQUE_SUBJECT_IDENTIFIER"
+      ],
+      "required": true,
+      "semantic_decision": {
+        "task_id": "AE_REPORTED_TERM",
+        "target_domain": "AE",
+        "output_kind": "variables",
+        "target_variables": [
+          "AETERM"
+        ],
+        "score": 1,
+        "evidence": "临床动作明确要求映射不良事件报告术语。",
+        "uncertainties": "",
+        "status": "proposed",
+        "structure_valid": true
+      },
+      "steps": [
+        {
+          "step_id": "AE_REPORTED_TERM_STEP_01",
+          "transform_id": "assign_no_ct",
+          "source_ref_ids": [
+            "ae_intermediate__AETERM"
+          ],
+          "target_variables": [
+            "AETERM"
+          ],
+          "parameters": {},
+          "parameter_sources": {}
+        }
+      ],
+      "recommendation_score": 0.99,
+      "reason": "来源字段直接表示报告的不良事件术语，无需改变值的语义或格式。",
+      "uncertainties": "",
+      "status": "proposed",
+      "review_required": true
+    },
+    "AE_CODED_TERM#1": {
+      "task_id": "AE_CODED_TERM",
+      "assembly_group_id": "AE_TERMS",
+      "target_domain": "AE",
+      "candidate_rank": 1,
+      "source_refs": [
+        {
+          "ref_id": "ae_intermediate__AEDECOD",
+          "dataset": "ae_intermediate",
+          "variable": "AEDECOD",
+          "role": "coded_term"
+        }
+      ],
+      "depends_on": [
+        "AE_UNIQUE_SUBJECT_IDENTIFIER"
+      ],
+      "required": true,
+      "semantic_decision": {
+        "task_id": "AE_CODED_TERM",
+        "target_domain": "AE",
+        "output_kind": "variables",
+        "target_variables": [
+          "AEDECOD"
+        ],
+        "score": 1,
+        "evidence": "临床动作明确要求映射不良事件编码术语。",
+        "uncertainties": "",
+        "status": "proposed",
+        "structure_valid": true
+      },
+      "steps": [
+        {
+          "step_id": "AE_CODED_TERM_STEP_01",
+          "transform_id": "assign_no_ct",
+          "source_ref_ids": [
+            "ae_intermediate__AEDECOD"
+          ],
+          "target_variables": [
+            "AEDECOD"
+          ],
+          "parameters": {},
+          "parameter_sources": {}
+        }
+      ],
+      "recommendation_score": 0.99,
+      "reason": "来源字段直接表示编码后的不良事件术语，可直接映射。",
+      "uncertainties": "",
+      "status": "proposed",
+      "review_required": true
+    },
+    "AE_BODY_SYSTEM#1": {
+      "task_id": "AE_BODY_SYSTEM",
+      "assembly_group_id": "AE_TERMS",
+      "target_domain": "AE",
+      "candidate_rank": 1,
+      "source_refs": [
+        {
+          "ref_id": "ae_intermediate__AEBODSYS",
+          "dataset": "ae_intermediate",
+          "variable": "AEBODSYS",
+          "role": "body_system"
+        }
+      ],
+      "depends_on": [
+        "AE_UNIQUE_SUBJECT_IDENTIFIER"
+      ],
+      "required": true,
+      "semantic_decision": {
+        "task_id": "AE_BODY_SYSTEM",
+        "target_domain": "AE",
+        "output_kind": "variables",
+        "target_variables": [
+          "AEBODSYS"
+        ],
+        "score": 1,
+        "evidence": "临床动作明确要求标准化并映射不良事件系统器官分类。",
+        "uncertainties": "",
+        "status": "proposed",
+        "structure_valid": true
+      },
+      "steps": [
+        {
+          "step_id": "AE_BODY_SYSTEM_STEP_01",
+          "transform_id": "assign_no_ct",
+          "source_ref_ids": [
+            "ae_intermediate__AEBODSYS"
+          ],
+          "target_variables": [
+            "AEBODSYS"
+          ],
+          "parameters": {},
+          "parameter_sources": {}
+        }
+      ],
+      "recommendation_score": 0.94,
+      "reason": "来源字段已直接表示系统器官分类，观察值呈现为规范化术语。",
+      "uncertainties": "仍需人工确认来源术语已按项目采用的医学词典版本完成标准化。",
+      "status": "proposed",
+      "review_required": true
+    },
+    "AE_SEVERITY#1": {
+      "task_id": "AE_SEVERITY",
+      "assembly_group_id": "AE_SAFETY",
+      "target_domain": "AE",
+      "candidate_rank": 1,
+      "source_refs": [
+        {
+          "ref_id": "ae_intermediate__AESEV",
+          "dataset": "ae_intermediate",
+          "variable": "AESEV",
+          "role": "severity"
+        }
+      ],
+      "depends_on": [
+        "AE_UNIQUE_SUBJECT_IDENTIFIER"
+      ],
+      "required": true,
+      "semantic_decision": {
+        "task_id": "AE_SEVERITY",
+        "target_domain": "AE",
+        "output_kind": "variables",
+        "target_variables": [
+          "AESEV"
+        ],
+        "score": 1,
+        "evidence": "临床动作明确要求映射不良事件严重程度。",
+        "uncertainties": "",
+        "status": "proposed",
+        "structure_valid": true
+      },
+      "steps": [
+        {
+          "step_id": "AE_SEVERITY_STEP_01",
+          "transform_id": "assign_ct",
+          "source_ref_ids": [
+            "ae_intermediate__AESEV"
+          ],
+          "target_variables": [
+            "AESEV"
+          ],
+          "parameters": {
+            "codelist_id": "AESEV"
+          },
+          "parameter_sources": {
+            "codelist_id": {
+              "source": "resource",
+              "reference": "resolver:target_codelist"
+            }
+          }
+        }
+      ],
+      "recommendation_score": 0.99,
+      "reason": "来源严重程度用语需要转换为目标受控术语。",
+      "uncertainties": "",
+      "status": "proposed",
+      "review_required": true
+    },
+    "AE_SERIOUS#1": {
+      "task_id": "AE_SERIOUS",
+      "assembly_group_id": "AE_SAFETY",
+      "target_domain": "AE",
+      "candidate_rank": 1,
+      "source_refs": [
+        {
+          "ref_id": "ae_intermediate__AESER",
+          "dataset": "ae_intermediate",
+          "variable": "AESER",
+          "role": "serious_indicator"
+        }
+      ],
+      "depends_on": [
+        "AE_UNIQUE_SUBJECT_IDENTIFIER"
+      ],
+      "required": true,
+      "semantic_decision": {
+        "task_id": "AE_SERIOUS",
+        "target_domain": "AE",
+        "output_kind": "variables",
+        "target_variables": [
+          "AESER"
+        ],
+        "score": 1,
+        "evidence": "临床动作明确要求映射严重不良事件指示变量。",
+        "uncertainties": "",
+        "status": "proposed",
+        "structure_valid": true
+      },
+      "steps": [
+        {
+          "step_id": "AE_SERIOUS_STEP_01",
+          "transform_id": "assign_ct",
+          "source_ref_ids": [
+            "ae_intermediate__AESER"
+          ],
+          "target_variables": [
+            "AESER"
+          ],
+          "parameters": {
+            "codelist_id": "NY"
+          },
+          "parameter_sources": {
+            "codelist_id": {
+              "source": "resource",
+              "reference": "resolver:target_codelist"
+            }
+          }
+        }
+      ],
+      "recommendation_score": 0.99,
+      "reason": "来源的是或否取值需要转换为目标受控术语。",
+      "uncertainties": "",
+      "status": "proposed",
+      "review_required": true
+    },
+    "AE_HOSPITALIZATION#1": {
+      "task_id": "AE_HOSPITALIZATION",
+      "assembly_group_id": "AE_SAFETY",
+      "target_domain": "AE",
+      "candidate_rank": 1,
+      "source_refs": [
+        {
+          "ref_id": "ae_intermediate__AESHOSP",
+          "dataset": "ae_intermediate",
+          "variable": "AESHOSP",
+          "role": "hospitalization_indicator"
+        }
+      ],
+      "depends_on": [
+        "AE_UNIQUE_SUBJECT_IDENTIFIER"
+      ],
+      "required": true,
+      "semantic_decision": {
+        "task_id": "AE_HOSPITALIZATION",
+        "target_domain": "AE",
+        "output_kind": "variables",
+        "target_variables": [
+          "AESHOSP"
+        ],
+        "score": 1,
+        "evidence": "临床动作明确要求映射需要住院或延长住院的指示变量。",
+        "uncertainties": "",
+        "status": "proposed",
+        "structure_valid": true
+      },
+      "steps": [
+        {
+          "step_id": "AE_HOSPITALIZATION_STEP_01",
+          "transform_id": "assign_ct",
+          "source_ref_ids": [
+            "ae_intermediate__AESHOSP"
+          ],
+          "target_variables": [
+            "AESHOSP"
+          ],
+          "parameters": {
+            "codelist_id": "NY"
+          },
+          "parameter_sources": {
+            "codelist_id": {
+              "source": "resource",
+              "reference": "resolver:target_codelist"
+            }
+          }
+        }
+      ],
+      "recommendation_score": 0.99,
+      "reason": "来源住院指示的是或否取值需要转换为目标受控术语。",
+      "uncertainties": "",
+      "status": "proposed",
+      "review_required": true
+    },
+    "AE_RELATIONSHIP#1": {
+      "task_id": "AE_RELATIONSHIP",
+      "assembly_group_id": "AE_REL_OUTCOME",
+      "target_domain": "AE",
+      "candidate_rank": 1,
+      "source_refs": [
+        {
+          "ref_id": "ae_intermediate__AEREL",
+          "dataset": "ae_intermediate",
+          "variable": "AEREL",
+          "role": "causality"
+        }
+      ],
+      "depends_on": [
+        "AE_UNIQUE_SUBJECT_IDENTIFIER"
+      ],
+      "required": true,
+      "semantic_decision": {
+        "task_id": "AE_RELATIONSHIP",
+        "target_domain": "AE",
+        "output_kind": "variables",
+        "target_variables": [
+          "AEREL"
+        ],
+        "score": 1,
+        "evidence": "临床动作明确要求映射不良事件与研究治疗的因果关系。",
+        "uncertainties": "",
+        "status": "proposed",
+        "structure_valid": true
+      },
+      "steps": [
+        {
+          "step_id": "AE_RELATIONSHIP_STEP_01",
+          "transform_id": "assign_no_ct",
+          "source_ref_ids": [
+            "ae_intermediate__AEREL"
+          ],
+          "target_variables": [
+            "AEREL"
+          ],
+          "parameters": {},
+          "parameter_sources": {}
+        }
+      ],
+      "recommendation_score": 0.98,
+      "reason": "来源字段直接表示与研究治疗的因果关系，可直接映射。",
+      "uncertainties": "",
+      "status": "proposed",
+      "review_required": true
+    },
+    "AE_OUTCOME#1": {
+      "task_id": "AE_OUTCOME",
+      "assembly_group_id": "AE_REL_OUTCOME",
+      "target_domain": "AE",
+      "candidate_rank": 1,
+      "source_refs": [
+        {
+          "ref_id": "ae_intermediate__AEOUTCOME",
+          "dataset": "ae_intermediate",
+          "variable": "AEOUTCOME",
+          "role": "outcome"
+        }
+      ],
+      "depends_on": [
+        "AE_UNIQUE_SUBJECT_IDENTIFIER"
+      ],
+      "required": true,
+      "semantic_decision": {
+        "task_id": "AE_OUTCOME",
+        "target_domain": "AE",
+        "output_kind": "variables",
+        "target_variables": [
+          "AEOUT"
+        ],
+        "score": 1,
+        "evidence": "临床动作明确要求映射不良事件结局。",
+        "uncertainties": "",
+        "status": "proposed",
+        "structure_valid": true
+      },
+      "steps": [
+        {
+          "step_id": "AE_OUTCOME_STEP_01",
+          "transform_id": "assign_ct",
+          "source_ref_ids": [
+            "ae_intermediate__AEOUTCOME"
+          ],
+          "target_variables": [
+            "AEOUT"
+          ],
+          "parameters": {
+            "codelist_id": "AEOUT"
+          },
+          "parameter_sources": {
+            "codelist_id": {
+              "source": "resource",
+              "reference": "resolver:target_codelist"
+            }
+          }
+        }
+      ],
+      "recommendation_score": 0.99,
+      "reason": "来源结局用语需要转换并规范到目标受控术语。",
+      "uncertainties": "",
+      "status": "proposed",
+      "review_required": true
+    },
+    "AE_START_DATETIME#1": {
+      "task_id": "AE_START_DATETIME",
+      "assembly_group_id": "AE_START",
+      "target_domain": "AE",
+      "candidate_rank": 1,
+      "source_refs": [
+        {
+          "ref_id": "ae_intermediate__AESTDAT",
+          "dataset": "ae_intermediate",
+          "variable": "AESTDAT",
+          "role": "date"
+        },
+        {
+          "ref_id": "ae_intermediate__AESTTIM",
+          "dataset": "ae_intermediate",
+          "variable": "AESTTIM",
+          "role": "time"
+        }
+      ],
+      "depends_on": [
+        "AE_UNIQUE_SUBJECT_IDENTIFIER"
+      ],
+      "required": true,
+      "semantic_decision": {
+        "task_id": "AE_START_DATETIME",
+        "target_domain": "AE",
+        "output_kind": "variables",
+        "target_variables": [
+          "AESTDTC"
+        ],
+        "score": 1,
+        "evidence": "临床动作明确要求合并不良事件开始日期和时间并形成标准日期时间。",
+        "uncertainties": "",
+        "status": "proposed",
+        "structure_valid": true
+      },
+      "steps": [
+        {
+          "step_id": "AE_START_DATETIME_STEP_01",
+          "transform_id": "to_iso8601_datetime",
+          "source_ref_ids": [
+            "ae_intermediate__AESTDAT",
+            "ae_intermediate__AESTTIM"
+          ],
+          "target_variables": [
+            "AESTDTC"
+          ],
+          "parameters": {
+            "formats": [
+              "dd-mmm-yyyy",
+              "H:M:S"
+            ]
+          },
+          "parameter_sources": {
+            "formats": {
+              "source": "policy",
+              "reference": "resolver:approved_formats"
+            }
+          }
+        }
+      ],
+      "recommendation_score": 1,
+      "reason": "来源提供格式明确的完整日期和时间，适合转换为完整标准日期时间。",
+      "uncertainties": "",
+      "status": "proposed",
+      "review_required": true
+    },
+    "AE_START_STUDY_DAY#1": {
+      "task_id": "AE_START_STUDY_DAY",
+      "assembly_group_id": "AE_START",
+      "target_domain": "AE",
+      "candidate_rank": 1,
+      "source_refs": [],
+      "depends_on": [
+        "AE_START_DATETIME",
+        "DM_REFERENCE_START"
+      ],
+      "required": true,
+      "semantic_decision": {
+        "task_id": "AE_START_STUDY_DAY",
+        "target_domain": "AE",
+        "output_kind": "variables",
+        "target_variables": [
+          "AESTDY"
+        ],
+        "score": 1,
+        "evidence": "临床动作明确要求派生不良事件开始研究日。",
+        "uncertainties": "",
+        "status": "proposed",
+        "structure_valid": true
+      },
+      "steps": [
+        {
+          "step_id": "AE_START_STUDY_DAY_STEP_01",
+          "transform_id": "derive_study_day",
+          "source_ref_ids": [],
+          "target_variables": [
+            "AESTDY"
+          ],
+          "parameters": {
+            "target_date": "AESTDTC",
+            "reference_date": "RFSTDTC"
+          },
+          "parameter_sources": {
+            "target_date": {
+              "source": "derived",
+              "reference": "resolver:study_day_policy"
+            },
+            "reference_date": {
+              "source": "policy",
+              "reference": "resolver:study_day_policy"
+            }
+          }
+        }
+      ],
+      "recommendation_score": 0.99,
+      "reason": "该动作依赖已派生的开始日期时间和受试者参考开始日期，符合研究日派生函数的用途。",
+      "uncertainties": "",
+      "status": "proposed",
+      "review_required": true
+    },
+    "AE_END_DATETIME#1": {
+      "task_id": "AE_END_DATETIME",
+      "assembly_group_id": "AE_END",
+      "target_domain": "AE",
+      "candidate_rank": 1,
+      "source_refs": [
+        {
+          "ref_id": "ae_intermediate__AEENDDAT",
+          "dataset": "ae_intermediate",
+          "variable": "AEENDDAT",
+          "role": "date"
+        },
+        {
+          "ref_id": "ae_intermediate__AEENDTIM",
+          "dataset": "ae_intermediate",
+          "variable": "AEENDTIM",
+          "role": "time"
+        }
+      ],
+      "depends_on": [
+        "AE_UNIQUE_SUBJECT_IDENTIFIER"
+      ],
+      "required": true,
+      "semantic_decision": {
+        "task_id": "AE_END_DATETIME",
+        "target_domain": "AE",
+        "output_kind": "variables",
+        "target_variables": [
+          "AEENDTC"
+        ],
+        "score": 1,
+        "evidence": "临床动作明确要求合并不良事件结束日期和时间并形成标准日期时间。",
+        "uncertainties": "",
+        "status": "proposed",
+        "structure_valid": true
+      },
+      "steps": [
+        {
+          "step_id": "AE_END_DATETIME_STEP_01",
+          "transform_id": "to_iso8601_datetime",
+          "source_ref_ids": [
+            "ae_intermediate__AEENDDAT",
+            "ae_intermediate__AEENDTIM"
+          ],
+          "target_variables": [
+            "AEENDTC"
+          ],
+          "parameters": {
+            "formats": [
+              "dd-mmm-yyyy",
+              "H:M:S"
+            ]
+          },
+          "parameter_sources": {
+            "formats": {
+              "source": "policy",
+              "reference": "resolver:approved_formats"
+            }
+          }
+        }
+      ],
+      "recommendation_score": 0.98,
+      "reason": "非缺失记录提供格式明确的完整结束日期和时间，可转换为完整标准日期时间。",
+      "uncertainties": "部分记录的结束日期和时间同时缺失，人工审核时应确认这些记录保留缺失。",
+      "status": "proposed",
+      "review_required": true
+    },
+    "AE_ONGOING_STATUS#1": {
+      "task_id": "AE_ONGOING_STATUS",
+      "assembly_group_id": "AE_END",
+      "target_domain": "AE",
+      "candidate_rank": 1,
+      "source_refs": [
+        {
+          "ref_id": "ae_intermediate__AEENDDAT",
+          "dataset": "ae_intermediate",
+          "variable": "AEENDDAT",
+          "role": "end_date"
+        },
+        {
+          "ref_id": "ae_intermediate__AEONGO",
+          "dataset": "ae_intermediate",
+          "variable": "AEONGO",
+          "role": "ongoing_indicator"
+        }
+      ],
+      "depends_on": [
+        "AE_UNIQUE_SUBJECT_IDENTIFIER"
+      ],
+      "required": true,
+      "semantic_decision": {
+        "task_id": "AE_ONGOING_STATUS",
+        "target_domain": "AE",
+        "output_kind": "variables",
+        "target_variables": [
+          "AEENRF"
+        ],
+        "score": 1,
+        "evidence": "临床动作明确要求派生不良事件相对于参考期的持续状态值。",
+        "uncertainties": "",
+        "status": "proposed",
+        "structure_valid": true
+      },
+      "steps": [
+        {
+          "step_id": "AE_ONGOING_STATUS_STEP_01",
+          "transform_id": "derive_ongoing_flag",
+          "source_ref_ids": [
+            "ae_intermediate__AEENDDAT",
+            "ae_intermediate__AEONGO"
+          ],
+          "target_variables": [
+            "AEENRF"
+          ],
+          "parameters": {
+            "ongoing_value": "ONGOING",
+            "affirmative_values": "Yes"
+          },
+          "parameter_sources": {
+            "ongoing_value": {
+              "source": "policy",
+              "reference": "resolver:ongoing_policy"
+            },
+            "affirmative_values": {
+              "source": "policy",
+              "reference": "resolver:ongoing_policy"
+            }
+          }
+        }
+      ],
+      "recommendation_score": 1,
+      "reason": "该函数专用于依据结束日期和明确的持续指示派生持续状态，且项目政策已规定肯定取值。",
+      "uncertainties": "",
+      "status": "proposed",
+      "review_required": true
+    },
+    "AE_END_STUDY_DAY#1": {
+      "task_id": "AE_END_STUDY_DAY",
+      "assembly_group_id": "AE_END",
+      "target_domain": "AE",
+      "candidate_rank": 1,
+      "source_refs": [],
+      "depends_on": [
+        "AE_END_DATETIME",
+        "DM_REFERENCE_START"
+      ],
+      "required": true,
+      "semantic_decision": {
+        "task_id": "AE_END_STUDY_DAY",
+        "target_domain": "AE",
+        "output_kind": "variables",
+        "target_variables": [
+          "AEENDY"
+        ],
+        "score": 1,
+        "evidence": "临床动作明确要求派生不良事件结束研究日。",
+        "uncertainties": "",
+        "status": "proposed",
+        "structure_valid": true
+      },
+      "steps": [
+        {
+          "step_id": "AE_END_STUDY_DAY_STEP_01",
+          "transform_id": "derive_study_day",
+          "source_ref_ids": [],
+          "target_variables": [
+            "AEENDY"
+          ],
+          "parameters": {
+            "target_date": "AEENDTC",
+            "reference_date": "RFSTDTC"
+          },
+          "parameter_sources": {
+            "target_date": {
+              "source": "derived",
+              "reference": "resolver:study_day_policy"
+            },
+            "reference_date": {
+              "source": "policy",
+              "reference": "resolver:study_day_policy"
+            }
+          }
+        }
+      ],
+      "recommendation_score": 0.98,
+      "reason": "该动作依赖已派生的结束日期时间和受试者参考开始日期，符合研究日派生函数的用途。",
+      "uncertainties": "结束日期时间缺失时无法派生结束研究日。",
+      "status": "proposed",
+      "review_required": true
+    },
+    "AE_SEQUENCE#1": {
+      "task_id": "AE_SEQUENCE",
+      "assembly_group_id": "AE_SEQUENCE",
+      "target_domain": "AE",
+      "candidate_rank": 1,
+      "source_refs": [],
+      "depends_on": [
+        "AE_UNIQUE_SUBJECT_IDENTIFIER",
+        "AE_REPORTED_TERM",
+        "AE_CODED_TERM",
+        "AE_START_DATETIME"
+      ],
+      "required": true,
+      "semantic_decision": {
+        "task_id": "AE_SEQUENCE",
+        "target_domain": "AE",
+        "output_kind": "variables",
+        "target_variables": [
+          "AESEQ"
+        ],
+        "score": 1,
+        "evidence": "临床动作明确要求派生受试者内稳定的不良事件序号。",
+        "uncertainties": "",
+        "status": "proposed",
+        "structure_valid": true
+      },
+      "steps": [
+        {
+          "step_id": "AE_SEQUENCE_STEP_01",
+          "transform_id": "derive_sequence",
+          "source_ref_ids": [],
+          "target_variables": [
+            "AESEQ"
+          ],
+          "parameters": {
+            "record_variables": [
+              "STUDYID",
+              "USUBJID",
+              "AESTDTC",
+              "AETERM",
+              "AEDECOD",
+              ".SOURCE_ROW"
+            ],
+            "start_at": 1
+          },
+          "parameter_sources": {
+            "record_variables": {
+              "source": "policy",
+              "reference": "resolver:sequence_policy"
+            },
+            "start_at": {
+              "source": "policy",
+              "reference": "resolver:sequence_policy"
+            }
+          }
+        }
+      ],
+      "recommendation_score": 1,
+      "reason": "项目政策已规定受试者内的稳定排序字段和起始序号，符合连续序号派生函数的用途。",
+      "uncertainties": "",
+      "status": "proposed",
+      "review_required": true
+    },
+    "VS_STUDY_IDENTIFIER#1": {
+      "task_id": "VS_STUDY_IDENTIFIER",
+      "assembly_group_id": "VS_CORE",
+      "target_domain": "VS",
+      "candidate_rank": 1,
+      "source_refs": [
+        {
+          "ref_id": "vs_intermediate__STUDY",
+          "dataset": "vs_intermediate",
+          "variable": "STUDY",
+          "role": "study_identifier"
+        }
+      ],
+      "depends_on": [
+        "DM_STUDY_IDENTIFIER"
+      ],
+      "required": true,
+      "semantic_decision": {
+        "task_id": "VS_STUDY_IDENTIFIER",
+        "target_domain": "VS",
+        "output_kind": "variables",
+        "target_variables": [
+          "STUDYID"
+        ],
+        "score": 1,
+        "evidence": "临床动作明确要求映射研究标识符，目录中对应变量为 STUDYID。",
+        "uncertainties": "",
+        "status": "proposed",
+        "structure_valid": true
+      },
+      "steps": [
+        {
+          "step_id": "VS_STUDY_IDENTIFIER_STEP_01",
+          "transform_id": "assign_no_ct",
+          "source_ref_ids": [
+            "vs_intermediate__STUDY"
+          ],
+          "target_variables": [
+            "STUDYID"
+          ],
+          "parameters": {},
+          "parameter_sources": {}
+        }
+      ],
+      "recommendation_score": 1,
+      "reason": "研究标识符可由单个字符型来源字段直接赋值，且不涉及受控术语或格式转换。",
+      "uncertainties": "",
+      "status": "proposed",
+      "review_required": true
+    },
+    "VS_DOMAIN_CONSTANT#1": {
+      "task_id": "VS_DOMAIN_CONSTANT",
+      "assembly_group_id": "VS_CORE",
+      "target_domain": "VS",
+      "candidate_rank": 1,
+      "source_refs": [],
+      "depends_on": [],
+      "required": true,
+      "semantic_decision": {
+        "task_id": "VS_DOMAIN_CONSTANT",
+        "target_domain": "VS",
+        "output_kind": "variables",
+        "target_variables": [
+          "DOMAIN"
+        ],
+        "score": 1,
+        "evidence": "临床动作明确要求设置 VS 域常量，目录中对应变量为 DOMAIN。",
+        "uncertainties": "",
+        "status": "proposed",
+        "structure_valid": true
+      },
+      "steps": [
+        {
+          "step_id": "VS_DOMAIN_CONSTANT_STEP_01",
+          "transform_id": "hardcode_no_ct",
+          "source_ref_ids": [],
+          "target_variables": [
+            "DOMAIN"
+          ],
+          "parameters": {
+            "value": "VS"
+          },
+          "parameter_sources": {
+            "value": {
+              "source": "policy",
+              "reference": "resolver:target_constant"
+            }
+          }
+        }
+      ],
+      "recommendation_score": 1,
+      "reason": "该动作要求设置固定域值，项目政策已给出相应常量，且不需要来源字段。",
+      "uncertainties": "",
+      "status": "proposed",
+      "review_required": true
+    },
+    "VS_UNIQUE_SUBJECT_IDENTIFIER#1": {
+      "task_id": "VS_UNIQUE_SUBJECT_IDENTIFIER",
+      "assembly_group_id": "VS_CORE",
+      "target_domain": "VS",
+      "candidate_rank": 1,
+      "source_refs": [
+        {
+          "ref_id": "vs_intermediate__STUDY",
+          "dataset": "vs_intermediate",
+          "variable": "STUDY",
+          "role": "study_identifier"
+        },
+        {
+          "ref_id": "vs_intermediate__PATNUM",
+          "dataset": "vs_intermediate",
+          "variable": "PATNUM",
+          "role": "subject_identifier"
+        }
+      ],
+      "depends_on": [
+        "DM_UNIQUE_SUBJECT_IDENTIFIER"
+      ],
+      "required": true,
+      "semantic_decision": {
+        "task_id": "VS_UNIQUE_SUBJECT_IDENTIFIER",
+        "target_domain": "VS",
+        "output_kind": "variables",
+        "target_variables": [
+          "USUBJID"
+        ],
+        "score": 1,
+        "evidence": "临床动作明确要求生成唯一受试者标识符，目录中对应变量为 USUBJID。",
+        "uncertainties": "",
+        "status": "proposed",
+        "structure_valid": true
+      },
+      "steps": [
+        {
+          "step_id": "VS_UNIQUE_SUBJECT_IDENTIFIER_STEP_01",
+          "transform_id": "derive_usubjid",
+          "source_ref_ids": [
+            "vs_intermediate__STUDY",
+            "vs_intermediate__PATNUM"
+          ],
+          "target_variables": [
+            "USUBJID"
+          ],
+          "parameters": {
+            "separator": "-"
+          },
+          "parameter_sources": {
+            "separator": {
+              "source": "policy",
+              "reference": "resolver:identifier_policy"
+            }
+          }
+        }
+      ],
+      "recommendation_score": 1,
+      "reason": "项目政策明确规定唯一受试者标识符由研究编号和受试者编号组成，所需两个来源引用均已提供。",
+      "uncertainties": "",
+      "status": "proposed",
+      "review_required": true
+    },
+    "VS_VISIT#1": {
+      "task_id": "VS_VISIT",
+      "assembly_group_id": "VS_CORE",
+      "target_domain": "VS",
+      "candidate_rank": 1,
+      "source_refs": [
+        {
+          "ref_id": "vs_intermediate__INSTANCE",
+          "dataset": "vs_intermediate",
+          "variable": "INSTANCE",
+          "role": "visit"
+        }
+      ],
+      "depends_on": [
+        "VS_UNIQUE_SUBJECT_IDENTIFIER"
+      ],
+      "required": true,
+      "semantic_decision": {
+        "task_id": "VS_VISIT",
+        "target_domain": "VS",
+        "output_kind": "variables",
+        "target_variables": [
+          "VISIT"
+        ],
+        "score": 1,
+        "evidence": "临床动作要求映射访视名称，目录中对应变量为 VISIT。",
+        "uncertainties": "",
+        "status": "proposed",
+        "structure_valid": true
+      },
+      "steps": [
+        {
+          "step_id": "VS_VISIT_STEP_01",
+          "transform_id": "assign_no_ct",
+          "source_ref_ids": [
+            "vs_intermediate__INSTANCE"
+          ],
+          "target_variables": [
+            "VISIT"
+          ],
+          "parameters": {},
+          "parameter_sources": {}
+        }
+      ],
+      "recommendation_score": 1,
+      "reason": "访视名称可由单个字符型访视来源字段直接赋值，不需要格式或术语转换。",
+      "uncertainties": "",
+      "status": "proposed",
+      "review_required": true
+    },
+    "VS_VISIT_NUMBER#1": {
+      "task_id": "VS_VISIT_NUMBER",
+      "assembly_group_id": "VS_CORE",
+      "target_domain": "VS",
+      "candidate_rank": 1,
+      "source_refs": [
+        {
+          "ref_id": "vs_intermediate__INSTANCE",
+          "dataset": "vs_intermediate",
+          "variable": "INSTANCE",
+          "role": "visit"
+        }
+      ],
+      "depends_on": [
+        "VS_VISIT"
+      ],
+      "required": true,
+      "semantic_decision": {
+        "task_id": "VS_VISIT_NUMBER",
+        "target_domain": "VS",
+        "output_kind": "variables",
+        "target_variables": [
+          "VISITNUM"
+        ],
+        "score": 1,
+        "evidence": "临床动作要求生成数值型访视值，目录中对应变量为 VISITNUM。",
+        "uncertainties": "",
+        "status": "proposed",
+        "structure_valid": true
+      },
+      "steps": [
+        {
+          "step_id": "VS_VISIT_NUMBER_STEP_01",
+          "transform_id": "derive_visitnum",
+          "source_ref_ids": [
+            "vs_intermediate__INSTANCE"
+          ],
+          "target_variables": [
+            "VISITNUM"
+          ],
+          "parameters": {
+            "visit_map_id": "trace_visits_v1"
+          },
+          "parameter_sources": {
+            "visit_map_id": {
+              "source": "resource",
+              "reference": "resolver:visit_policy"
+            }
+          }
+        }
+      ],
+      "recommendation_score": 1,
+      "reason": "该动作明确要求依据批准的访视表把访视名称转换为数值型访视编号。",
+      "uncertainties": "",
+      "status": "proposed",
+      "review_required": true
+    },
+    "VS_DATETIME#1": {
+      "task_id": "VS_DATETIME",
+      "assembly_group_id": "VS_CORE",
+      "target_domain": "VS",
+      "candidate_rank": 1,
+      "source_refs": [
+        {
+          "ref_id": "vs_intermediate__VSDAT",
+          "dataset": "vs_intermediate",
+          "variable": "VSDAT",
+          "role": "date"
+        },
+        {
+          "ref_id": "vs_intermediate__VSTIM",
+          "dataset": "vs_intermediate",
+          "variable": "VSTIM",
+          "role": "time"
+        }
+      ],
+      "depends_on": [
+        "VS_UNIQUE_SUBJECT_IDENTIFIER"
+      ],
+      "required": true,
+      "semantic_decision": {
+        "task_id": "VS_DATETIME",
+        "target_domain": "VS",
+        "output_kind": "variables",
+        "target_variables": [
+          "VSDTC"
+        ],
+        "score": 1,
+        "evidence": "临床动作要求合并生命体征日期和时间并形成 ISO 8601 日期时间，目录中对应变量为 VSDTC。",
+        "uncertainties": "",
+        "status": "proposed",
+        "structure_valid": true
+      },
+      "steps": [
+        {
+          "step_id": "VS_DATETIME_STEP_01",
+          "transform_id": "to_iso8601_datetime",
+          "source_ref_ids": [
+            "vs_intermediate__VSDAT",
+            "vs_intermediate__VSTIM"
+          ],
+          "target_variables": [
+            "VSDTC"
+          ],
+          "parameters": {
+            "formats": [
+              "dd-mmm-yyyy",
+              "H:M:S"
+            ]
+          },
+          "parameter_sources": {
+            "formats": {
+              "source": "policy",
+              "reference": "resolver:approved_formats"
+            }
+          }
+        }
+      ],
+      "recommendation_score": 1,
+      "reason": "完整日期和时间分别来自两个已批准格式的字段，适合合并转换为完整的 ISO 8601 日期时间。",
+      "uncertainties": "",
+      "status": "proposed",
+      "review_required": true
+    },
+    "VS_POSITION#1": {
+      "task_id": "VS_POSITION",
+      "assembly_group_id": "VS_CORE",
+      "target_domain": "VS",
+      "candidate_rank": 1,
+      "source_refs": [
+        {
+          "ref_id": "vs_intermediate__SUBPOS",
+          "dataset": "vs_intermediate",
+          "variable": "SUBPOS",
+          "role": "body_position"
+        }
+      ],
+      "depends_on": [
+        "VS_UNIQUE_SUBJECT_IDENTIFIER"
+      ],
+      "required": true,
+      "semantic_decision": {
+        "task_id": "VS_POSITION",
+        "target_domain": "VS",
+        "output_kind": "variables",
+        "target_variables": [
+          "VSPOS"
+        ],
+        "score": 1,
+        "evidence": "临床动作要求映射受试者体位，目录中对应变量为 VSPOS。",
+        "uncertainties": "",
+        "status": "proposed",
+        "structure_valid": true
+      },
+      "steps": [
+        {
+          "step_id": "VS_POSITION_STEP_01",
+          "transform_id": "assign_ct",
+          "source_ref_ids": [
+            "vs_intermediate__SUBPOS"
+          ],
+          "target_variables": [
+            "VSPOS"
+          ],
+          "parameters": {
+            "codelist_id": "VSPOS"
+          },
+          "parameter_sources": {
+            "codelist_id": {
+              "source": "resource",
+              "reference": "resolver:target_codelist"
+            }
+          }
+        }
+      ],
+      "recommendation_score": 1,
+      "reason": "体位目标受受控术语约束，来源示例值需要映射为登记的标准术语。",
+      "uncertainties": "",
+      "status": "proposed",
+      "review_required": true
+    },
+    "VS_HEIGHT_RECORD#1": {
+      "task_id": "VS_HEIGHT_RECORD",
+      "assembly_group_id": "VS_HEIGHT",
+      "target_domain": "VS",
+      "candidate_rank": 1,
+      "source_refs": [
+        {
+          "ref_id": "vs_intermediate__HEIGHT",
+          "dataset": "vs_intermediate",
+          "variable": "HEIGHT",
+          "role": "result"
+        }
+      ],
+      "depends_on": [
+        "VS_DATETIME"
+      ],
+      "required": true,
+      "semantic_decision": {
+        "task_id": "VS_HEIGHT_RECORD",
+        "target_domain": "VS",
+        "output_kind": "variables",
+        "target_variables": [
+          "VSTESTCD",
+          "VSTEST",
+          "VSORRES",
+          "VSORRESU"
+        ],
+        "score": 1,
+        "evidence": "临床动作要求生成身高检查记录及其原始结果和单位；项目政策同时给出了身高的检查代码、检查名称和原始单位。",
+        "uncertainties": "",
+        "status": "proposed",
+        "structure_valid": true
+      },
+      "steps": [
+        {
+          "step_id": "VS_HEIGHT_RECORD_STEP_01",
+          "transform_id": "transpose_findings",
+          "source_ref_ids": [
+            "vs_intermediate__HEIGHT"
+          ],
+          "target_variables": [
+            "VSTESTCD",
+            "VSTEST",
+            "VSORRES",
+            "VSORRESU"
+          ],
+          "parameters": {
+            "test_code": "HEIGHT",
+            "test_name": "Height",
+            "original_unit": "cm",
+            "unit_source": null
+          },
+          "parameter_sources": {
+            "test_code": {
+              "source": "policy",
+              "reference": "resolver:findings_policy"
+            },
+            "test_name": {
+              "source": "policy",
+              "reference": "resolver:findings_policy"
+            },
+            "original_unit": {
+              "source": "policy",
+              "reference": "resolver:findings_policy"
+            },
+            "unit_source": {
+              "source": "policy",
+              "reference": "resolver:findings_policy"
+            }
+          }
+        }
+      ],
+      "recommendation_score": 1,
+      "reason": "该动作要求将横向身高结果展开为一条检查记录，项目政策已确认检查信息和原始单位。",
+      "uncertainties": "",
+      "status": "proposed",
+      "review_required": true
+    },
+    "VS_WEIGHT_RECORD#1": {
+      "task_id": "VS_WEIGHT_RECORD",
+      "assembly_group_id": "VS_WEIGHT",
+      "target_domain": "VS",
+      "candidate_rank": 1,
+      "source_refs": [
+        {
+          "ref_id": "vs_intermediate__WEIGHT",
+          "dataset": "vs_intermediate",
+          "variable": "WEIGHT",
+          "role": "result"
+        }
+      ],
+      "depends_on": [
+        "VS_DATETIME"
+      ],
+      "required": true,
+      "semantic_decision": {
+        "task_id": "VS_WEIGHT_RECORD",
+        "target_domain": "VS",
+        "output_kind": "variables",
+        "target_variables": [
+          "VSTESTCD",
+          "VSTEST",
+          "VSORRES",
+          "VSORRESU"
+        ],
+        "score": 1,
+        "evidence": "临床动作要求生成体重检查记录及其原始结果和单位；项目政策同时给出了体重的检查代码、检查名称和原始单位。",
+        "uncertainties": "",
+        "status": "proposed",
+        "structure_valid": true
+      },
+      "steps": [
+        {
+          "step_id": "VS_WEIGHT_RECORD_STEP_01",
+          "transform_id": "transpose_findings",
+          "source_ref_ids": [
+            "vs_intermediate__WEIGHT"
+          ],
+          "target_variables": [
+            "VSTESTCD",
+            "VSTEST",
+            "VSORRES",
+            "VSORRESU"
+          ],
+          "parameters": {
+            "test_code": "WEIGHT",
+            "test_name": "Weight",
+            "original_unit": "kg",
+            "unit_source": null
+          },
+          "parameter_sources": {
+            "test_code": {
+              "source": "policy",
+              "reference": "resolver:findings_policy"
+            },
+            "test_name": {
+              "source": "policy",
+              "reference": "resolver:findings_policy"
+            },
+            "original_unit": {
+              "source": "policy",
+              "reference": "resolver:findings_policy"
+            },
+            "unit_source": {
+              "source": "policy",
+              "reference": "resolver:findings_policy"
+            }
+          }
+        }
+      ],
+      "recommendation_score": 1,
+      "reason": "该动作要求将横向体重结果展开为一条检查记录，项目政策已确认检查信息和原始单位。",
+      "uncertainties": "",
+      "status": "proposed",
+      "review_required": true
+    },
+    "VS_TEMP_RECORD#1": {
+      "task_id": "VS_TEMP_RECORD",
+      "assembly_group_id": "VS_TEMP",
+      "target_domain": "VS",
+      "candidate_rank": 1,
+      "source_refs": [
+        {
+          "ref_id": "vs_intermediate__TEMP",
+          "dataset": "vs_intermediate",
+          "variable": "TEMP",
+          "role": "result"
+        }
+      ],
+      "depends_on": [
+        "VS_DATETIME"
+      ],
+      "required": true,
+      "semantic_decision": {
+        "task_id": "VS_TEMP_RECORD",
+        "target_domain": "VS",
+        "output_kind": "variables",
+        "target_variables": [
+          "VSTESTCD",
+          "VSTEST",
+          "VSORRES",
+          "VSORRESU"
+        ],
+        "score": 1,
+        "evidence": "临床动作要求生成体温检查记录及其原始结果和单位；项目政策同时给出了体温的检查代码、检查名称和原始单位。",
+        "uncertainties": "",
+        "status": "proposed",
+        "structure_valid": true
+      },
+      "steps": [
+        {
+          "step_id": "VS_TEMP_RECORD_STEP_01",
+          "transform_id": "transpose_findings",
+          "source_ref_ids": [
+            "vs_intermediate__TEMP"
+          ],
+          "target_variables": [
+            "VSTESTCD",
+            "VSTEST",
+            "VSORRES",
+            "VSORRESU"
+          ],
+          "parameters": {
+            "test_code": "TEMP",
+            "test_name": "Temperature",
+            "original_unit": "C",
+            "unit_source": null
+          },
+          "parameter_sources": {
+            "test_code": {
+              "source": "policy",
+              "reference": "resolver:findings_policy"
+            },
+            "test_name": {
+              "source": "policy",
+              "reference": "resolver:findings_policy"
+            },
+            "original_unit": {
+              "source": "policy",
+              "reference": "resolver:findings_policy"
+            },
+            "unit_source": {
+              "source": "policy",
+              "reference": "resolver:findings_policy"
+            }
+          }
+        }
+      ],
+      "recommendation_score": 1,
+      "reason": "该动作要求将横向体温结果展开为一条检查记录，项目政策已确认检查信息和原始单位。",
+      "uncertainties": "",
+      "status": "proposed",
+      "review_required": true
+    },
+    "VS_SYSBP_RECORD#1": {
+      "task_id": "VS_SYSBP_RECORD",
+      "assembly_group_id": "VS_SYSBP",
+      "target_domain": "VS",
+      "candidate_rank": 1,
+      "source_refs": [
+        {
+          "ref_id": "vs_intermediate__SYSBP",
+          "dataset": "vs_intermediate",
+          "variable": "SYSBP",
+          "role": "result"
+        }
+      ],
+      "depends_on": [
+        "VS_DATETIME"
+      ],
+      "required": true,
+      "semantic_decision": {
+        "task_id": "VS_SYSBP_RECORD",
+        "target_domain": "VS",
+        "output_kind": "variables",
+        "target_variables": [
+          "VSTESTCD",
+          "VSTEST",
+          "VSORRES",
+          "VSORRESU"
+        ],
+        "score": 1,
+        "evidence": "临床动作要求生成收缩压检查记录及其原始结果和单位；项目政策同时给出了收缩压的检查代码、检查名称和原始单位。",
+        "uncertainties": "",
+        "status": "proposed",
+        "structure_valid": true
+      },
+      "steps": [
+        {
+          "step_id": "VS_SYSBP_RECORD_STEP_01",
+          "transform_id": "transpose_findings",
+          "source_ref_ids": [
+            "vs_intermediate__SYSBP"
+          ],
+          "target_variables": [
+            "VSTESTCD",
+            "VSTEST",
+            "VSORRES",
+            "VSORRESU"
+          ],
+          "parameters": {
+            "test_code": "SYSBP",
+            "test_name": "Systolic Blood Pressure",
+            "original_unit": "mmHg",
+            "unit_source": null
+          },
+          "parameter_sources": {
+            "test_code": {
+              "source": "policy",
+              "reference": "resolver:findings_policy"
+            },
+            "test_name": {
+              "source": "policy",
+              "reference": "resolver:findings_policy"
+            },
+            "original_unit": {
+              "source": "policy",
+              "reference": "resolver:findings_policy"
+            },
+            "unit_source": {
+              "source": "policy",
+              "reference": "resolver:findings_policy"
+            }
+          }
+        }
+      ],
+      "recommendation_score": 1,
+      "reason": "该动作要求将横向收缩压结果展开为一条检查记录，项目政策已确认检查信息和原始单位。",
+      "uncertainties": "",
+      "status": "proposed",
+      "review_required": true
+    },
+    "VS_DIABP_RECORD#1": {
+      "task_id": "VS_DIABP_RECORD",
+      "assembly_group_id": "VS_DIABP",
+      "target_domain": "VS",
+      "candidate_rank": 1,
+      "source_refs": [
+        {
+          "ref_id": "vs_intermediate__DIABP",
+          "dataset": "vs_intermediate",
+          "variable": "DIABP",
+          "role": "result"
+        }
+      ],
+      "depends_on": [
+        "VS_DATETIME"
+      ],
+      "required": true,
+      "semantic_decision": {
+        "task_id": "VS_DIABP_RECORD",
+        "target_domain": "VS",
+        "output_kind": "variables",
+        "target_variables": [
+          "VSTESTCD",
+          "VSTEST",
+          "VSORRES",
+          "VSORRESU"
+        ],
+        "score": 1,
+        "evidence": "临床动作要求生成舒张压检查记录及其原始结果和单位；项目政策同时给出了舒张压的检查代码、检查名称和原始单位。",
+        "uncertainties": "",
+        "status": "proposed",
+        "structure_valid": true
+      },
+      "steps": [
+        {
+          "step_id": "VS_DIABP_RECORD_STEP_01",
+          "transform_id": "transpose_findings",
+          "source_ref_ids": [
+            "vs_intermediate__DIABP"
+          ],
+          "target_variables": [
+            "VSTESTCD",
+            "VSTEST",
+            "VSORRES",
+            "VSORRESU"
+          ],
+          "parameters": {
+            "test_code": "DIABP",
+            "test_name": "Diastolic Blood Pressure",
+            "original_unit": "mmHg",
+            "unit_source": null
+          },
+          "parameter_sources": {
+            "test_code": {
+              "source": "policy",
+              "reference": "resolver:findings_policy"
+            },
+            "test_name": {
+              "source": "policy",
+              "reference": "resolver:findings_policy"
+            },
+            "original_unit": {
+              "source": "policy",
+              "reference": "resolver:findings_policy"
+            },
+            "unit_source": {
+              "source": "policy",
+              "reference": "resolver:findings_policy"
+            }
+          }
+        }
+      ],
+      "recommendation_score": 1,
+      "reason": "该动作要求将横向舒张压结果展开为一条检查记录，项目政策已确认检查信息和原始单位。",
+      "uncertainties": "",
+      "status": "proposed",
+      "review_required": true
+    },
+    "VS_PULSE_RECORD#1": {
+      "task_id": "VS_PULSE_RECORD",
+      "assembly_group_id": "VS_PULSE",
+      "target_domain": "VS",
+      "candidate_rank": 1,
+      "source_refs": [
+        {
+          "ref_id": "vs_intermediate__PULSE",
+          "dataset": "vs_intermediate",
+          "variable": "PULSE",
+          "role": "result"
+        }
+      ],
+      "depends_on": [
+        "VS_DATETIME"
+      ],
+      "required": true,
+      "semantic_decision": {
+        "task_id": "VS_PULSE_RECORD",
+        "target_domain": "VS",
+        "output_kind": "variables",
+        "target_variables": [
+          "VSTESTCD",
+          "VSTEST",
+          "VSORRES",
+          "VSORRESU"
+        ],
+        "score": 1,
+        "evidence": "临床动作要求生成脉率检查记录及其原始结果和单位；项目政策同时给出了脉率的检查代码、检查名称和原始单位。",
+        "uncertainties": "",
+        "status": "proposed",
+        "structure_valid": true
+      },
+      "steps": [
+        {
+          "step_id": "VS_PULSE_RECORD_STEP_01",
+          "transform_id": "transpose_findings",
+          "source_ref_ids": [
+            "vs_intermediate__PULSE"
+          ],
+          "target_variables": [
+            "VSTESTCD",
+            "VSTEST",
+            "VSORRES",
+            "VSORRESU"
+          ],
+          "parameters": {
+            "test_code": "PULSE",
+            "test_name": "Pulse Rate",
+            "original_unit": "beats/min",
+            "unit_source": null
+          },
+          "parameter_sources": {
+            "test_code": {
+              "source": "policy",
+              "reference": "resolver:findings_policy"
+            },
+            "test_name": {
+              "source": "policy",
+              "reference": "resolver:findings_policy"
+            },
+            "original_unit": {
+              "source": "policy",
+              "reference": "resolver:findings_policy"
+            },
+            "unit_source": {
+              "source": "policy",
+              "reference": "resolver:findings_policy"
+            }
+          }
+        }
+      ],
+      "recommendation_score": 1,
+      "reason": "该动作要求将横向脉率结果展开为一条检查记录，项目政策已确认检查信息和原始单位。",
+      "uncertainties": "",
+      "status": "proposed",
+      "review_required": true
+    },
+    "VS_SEQUENCE#1": {
+      "task_id": "VS_SEQUENCE",
+      "assembly_group_id": "VS_POST_DERIVATIONS",
+      "target_domain": "VS",
+      "candidate_rank": 1,
+      "source_refs": [],
+      "depends_on": [
+        "VS_HEIGHT_RECORD",
+        "VS_WEIGHT_RECORD",
+        "VS_TEMP_RECORD",
+        "VS_SYSBP_RECORD",
+        "VS_DIABP_RECORD",
+        "VS_PULSE_RECORD"
+      ],
+      "required": true,
+      "semantic_decision": {
+        "task_id": "VS_SEQUENCE",
+        "target_domain": "VS",
+        "output_kind": "variables",
+        "target_variables": [
+          "VSSEQ"
+        ],
+        "score": 1,
+        "evidence": "临床动作要求生成受试者内稳定的生命体征序号，目录中对应变量为 VSSEQ。",
+        "uncertainties": "",
+        "status": "proposed",
+        "structure_valid": true
+      },
+      "steps": [
+        {
+          "step_id": "VS_SEQUENCE_STEP_01",
+          "transform_id": "derive_sequence",
+          "source_ref_ids": [],
+          "target_variables": [
+            "VSSEQ"
+          ],
+          "parameters": {
+            "record_variables": [
+              "STUDYID",
+              "USUBJID",
+              "VSDTC",
+              "VSTESTCD",
+              "VSPOS",
+              "VISITNUM",
+              ".SOURCE_ROW"
+            ],
+            "start_at": 1
+          },
+          "parameter_sources": {
+            "record_variables": {
+              "source": "policy",
+              "reference": "resolver:sequence_policy"
+            },
+            "start_at": {
+              "source": "policy",
+              "reference": "resolver:sequence_policy"
+            }
+          }
+        }
+      ],
+      "recommendation_score": 1,
+      "reason": "该动作要求在受试者内生成稳定连续序号，项目政策已提供该域的稳定排序规则。",
+      "uncertainties": "",
+      "status": "proposed",
+      "review_required": true
+    },
+    "VS_STUDY_DAY#1": {
+      "task_id": "VS_STUDY_DAY",
+      "assembly_group_id": "VS_POST_DERIVATIONS",
+      "target_domain": "VS",
+      "candidate_rank": 1,
+      "source_refs": [],
+      "depends_on": [
+        "VS_DATETIME",
+        "DM_REFERENCE_START"
+      ],
+      "required": true,
+      "semantic_decision": {
+        "task_id": "VS_STUDY_DAY",
+        "target_domain": "VS",
+        "output_kind": "variables",
+        "target_variables": [
+          "VSDY"
+        ],
+        "score": 1,
+        "evidence": "临床动作要求生成生命体征研究日，目录中对应变量为 VSDY。",
+        "uncertainties": "",
+        "status": "proposed",
+        "structure_valid": true
+      },
+      "steps": [
+        {
+          "step_id": "VS_STUDY_DAY_STEP_01",
+          "transform_id": "derive_study_day",
+          "source_ref_ids": [],
+          "target_variables": [
+            "VSDY"
+          ],
+          "parameters": {
+            "target_date": "VSDTC",
+            "reference_date": "RFSTDTC"
+          },
+          "parameter_sources": {
+            "target_date": {
+              "source": "derived",
+              "reference": "resolver:study_day_policy"
+            },
+            "reference_date": {
+              "source": "policy",
+              "reference": "resolver:study_day_policy"
+            }
+          }
+        }
+      ],
+      "recommendation_score": 1,
+      "reason": "该动作要求依据完整测量日期和上游参考日期生成研究日，任务依赖关系和项目政策已明确所需上游结果。",
+      "uncertainties": "",
+      "status": "proposed",
+      "review_required": true
+    }
+  },
+  "failures": [],
+  "dependency_blocks": [],
+  "available_task_ids": ["DM_STUDY_IDENTIFIER", "DM_DOMAIN_CONSTANT", "DM_UNIQUE_SUBJECT_IDENTIFIER", "DM_SUBJECT_IDENTIFIER", "DM_SITE_IDENTIFIER", "DM_REFERENCE_START", "DM_CONSENT", "DM_AGE", "DM_AGE_UNIT", "DM_SEX", "DM_ETHNICITY", "DM_RACE", "DM_COUNTRY", "DM_PLANNED_ARM_CODE", "DM_PLANNED_ARM", "DM_ACTUAL_ARM_CODE", "DM_ACTUAL_ARM", "AE_STUDY_IDENTIFIER", "AE_DOMAIN_CONSTANT", "AE_UNIQUE_SUBJECT_IDENTIFIER", "AE_REPORTED_TERM", "AE_CODED_TERM", "AE_BODY_SYSTEM", "AE_SEVERITY", "AE_SERIOUS", "AE_HOSPITALIZATION", "AE_RELATIONSHIP", "AE_OUTCOME", "AE_START_DATETIME", "AE_START_STUDY_DAY", "AE_END_DATETIME", "AE_ONGOING_STATUS", "AE_END_STUDY_DAY", "AE_SEQUENCE", "VS_STUDY_IDENTIFIER", "VS_DOMAIN_CONSTANT", "VS_UNIQUE_SUBJECT_IDENTIFIER", "VS_VISIT", "VS_VISIT_NUMBER", "VS_DATETIME", "VS_POSITION", "VS_HEIGHT_RECORD", "VS_WEIGHT_RECORD", "VS_TEMP_RECORD", "VS_SYSBP_RECORD", "VS_DIABP_RECORD", "VS_PULSE_RECORD", "VS_SEQUENCE", "VS_STUDY_DAY"],
+  "stage": "assembly"
+}

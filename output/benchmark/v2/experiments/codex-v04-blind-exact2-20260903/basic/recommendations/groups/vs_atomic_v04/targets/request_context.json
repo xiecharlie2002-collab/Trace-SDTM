@@ -1,0 +1,246 @@
+[
+  {
+    "task_id": "VS_STUDY_IDENTIFIER",
+    "assembly_group_id": "VS_STUDY_IDENTIFIER",
+    "target_domain": "VS",
+    "clinical_action": "Copy the study identifier to VS.",
+    "form_name": null,
+    "expected_cardinality": null,
+    "required": true,
+    "depends_on": [],
+    "source_refs": [
+      {
+        "ref_id": "vs_basic__STUDY",
+        "dataset": "vs_basic",
+        "variable": "STUDY",
+        "role": "study_identifier"
+      }
+    ],
+    "field_profiles": [
+      {
+        "declared_source_key": "vs_basic.STUDY",
+        "role": "study_identifier",
+        "resolution": "direct",
+        "evidence": [
+          {
+            "source_dataset": "vs_basic",
+            "source_variable": "STUDY",
+            "label": "Study identifier",
+            "data_type": "character",
+            "example_values": "TRACEB01",
+            "missing_rate": 0,
+            "unique_count": 1,
+            "form_name": "Vital Signs",
+            "grain": "one_record_per_finding",
+            "format_candidates": "",
+            "partial_tokens": "",
+            "record_count": 6
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "task_id": "VS_DOMAIN_CONSTANT",
+    "assembly_group_id": "VS_DOMAIN_CONSTANT",
+    "target_domain": "VS",
+    "clinical_action": "Set the constant VS domain code.",
+    "form_name": null,
+    "expected_cardinality": null,
+    "required": true,
+    "depends_on": [],
+    "source_refs": [],
+    "field_profiles": []
+  },
+  {
+    "task_id": "VS_UNIQUE_SUBJECT_IDENTIFIER",
+    "assembly_group_id": "VS_UNIQUE_SUBJECT_IDENTIFIER",
+    "target_domain": "VS",
+    "clinical_action": "Derive the unique subject identifier for VS.",
+    "form_name": null,
+    "expected_cardinality": null,
+    "required": true,
+    "depends_on": [],
+    "source_refs": [
+      {
+        "ref_id": "vs_basic__STUDY",
+        "dataset": "vs_basic",
+        "variable": "STUDY",
+        "role": "study_identifier"
+      },
+      {
+        "ref_id": "vs_basic__PATNUM",
+        "dataset": "vs_basic",
+        "variable": "PATNUM",
+        "role": "subject_identifier"
+      }
+    ],
+    "field_profiles": [
+      {
+        "declared_source_key": "vs_basic.STUDY",
+        "role": "study_identifier",
+        "resolution": "direct",
+        "evidence": [
+          {
+            "source_dataset": "vs_basic",
+            "source_variable": "STUDY",
+            "label": "Study identifier",
+            "data_type": "character",
+            "example_values": "TRACEB01",
+            "missing_rate": 0,
+            "unique_count": 1,
+            "form_name": "Vital Signs",
+            "grain": "one_record_per_finding",
+            "format_candidates": "",
+            "partial_tokens": "",
+            "record_count": 6
+          }
+        ]
+      },
+      {
+        "declared_source_key": "vs_basic.PATNUM",
+        "role": "subject_identifier",
+        "resolution": "direct",
+        "evidence": [
+          {
+            "source_dataset": "vs_basic",
+            "source_variable": "PATNUM",
+            "label": "Subject identifier",
+            "data_type": "character",
+            "example_values": "101-001 | 101-002 | 102-001 | 102-002",
+            "missing_rate": 0,
+            "unique_count": 4,
+            "form_name": "Vital Signs",
+            "grain": "one_record_per_finding",
+            "format_candidates": "",
+            "partial_tokens": "",
+            "record_count": 6
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "task_id": "VS_TEST_CODE",
+    "assembly_group_id": "VS_TEST_CODE",
+    "target_domain": "VS",
+    "clinical_action": "Copy the vital signs test code.",
+    "form_name": null,
+    "expected_cardinality": null,
+    "required": true,
+    "depends_on": [],
+    "source_refs": [
+      {
+        "ref_id": "vs_basic__VSTESTCD",
+        "dataset": "vs_basic",
+        "variable": "VSTESTCD",
+        "role": "test_code"
+      }
+    ],
+    "field_profiles": [
+      {
+        "declared_source_key": "vs_basic.VSTESTCD",
+        "role": "test_code",
+        "resolution": "direct",
+        "evidence": [
+          {
+            "source_dataset": "vs_basic",
+            "source_variable": "VSTESTCD",
+            "label": "VSTESTCD",
+            "data_type": "character",
+            "example_values": "SYSBP | DIABP | PULSE | TEMP | HEIGHT",
+            "missing_rate": 0,
+            "unique_count": 6,
+            "form_name": "Vital Signs",
+            "grain": "one_record_per_finding",
+            "format_candidates": "",
+            "partial_tokens": "",
+            "record_count": 6
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "task_id": "VS_ORIGINAL_RESULT",
+    "assembly_group_id": "VS_ORIGINAL_RESULT",
+    "target_domain": "VS",
+    "clinical_action": "Copy the original vital signs result.",
+    "form_name": null,
+    "expected_cardinality": null,
+    "required": true,
+    "depends_on": [],
+    "source_refs": [
+      {
+        "ref_id": "vs_basic__VSORRES",
+        "dataset": "vs_basic",
+        "variable": "VSORRES",
+        "role": "original_result"
+      }
+    ],
+    "field_profiles": [
+      {
+        "declared_source_key": "vs_basic.VSORRES",
+        "role": "original_result",
+        "resolution": "direct",
+        "evidence": [
+          {
+            "source_dataset": "vs_basic",
+            "source_variable": "VSORRES",
+            "label": "VSORRES",
+            "data_type": "numeric",
+            "example_values": "122 | 78 | 72 | 36.8 | 168",
+            "missing_rate": 0,
+            "unique_count": 6,
+            "form_name": "Vital Signs",
+            "grain": "one_record_per_finding",
+            "format_candidates": "",
+            "partial_tokens": "",
+            "record_count": 6
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "task_id": "VS_MEASUREMENT_DATE",
+    "assembly_group_id": "VS_MEASUREMENT_DATE",
+    "target_domain": "VS",
+    "clinical_action": "Convert the vital signs date to ISO 8601.",
+    "form_name": null,
+    "expected_cardinality": null,
+    "required": true,
+    "depends_on": [],
+    "source_refs": [
+      {
+        "ref_id": "vs_basic__VSDAT",
+        "dataset": "vs_basic",
+        "variable": "VSDAT",
+        "role": "measurement_date"
+      }
+    ],
+    "field_profiles": [
+      {
+        "declared_source_key": "vs_basic.VSDAT",
+        "role": "measurement_date",
+        "resolution": "direct",
+        "evidence": [
+          {
+            "source_dataset": "vs_basic",
+            "source_variable": "VSDAT",
+            "label": "VSDAT",
+            "data_type": "Date",
+            "example_values": "2025-01-05 | 2025-01-06 | 2025-01-07",
+            "missing_rate": 0,
+            "unique_count": 3,
+            "form_name": "Vital Signs",
+            "grain": "one_record_per_finding",
+            "format_candidates": "y-m-d",
+            "partial_tokens": "",
+            "record_count": 6
+          }
+        ]
+      }
+    ]
+  }
+]

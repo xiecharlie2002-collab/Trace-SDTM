@@ -1,0 +1,220 @@
+{
+  "valid": {
+    "VS_STUDY_IDENTIFIER": {
+      "task_id": "VS_STUDY_IDENTIFIER",
+      "target_domain": "VS",
+      "output_kind": "variables",
+      "target_variables": [
+        "STUDYID"
+      ],
+      "score": 1,
+      "evidence": "条件评价给定正确目标。",
+      "uncertainties": "",
+      "status": "proposed",
+      "structure_valid": true
+    },
+    "VS_DOMAIN_CONSTANT": {
+      "task_id": "VS_DOMAIN_CONSTANT",
+      "target_domain": "VS",
+      "output_kind": "variables",
+      "target_variables": [
+        "DOMAIN"
+      ],
+      "score": 1,
+      "evidence": "条件评价给定正确目标。",
+      "uncertainties": "",
+      "status": "proposed",
+      "structure_valid": true
+    },
+    "VS_UNIQUE_SUBJECT_IDENTIFIER": {
+      "task_id": "VS_UNIQUE_SUBJECT_IDENTIFIER",
+      "target_domain": "VS",
+      "output_kind": "variables",
+      "target_variables": [
+        "USUBJID"
+      ],
+      "score": 1,
+      "evidence": "条件评价给定正确目标。",
+      "uncertainties": "",
+      "status": "proposed",
+      "structure_valid": true
+    },
+    "VS_VISIT": {
+      "task_id": "VS_VISIT",
+      "target_domain": "VS",
+      "output_kind": "variables",
+      "target_variables": [
+        "VISIT"
+      ],
+      "score": 1,
+      "evidence": "条件评价给定正确目标。",
+      "uncertainties": "",
+      "status": "proposed",
+      "structure_valid": true
+    },
+    "VS_VISIT_NUMBER": {
+      "task_id": "VS_VISIT_NUMBER",
+      "target_domain": "VS",
+      "output_kind": "variables",
+      "target_variables": [
+        "VISITNUM"
+      ],
+      "score": 1,
+      "evidence": "条件评价给定正确目标。",
+      "uncertainties": "",
+      "status": "proposed",
+      "structure_valid": true
+    },
+    "VS_DATETIME": {
+      "task_id": "VS_DATETIME",
+      "target_domain": "VS",
+      "output_kind": "variables",
+      "target_variables": [
+        "VSDTC"
+      ],
+      "score": 1,
+      "evidence": "条件评价给定正确目标。",
+      "uncertainties": "",
+      "status": "proposed",
+      "structure_valid": true
+    },
+    "VS_POSITION": {
+      "task_id": "VS_POSITION",
+      "target_domain": "VS",
+      "output_kind": "variables",
+      "target_variables": [
+        "VSPOS"
+      ],
+      "score": 1,
+      "evidence": "条件评价给定正确目标。",
+      "uncertainties": "",
+      "status": "proposed",
+      "structure_valid": true
+    },
+    "VS_HEIGHT_RECORD": {
+      "task_id": "VS_HEIGHT_RECORD",
+      "target_domain": "VS",
+      "output_kind": "variables",
+      "target_variables": [
+        "VSTESTCD",
+        "VSTEST",
+        "VSORRES",
+        "VSORRESU"
+      ],
+      "score": 1,
+      "evidence": "条件评价给定正确目标。",
+      "uncertainties": "",
+      "status": "proposed",
+      "structure_valid": true
+    },
+    "VS_WEIGHT_RECORD": {
+      "task_id": "VS_WEIGHT_RECORD",
+      "target_domain": "VS",
+      "output_kind": "variables",
+      "target_variables": [
+        "VSTESTCD",
+        "VSTEST",
+        "VSORRES",
+        "VSORRESU"
+      ],
+      "score": 1,
+      "evidence": "条件评价给定正确目标。",
+      "uncertainties": "",
+      "status": "proposed",
+      "structure_valid": true
+    },
+    "VS_TEMP_RECORD": {
+      "task_id": "VS_TEMP_RECORD",
+      "target_domain": "VS",
+      "output_kind": "variables",
+      "target_variables": [
+        "VSTESTCD",
+        "VSTEST",
+        "VSORRES",
+        "VSORRESU"
+      ],
+      "score": 1,
+      "evidence": "条件评价给定正确目标。",
+      "uncertainties": "",
+      "status": "proposed",
+      "structure_valid": true
+    },
+    "VS_SYSBP_RECORD": {
+      "task_id": "VS_SYSBP_RECORD",
+      "target_domain": "VS",
+      "output_kind": "variables",
+      "target_variables": [
+        "VSTESTCD",
+        "VSTEST",
+        "VSORRES",
+        "VSORRESU"
+      ],
+      "score": 1,
+      "evidence": "条件评价给定正确目标。",
+      "uncertainties": "",
+      "status": "proposed",
+      "structure_valid": true
+    },
+    "VS_DIABP_RECORD": {
+      "task_id": "VS_DIABP_RECORD",
+      "target_domain": "VS",
+      "output_kind": "variables",
+      "target_variables": [
+        "VSTESTCD",
+        "VSTEST",
+        "VSORRES",
+        "VSORRESU"
+      ],
+      "score": 1,
+      "evidence": "条件评价给定正确目标。",
+      "uncertainties": "",
+      "status": "proposed",
+      "structure_valid": true
+    },
+    "VS_PULSE_RECORD": {
+      "task_id": "VS_PULSE_RECORD",
+      "target_domain": "VS",
+      "output_kind": "variables",
+      "target_variables": [
+        "VSTESTCD",
+        "VSTEST",
+        "VSORRES",
+        "VSORRESU"
+      ],
+      "score": 1,
+      "evidence": "条件评价给定正确目标。",
+      "uncertainties": "",
+      "status": "proposed",
+      "structure_valid": true
+    },
+    "VS_SEQUENCE": {
+      "task_id": "VS_SEQUENCE",
+      "target_domain": "VS",
+      "output_kind": "variables",
+      "target_variables": [
+        "VSSEQ"
+      ],
+      "score": 1,
+      "evidence": "条件评价给定正确目标。",
+      "uncertainties": "",
+      "status": "proposed",
+      "structure_valid": true
+    },
+    "VS_STUDY_DAY": {
+      "task_id": "VS_STUDY_DAY",
+      "target_domain": "VS",
+      "output_kind": "variables",
+      "target_variables": [
+        "VSDY"
+      ],
+      "score": 1,
+      "evidence": "条件评价给定正确目标。",
+      "uncertainties": "",
+      "status": "proposed",
+      "structure_valid": true
+    }
+  },
+  "failures": [],
+  "missing_task_ids": [],
+  "stage": "target_identification"
+}

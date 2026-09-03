@@ -1,0 +1,85 @@
+{
+  "valid": {
+    "AE_STUDY_IDENTIFIER": {
+      "task_id": "AE_STUDY_IDENTIFIER",
+      "target_domain": "AE",
+      "output_kind": "variables",
+      "target_variables": [
+        "STUDYID"
+      ],
+      "score": 1,
+      "evidence": "条件评价给定正确目标。",
+      "uncertainties": "",
+      "status": "proposed",
+      "structure_valid": true
+    },
+    "AE_DOMAIN_CONSTANT": {
+      "task_id": "AE_DOMAIN_CONSTANT",
+      "target_domain": "AE",
+      "output_kind": "variables",
+      "target_variables": [
+        "DOMAIN"
+      ],
+      "score": 1,
+      "evidence": "条件评价给定正确目标。",
+      "uncertainties": "",
+      "status": "proposed",
+      "structure_valid": true
+    },
+    "AE_UNIQUE_SUBJECT_IDENTIFIER": {
+      "task_id": "AE_UNIQUE_SUBJECT_IDENTIFIER",
+      "target_domain": "AE",
+      "output_kind": "variables",
+      "target_variables": [
+        "USUBJID"
+      ],
+      "score": 1,
+      "evidence": "条件评价给定正确目标。",
+      "uncertainties": "",
+      "status": "proposed",
+      "structure_valid": true
+    },
+    "AE_REPORTED_TERM": {
+      "task_id": "AE_REPORTED_TERM",
+      "target_domain": "AE",
+      "output_kind": "variables",
+      "target_variables": [
+        "AETERM"
+      ],
+      "score": 1,
+      "evidence": "条件评价给定正确目标。",
+      "uncertainties": "",
+      "status": "proposed",
+      "structure_valid": true
+    },
+    "AE_SEVERITY": {
+      "task_id": "AE_SEVERITY",
+      "target_domain": "AE",
+      "output_kind": "variables",
+      "target_variables": [
+        "AESEV"
+      ],
+      "score": 1,
+      "evidence": "条件评价给定正确目标。",
+      "uncertainties": "",
+      "status": "proposed",
+      "structure_valid": true
+    },
+    "AE_START_DATE": {
+      "task_id": "AE_START_DATE",
+      "target_domain": "AE",
+      "output_kind": "variables",
+      "target_variables": [
+        "AESTDTC"
+      ],
+      "score": 1,
+      "evidence": "条件评价给定正确目标。",
+      "uncertainties": "",
+      "status": "proposed",
+      "structure_valid": true
+    }
+  },
+  "failures": [],
+  "missing_task_ids": [],
+  "stage": "target_identification"
+}

@@ -1,0 +1,2 @@
+# Blind-evaluation evidence is byte-frozen; Git must not rewrite or merge it.
+output/benchmark/v2/experiments/codex-v04-blind-exact2-20260903/** binary

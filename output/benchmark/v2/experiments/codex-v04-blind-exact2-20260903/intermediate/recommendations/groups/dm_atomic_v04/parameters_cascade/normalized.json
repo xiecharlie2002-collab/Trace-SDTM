@@ -1,0 +1,295 @@
+{
+  "valid": [],
+  "failures": [],
+  "stage": "parameter_completion",
+  "skipped": true,
+  "provider": "automatic_injection",
+  "resolutions": {
+    "valid": {
+      "DM_STUDY_IDENTIFIER#1": {
+        "task_id": "DM_STUDY_IDENTIFIER",
+        "candidate_rank": 1,
+        "transform_id": "assign_no_ct",
+        "injected_parameters": {},
+        "parameter_sources": {},
+        "unresolved_parameters": [],
+        "parameter_options": [],
+        "unavailable_parameters": [],
+        "fully_resolved": true,
+        "status": "ready"
+      },
+      "DM_DOMAIN_CONSTANT#1": {
+        "task_id": "DM_DOMAIN_CONSTANT",
+        "candidate_rank": 1,
+        "transform_id": "hardcode_no_ct",
+        "injected_parameters": {
+          "value": "DM"
+        },
+        "parameter_sources": {
+          "value": {
+            "source": "policy",
+            "reference": "resolver:target_constant"
+          }
+        },
+        "unresolved_parameters": [],
+        "parameter_options": {},
+        "unavailable_parameters": [],
+        "fully_resolved": true,
+        "status": "ready"
+      },
+      "DM_UNIQUE_SUBJECT_IDENTIFIER#1": {
+        "task_id": "DM_UNIQUE_SUBJECT_IDENTIFIER",
+        "candidate_rank": 1,
+        "transform_id": "derive_usubjid",
+        "injected_parameters": {
+          "separator": "-"
+        },
+        "parameter_sources": {
+          "separator": {
+            "source": "policy",
+            "reference": "resolver:identifier_policy"
+          }
+        },
+        "unresolved_parameters": [],
+        "parameter_options": {},
+        "unavailable_parameters": [],
+        "fully_resolved": true,
+        "status": "ready"
+      },
+      "DM_SUBJECT_IDENTIFIER#1": {
+        "task_id": "DM_SUBJECT_IDENTIFIER",
+        "candidate_rank": 1,
+        "transform_id": "assign_no_ct",
+        "injected_parameters": {},
+        "parameter_sources": {},
+        "unresolved_parameters": [],
+        "parameter_options": [],
+        "unavailable_parameters": [],
+        "fully_resolved": true,
+        "status": "ready"
+      },
+      "DM_SITE_IDENTIFIER#1": {
+        "task_id": "DM_SITE_IDENTIFIER",
+        "candidate_rank": 1,
+        "transform_id": "extract_delimited_part",
+        "injected_parameters": {
+          "separator": "-",
+          "position": 1
+        },
+        "parameter_sources": {
+          "separator": {
+            "source": "policy",
+            "reference": "resolver:site_identifier_policy"
+          },
+          "position": {
+            "source": "policy",
+            "reference": "resolver:site_identifier_policy"
+          }
+        },
+        "unresolved_parameters": [],
+        "parameter_options": {},
+        "unavailable_parameters": [],
+        "fully_resolved": true,
+        "status": "ready"
+      },
+      "DM_REFERENCE_START#1": {
+        "task_id": "DM_REFERENCE_START",
+        "candidate_rank": 1,
+        "transform_id": "to_iso8601_datetime",
+        "injected_parameters": {
+          "formats": [
+            "dd-mmm-yyyy",
+            "H:M:S"
+          ]
+        },
+        "parameter_sources": {
+          "formats": {
+            "source": "policy",
+            "reference": "resolver:approved_formats"
+          }
+        },
+        "unresolved_parameters": [],
+        "parameter_options": {},
+        "unavailable_parameters": [],
+        "fully_resolved": true,
+        "status": "ready"
+      },
+      "DM_CONSENT#1": {
+        "task_id": "DM_CONSENT",
+        "candidate_rank": 1,
+        "transform_id": "to_iso8601_date",
+        "injected_parameters": {
+          "formats": [
+            "dd-mmm-yyyy"
+          ]
+        },
+        "parameter_sources": {
+          "formats": {
+            "source": "policy",
+            "reference": "resolver:approved_formats"
+          }
+        },
+        "unresolved_parameters": [],
+        "parameter_options": {},
+        "unavailable_parameters": [],
+        "fully_resolved": true,
+        "status": "ready"
+      },
+      "DM_AGE#1": {
+        "task_id": "DM_AGE",
+        "candidate_rank": 1,
+        "transform_id": "assign_no_ct",
+        "injected_parameters": {},
+        "parameter_sources": {},
+        "unresolved_parameters": [],
+        "parameter_options": [],
+        "unavailable_parameters": [],
+        "fully_resolved": true,
+        "status": "ready"
+      },
+      "DM_AGE_UNIT#1": {
+        "task_id": "DM_AGE_UNIT",
+        "candidate_rank": 1,
+        "transform_id": "hardcode_ct",
+        "injected_parameters": {
+          "value": "YEARS",
+          "codelist_id": "AGEU"
+        },
+        "parameter_sources": {
+          "value": {
+            "source": "policy",
+            "reference": "resolver:target_constant"
+          },
+          "codelist_id": {
+            "source": "resource",
+            "reference": "resolver:target_codelist"
+          }
+        },
+        "unresolved_parameters": [],
+        "parameter_options": {},
+        "unavailable_parameters": [],
+        "fully_resolved": true,
+        "status": "ready"
+      },
+      "DM_SEX#1": {
+        "task_id": "DM_SEX",
+        "candidate_rank": 1,
+        "transform_id": "assign_ct",
+        "injected_parameters": {
+          "codelist_id": "SEX"
+        },
+        "parameter_sources": {
+          "codelist_id": {
+            "source": "resource",
+            "reference": "resolver:target_codelist"
+          }
+        },
+        "unresolved_parameters": [],
+        "parameter_options": {},
+        "unavailable_parameters": [],
+        "fully_resolved": true,
+        "status": "ready"
+      },
+      "DM_ETHNICITY#1": {
+        "task_id": "DM_ETHNICITY",
+        "candidate_rank": 1,
+        "transform_id": "assign_ct",
+        "injected_parameters": {
+          "codelist_id": "ETHNIC"
+        },
+        "parameter_sources": {
+          "codelist_id": {
+            "source": "resource",
+            "reference": "resolver:target_codelist"
+          }
+        },
+        "unresolved_parameters": [],
+        "parameter_options": {},
+        "unavailable_parameters": [],
+        "fully_resolved": true,
+        "status": "ready"
+      },
+      "DM_RACE#1": {
+        "task_id": "DM_RACE",
+        "candidate_rank": 1,
+        "transform_id": "assign_ct",
+        "injected_parameters": {
+          "codelist_id": "RACE"
+        },
+        "parameter_sources": {
+          "codelist_id": {
+            "source": "resource",
+            "reference": "resolver:target_codelist"
+          }
+        },
+        "unresolved_parameters": [],
+        "parameter_options": {},
+        "unavailable_parameters": [],
+        "fully_resolved": true,
+        "status": "ready"
+      },
+      "DM_COUNTRY#1": {
+        "task_id": "DM_COUNTRY",
+        "candidate_rank": 1,
+        "transform_id": "assign_no_ct",
+        "injected_parameters": {},
+        "parameter_sources": {},
+        "unresolved_parameters": [],
+        "parameter_options": [],
+        "unavailable_parameters": [],
+        "fully_resolved": true,
+        "status": "ready"
+      },
+      "DM_PLANNED_ARM_CODE#1": {
+        "task_id": "DM_PLANNED_ARM_CODE",
+        "candidate_rank": 1,
+        "transform_id": "assign_no_ct",
+        "injected_parameters": {},
+        "parameter_sources": {},
+        "unresolved_parameters": [],
+        "parameter_options": [],
+        "unavailable_parameters": [],
+        "fully_resolved": true,
+        "status": "ready"
+      },
+      "DM_PLANNED_ARM#1": {
+        "task_id": "DM_PLANNED_ARM",
+        "candidate_rank": 1,
+        "transform_id": "assign_no_ct",
+        "injected_parameters": {},
+        "parameter_sources": {},
+        "unresolved_parameters": [],
+        "parameter_options": [],
+        "unavailable_parameters": [],
+        "fully_resolved": true,
+        "status": "ready"
+      },
+      "DM_ACTUAL_ARM_CODE#1": {
+        "task_id": "DM_ACTUAL_ARM_CODE",
+        "candidate_rank": 1,
+        "transform_id": "assign_no_ct",
+        "injected_parameters": {},
+        "parameter_sources": {},
+        "unresolved_parameters": [],
+        "parameter_options": [],
+        "unavailable_parameters": [],
+        "fully_resolved": true,
+        "status": "ready"
+      },
+      "DM_ACTUAL_ARM#1": {
+        "task_id": "DM_ACTUAL_ARM",
+        "candidate_rank": 1,
+        "transform_id": "assign_no_ct",
+        "injected_parameters": {},
+        "parameter_sources": {},
+        "unresolved_parameters": [],
+        "parameter_options": [],
+        "unavailable_parameters": [],
+        "fully_resolved": true,
+        "status": "ready"
+      }
+    },
+    "failures": [],
+    "stage": "known_parameter_resolution"
+  }
+}

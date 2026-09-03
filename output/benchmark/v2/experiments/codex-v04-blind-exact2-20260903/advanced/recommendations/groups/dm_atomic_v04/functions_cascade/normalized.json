@@ -1,0 +1,245 @@
+{
+  "valid": {
+    "DM_STUDY_IDENTIFIER#1": {
+      "task_id": "DM_STUDY_IDENTIFIER",
+      "candidate_rank": 1,
+      "transform_id": "assign_no_ct",
+      "source_ref_ids": [
+        "dm_subject__STUDY"
+      ],
+      "score": 0.99,
+      "reason": "研究标识符来源单一，且该动作不涉及受控术语或格式转换。",
+      "uncertainties": "",
+      "status": "proposed",
+      "review_required": true,
+      "structure_valid": true
+    },
+    "DM_DOMAIN_CONSTANT#1": {
+      "task_id": "DM_DOMAIN_CONSTANT",
+      "candidate_rank": 1,
+      "transform_id": "hardcode_no_ct",
+      "source_ref_ids": [],
+      "score": 1,
+      "reason": "该动作要求设置固定域值，且目标不受受控术语约束。",
+      "uncertainties": "",
+      "status": "proposed",
+      "review_required": true,
+      "structure_valid": true
+    },
+    "DM_UNIQUE_SUBJECT_IDENTIFIER#1": {
+      "task_id": "DM_UNIQUE_SUBJECT_IDENTIFIER",
+      "candidate_rank": 1,
+      "transform_id": "derive_usubjid",
+      "source_ref_ids": [
+        "dm_subject__STUDY",
+        "dm_subject__PATNUM"
+      ],
+      "score": 1,
+      "reason": "项目政策明确要求使用研究编号和受试者编号按批准格式派生唯一受试者标识符。",
+      "uncertainties": "",
+      "status": "proposed",
+      "review_required": true,
+      "structure_valid": true
+    },
+    "DM_SUBJECT_IDENTIFIER#1": {
+      "task_id": "DM_SUBJECT_IDENTIFIER",
+      "candidate_rank": 1,
+      "transform_id": "assign_no_ct",
+      "source_ref_ids": [
+        "dm_subject__PATNUM"
+      ],
+      "score": 0.99,
+      "reason": "申办方受试者标识符可由单一来源字段直接映射，且不涉及受控术语转换。",
+      "uncertainties": "",
+      "status": "proposed",
+      "review_required": true,
+      "structure_valid": true
+    },
+    "DM_SITE_IDENTIFIER#1": {
+      "task_id": "DM_SITE_IDENTIFIER",
+      "candidate_rank": 1,
+      "transform_id": "extract_delimited_part",
+      "source_ref_ids": [
+        "dm_subject__PATNUM"
+      ],
+      "score": 1,
+      "reason": "项目政策明确规定从受试者标识符的固定分隔部分提取中心标识符。",
+      "uncertainties": "",
+      "status": "proposed",
+      "review_required": true,
+      "structure_valid": true
+    },
+    "DM_REFERENCE_START#1": {
+      "task_id": "DM_REFERENCE_START",
+      "candidate_rank": 1,
+      "transform_id": "derive_reference_datetime",
+      "source_ref_ids": [
+        "ex_a_raw__EXSTDAT",
+        "ex_a_raw__EXSTTIM",
+        "ex_b_raw__DOSE_DATE",
+        "ex_b_raw__DOSE_TIME"
+      ],
+      "score": 1,
+      "reason": "该动作要求综合两个暴露来源，并按明确规则选择每名受试者最早的完整日期时间。",
+      "uncertainties": "",
+      "status": "proposed",
+      "review_required": true,
+      "structure_valid": true
+    },
+    "DM_CONSENT#1": {
+      "task_id": "DM_CONSENT",
+      "candidate_rank": 1,
+      "transform_id": "to_iso8601_date",
+      "source_ref_ids": [
+        "dm_subject__IC_DT"
+      ],
+      "score": 1,
+      "reason": "来源是具有批准格式的完整日期，当前原子动作仅要求转换为 ISO 8601 日期。",
+      "uncertainties": "",
+      "status": "proposed",
+      "review_required": true,
+      "structure_valid": true
+    },
+    "DM_AGE#1": {
+      "task_id": "DM_AGE",
+      "candidate_rank": 1,
+      "transform_id": "assign_no_ct",
+      "source_ref_ids": [
+        "dm_subject__AGE"
+      ],
+      "score": 0.99,
+      "reason": "年龄为单一数值来源的直接映射，不涉及受控术语或格式改变。",
+      "uncertainties": "",
+      "status": "proposed",
+      "review_required": true,
+      "structure_valid": true
+    },
+    "DM_AGE_UNIT#1": {
+      "task_id": "DM_AGE_UNIT",
+      "candidate_rank": 1,
+      "transform_id": "hardcode_ct",
+      "source_ref_ids": [],
+      "score": 1,
+      "reason": "该动作要求设置受控年龄单位，项目政策已提供经过术语表约束的固定值。",
+      "uncertainties": "",
+      "status": "proposed",
+      "review_required": true,
+      "structure_valid": true
+    },
+    "DM_SEX#1": {
+      "task_id": "DM_SEX",
+      "candidate_rank": 1,
+      "transform_id": "assign_ct",
+      "source_ref_ids": [
+        "dm_subject__SEX"
+      ],
+      "score": 0.99,
+      "reason": "来源性别值需要映射至目标受控术语。",
+      "uncertainties": "",
+      "status": "proposed",
+      "review_required": true,
+      "structure_valid": true
+    },
+    "DM_ETHNICITY#1": {
+      "task_id": "DM_ETHNICITY",
+      "candidate_rank": 1,
+      "transform_id": "assign_ct",
+      "source_ref_ids": [
+        "dm_subject__ETHNIC"
+      ],
+      "score": 0.99,
+      "reason": "来源族裔值需要映射至目标受控术语。",
+      "uncertainties": "",
+      "status": "proposed",
+      "review_required": true,
+      "structure_valid": true
+    },
+    "DM_RACE#1": {
+      "task_id": "DM_RACE",
+      "candidate_rank": 1,
+      "transform_id": "assign_ct",
+      "source_ref_ids": [
+        "dm_subject__RACE"
+      ],
+      "score": 0.99,
+      "reason": "来源种族值需要映射至目标受控术语。",
+      "uncertainties": "",
+      "status": "proposed",
+      "review_required": true,
+      "structure_valid": true
+    },
+    "DM_COUNTRY#1": {
+      "task_id": "DM_COUNTRY",
+      "candidate_rank": 1,
+      "transform_id": "assign_no_ct",
+      "source_ref_ids": [
+        "dm_subject__COUNTRY"
+      ],
+      "score": 0.99,
+      "reason": "国家由单一来源字段直接映射，当前目标决定未表明需要受控术语转换。",
+      "uncertainties": "",
+      "status": "proposed",
+      "review_required": true,
+      "structure_valid": true
+    },
+    "DM_PLANNED_ARM_CODE#1": {
+      "task_id": "DM_PLANNED_ARM_CODE",
+      "candidate_rank": 1,
+      "transform_id": "assign_no_ct",
+      "source_ref_ids": [
+        "dm_subject__PLANNED_ARMCD"
+      ],
+      "score": 0.99,
+      "reason": "计划治疗组代码由对应的单一来源字段直接映射。",
+      "uncertainties": "",
+      "status": "proposed",
+      "review_required": true,
+      "structure_valid": true
+    },
+    "DM_PLANNED_ARM#1": {
+      "task_id": "DM_PLANNED_ARM",
+      "candidate_rank": 1,
+      "transform_id": "assign_no_ct",
+      "source_ref_ids": [
+        "dm_subject__PLANNED_ARM"
+      ],
+      "score": 0.99,
+      "reason": "计划治疗组描述由对应的单一来源字段直接映射。",
+      "uncertainties": "",
+      "status": "proposed",
+      "review_required": true,
+      "structure_valid": true
+    },
+    "DM_ACTUAL_ARM_CODE#1": {
+      "task_id": "DM_ACTUAL_ARM_CODE",
+      "candidate_rank": 1,
+      "transform_id": "assign_no_ct",
+      "source_ref_ids": [
+        "dm_subject__ACTUAL_ARMCD"
+      ],
+      "score": 0.99,
+      "reason": "实际治疗组代码由对应的单一来源字段直接映射。",
+      "uncertainties": "",
+      "status": "proposed",
+      "review_required": true,
+      "structure_valid": true
+    },
+    "DM_ACTUAL_ARM#1": {
+      "task_id": "DM_ACTUAL_ARM",
+      "candidate_rank": 1,
+      "transform_id": "assign_no_ct",
+      "source_ref_ids": [
+        "dm_subject__ACTUAL_ARM"
+      ],
+      "score": 0.99,
+      "reason": "实际治疗组描述由对应的单一来源字段直接映射。",
+      "uncertainties": "",
+      "status": "proposed",
+      "review_required": true,
+      "structure_valid": true
+    }
+  },
+  "failures": [],
+  "missing_task_ids": [],
+  "stage": "function_selection"
+}

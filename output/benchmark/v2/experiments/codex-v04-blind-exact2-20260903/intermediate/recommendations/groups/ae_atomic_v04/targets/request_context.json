@@ -1,0 +1,728 @@
+[
+  {
+    "task_id": "AE_STUDY_IDENTIFIER",
+    "assembly_group_id": "AE_CORE",
+    "target_domain": "AE",
+    "clinical_action": "Map the study identifier to AE.",
+    "form_name": "Adverse Events",
+    "expected_cardinality": null,
+    "required": true,
+    "depends_on": [
+      "DM_STUDY_IDENTIFIER"
+    ],
+    "source_refs": [
+      {
+        "ref_id": "ae_intermediate__STUDY",
+        "dataset": "ae_intermediate",
+        "variable": "STUDY",
+        "role": "study_identifier"
+      }
+    ],
+    "field_profiles": [
+      {
+        "declared_source_key": "ae_intermediate.STUDY",
+        "role": "study_identifier",
+        "resolution": "direct",
+        "evidence": [
+          {
+            "source_dataset": "ae_intermediate",
+            "source_variable": "STUDY",
+            "label": "Study identifier",
+            "data_type": "character",
+            "example_values": "TRACE-MID",
+            "missing_rate": 0,
+            "unique_count": 1,
+            "form_name": "Adverse Events",
+            "grain": "one_record_per_event",
+            "format_candidates": "",
+            "partial_tokens": "",
+            "record_count": 7
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "task_id": "AE_DOMAIN_CONSTANT",
+    "assembly_group_id": "AE_CORE",
+    "target_domain": "AE",
+    "clinical_action": "Set the AE domain constant.",
+    "form_name": "Adverse Events",
+    "expected_cardinality": null,
+    "required": true,
+    "depends_on": [],
+    "source_refs": [],
+    "field_profiles": []
+  },
+  {
+    "task_id": "AE_UNIQUE_SUBJECT_IDENTIFIER",
+    "assembly_group_id": "AE_CORE",
+    "target_domain": "AE",
+    "clinical_action": "Derive the unique subject identifier for AE.",
+    "form_name": "Adverse Events",
+    "expected_cardinality": null,
+    "required": true,
+    "depends_on": [
+      "DM_UNIQUE_SUBJECT_IDENTIFIER"
+    ],
+    "source_refs": [
+      {
+        "ref_id": "ae_intermediate__STUDY",
+        "dataset": "ae_intermediate",
+        "variable": "STUDY",
+        "role": "study_identifier"
+      },
+      {
+        "ref_id": "ae_intermediate__PATNUM",
+        "dataset": "ae_intermediate",
+        "variable": "PATNUM",
+        "role": "subject_identifier"
+      }
+    ],
+    "field_profiles": [
+      {
+        "declared_source_key": "ae_intermediate.STUDY",
+        "role": "study_identifier",
+        "resolution": "direct",
+        "evidence": [
+          {
+            "source_dataset": "ae_intermediate",
+            "source_variable": "STUDY",
+            "label": "Study identifier",
+            "data_type": "character",
+            "example_values": "TRACE-MID",
+            "missing_rate": 0,
+            "unique_count": 1,
+            "form_name": "Adverse Events",
+            "grain": "one_record_per_event",
+            "format_candidates": "",
+            "partial_tokens": "",
+            "record_count": 7
+          }
+        ]
+      },
+      {
+        "declared_source_key": "ae_intermediate.PATNUM",
+        "role": "subject_identifier",
+        "resolution": "direct",
+        "evidence": [
+          {
+            "source_dataset": "ae_intermediate",
+            "source_variable": "PATNUM",
+            "label": "Subject identifier",
+            "data_type": "character",
+            "example_values": "701-1001 | 701-1002 | 702-1003 | 702-1004 | 703-1005",
+            "missing_rate": 0,
+            "unique_count": 6,
+            "form_name": "Adverse Events",
+            "grain": "one_record_per_event",
+            "format_candidates": "",
+            "partial_tokens": "",
+            "record_count": 7
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "task_id": "AE_REPORTED_TERM",
+    "assembly_group_id": "AE_TERMS",
+    "target_domain": "AE",
+    "clinical_action": "Map the reported adverse event term.",
+    "form_name": "Adverse Events",
+    "expected_cardinality": null,
+    "required": true,
+    "depends_on": [
+      "AE_UNIQUE_SUBJECT_IDENTIFIER"
+    ],
+    "source_refs": [
+      {
+        "ref_id": "ae_intermediate__AETERM",
+        "dataset": "ae_intermediate",
+        "variable": "AETERM",
+        "role": "reported_term"
+      }
+    ],
+    "field_profiles": [
+      {
+        "declared_source_key": "ae_intermediate.AETERM",
+        "role": "reported_term",
+        "resolution": "direct",
+        "evidence": [
+          {
+            "source_dataset": "ae_intermediate",
+            "source_variable": "AETERM",
+            "label": "AETERM",
+            "data_type": "character",
+            "example_values": "Headache | Nausea | Dizziness | Rash | Fatigue",
+            "missing_rate": 0,
+            "unique_count": 7,
+            "form_name": "Adverse Events",
+            "grain": "one_record_per_event",
+            "format_candidates": "",
+            "partial_tokens": "",
+            "record_count": 7
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "task_id": "AE_CODED_TERM",
+    "assembly_group_id": "AE_TERMS",
+    "target_domain": "AE",
+    "clinical_action": "Map the coded adverse event term.",
+    "form_name": "Adverse Events",
+    "expected_cardinality": null,
+    "required": true,
+    "depends_on": [
+      "AE_UNIQUE_SUBJECT_IDENTIFIER"
+    ],
+    "source_refs": [
+      {
+        "ref_id": "ae_intermediate__AEDECOD",
+        "dataset": "ae_intermediate",
+        "variable": "AEDECOD",
+        "role": "coded_term"
+      }
+    ],
+    "field_profiles": [
+      {
+        "declared_source_key": "ae_intermediate.AEDECOD",
+        "role": "coded_term",
+        "resolution": "direct",
+        "evidence": [
+          {
+            "source_dataset": "ae_intermediate",
+            "source_variable": "AEDECOD",
+            "label": "Coded adverse event term",
+            "data_type": "character",
+            "example_values": "Headache | Nausea | Dizziness | Rash | Fatigue",
+            "missing_rate": 0,
+            "unique_count": 7,
+            "form_name": "Adverse Events",
+            "grain": "one_record_per_event",
+            "format_candidates": "",
+            "partial_tokens": "",
+            "record_count": 7
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "task_id": "AE_BODY_SYSTEM",
+    "assembly_group_id": "AE_TERMS",
+    "target_domain": "AE",
+    "clinical_action": "Normalize and map the body system term.",
+    "form_name": "Adverse Events",
+    "expected_cardinality": null,
+    "required": true,
+    "depends_on": [
+      "AE_UNIQUE_SUBJECT_IDENTIFIER"
+    ],
+    "source_refs": [
+      {
+        "ref_id": "ae_intermediate__AEBODSYS",
+        "dataset": "ae_intermediate",
+        "variable": "AEBODSYS",
+        "role": "body_system"
+      }
+    ],
+    "field_profiles": [
+      {
+        "declared_source_key": "ae_intermediate.AEBODSYS",
+        "role": "body_system",
+        "resolution": "direct",
+        "evidence": [
+          {
+            "source_dataset": "ae_intermediate",
+            "source_variable": "AEBODSYS",
+            "label": "Adverse event body system",
+            "data_type": "character",
+            "example_values": "Nervous system disorders | Gastrointestinal disorders | Skin and subcutaneous tissue disorders | General disorders an...",
+            "missing_rate": 0,
+            "unique_count": 5,
+            "form_name": "Adverse Events",
+            "grain": "one_record_per_event",
+            "format_candidates": "",
+            "partial_tokens": "",
+            "record_count": 7
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "task_id": "AE_SEVERITY",
+    "assembly_group_id": "AE_SAFETY",
+    "target_domain": "AE",
+    "clinical_action": "Map adverse event severity.",
+    "form_name": "Adverse Events",
+    "expected_cardinality": null,
+    "required": true,
+    "depends_on": [
+      "AE_UNIQUE_SUBJECT_IDENTIFIER"
+    ],
+    "source_refs": [
+      {
+        "ref_id": "ae_intermediate__AESEV",
+        "dataset": "ae_intermediate",
+        "variable": "AESEV",
+        "role": "severity"
+      }
+    ],
+    "field_profiles": [
+      {
+        "declared_source_key": "ae_intermediate.AESEV",
+        "role": "severity",
+        "resolution": "direct",
+        "evidence": [
+          {
+            "source_dataset": "ae_intermediate",
+            "source_variable": "AESEV",
+            "label": "AESEV",
+            "data_type": "character",
+            "example_values": "Mild Adverse Event | Moderate Adverse Event | Severe Adverse Event",
+            "missing_rate": 0,
+            "unique_count": 3,
+            "form_name": "Adverse Events",
+            "grain": "one_record_per_event",
+            "format_candidates": "",
+            "partial_tokens": "",
+            "record_count": 7
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "task_id": "AE_SERIOUS",
+    "assembly_group_id": "AE_SAFETY",
+    "target_domain": "AE",
+    "clinical_action": "Map the serious-event indicator.",
+    "form_name": "Adverse Events",
+    "expected_cardinality": null,
+    "required": true,
+    "depends_on": [
+      "AE_UNIQUE_SUBJECT_IDENTIFIER"
+    ],
+    "source_refs": [
+      {
+        "ref_id": "ae_intermediate__AESER",
+        "dataset": "ae_intermediate",
+        "variable": "AESER",
+        "role": "serious_indicator"
+      }
+    ],
+    "field_profiles": [
+      {
+        "declared_source_key": "ae_intermediate.AESER",
+        "role": "serious_indicator",
+        "resolution": "direct",
+        "evidence": [
+          {
+            "source_dataset": "ae_intermediate",
+            "source_variable": "AESER",
+            "label": "AESER",
+            "data_type": "character",
+            "example_values": "No | Yes",
+            "missing_rate": 0,
+            "unique_count": 2,
+            "form_name": "Adverse Events",
+            "grain": "one_record_per_event",
+            "format_candidates": "",
+            "partial_tokens": "",
+            "record_count": 7
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "task_id": "AE_HOSPITALIZATION",
+    "assembly_group_id": "AE_SAFETY",
+    "target_domain": "AE",
+    "clinical_action": "Map the hospitalization indicator.",
+    "form_name": "Adverse Events",
+    "expected_cardinality": null,
+    "required": true,
+    "depends_on": [
+      "AE_UNIQUE_SUBJECT_IDENTIFIER"
+    ],
+    "source_refs": [
+      {
+        "ref_id": "ae_intermediate__AESHOSP",
+        "dataset": "ae_intermediate",
+        "variable": "AESHOSP",
+        "role": "hospitalization_indicator"
+      }
+    ],
+    "field_profiles": [
+      {
+        "declared_source_key": "ae_intermediate.AESHOSP",
+        "role": "hospitalization_indicator",
+        "resolution": "direct",
+        "evidence": [
+          {
+            "source_dataset": "ae_intermediate",
+            "source_variable": "AESHOSP",
+            "label": "AESHOSP",
+            "data_type": "character",
+            "example_values": "No | Yes",
+            "missing_rate": 0,
+            "unique_count": 2,
+            "form_name": "Adverse Events",
+            "grain": "one_record_per_event",
+            "format_candidates": "",
+            "partial_tokens": "",
+            "record_count": 7
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "task_id": "AE_RELATIONSHIP",
+    "assembly_group_id": "AE_REL_OUTCOME",
+    "target_domain": "AE",
+    "clinical_action": "Map relationship to study treatment.",
+    "form_name": "Adverse Events",
+    "expected_cardinality": null,
+    "required": true,
+    "depends_on": [
+      "AE_UNIQUE_SUBJECT_IDENTIFIER"
+    ],
+    "source_refs": [
+      {
+        "ref_id": "ae_intermediate__AEREL",
+        "dataset": "ae_intermediate",
+        "variable": "AEREL",
+        "role": "causality"
+      }
+    ],
+    "field_profiles": [
+      {
+        "declared_source_key": "ae_intermediate.AEREL",
+        "role": "causality",
+        "resolution": "direct",
+        "evidence": [
+          {
+            "source_dataset": "ae_intermediate",
+            "source_variable": "AEREL",
+            "label": "AEREL",
+            "data_type": "character",
+            "example_values": "Possibly Related | Probably Related | Unlikely Related | Not Related",
+            "missing_rate": 0,
+            "unique_count": 4,
+            "form_name": "Adverse Events",
+            "grain": "one_record_per_event",
+            "format_candidates": "",
+            "partial_tokens": "",
+            "record_count": 7
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "task_id": "AE_OUTCOME",
+    "assembly_group_id": "AE_REL_OUTCOME",
+    "target_domain": "AE",
+    "clinical_action": "Map adverse event outcome.",
+    "form_name": "Adverse Events",
+    "expected_cardinality": null,
+    "required": true,
+    "depends_on": [
+      "AE_UNIQUE_SUBJECT_IDENTIFIER"
+    ],
+    "source_refs": [
+      {
+        "ref_id": "ae_intermediate__AEOUTCOME",
+        "dataset": "ae_intermediate",
+        "variable": "AEOUTCOME",
+        "role": "outcome"
+      }
+    ],
+    "field_profiles": [
+      {
+        "declared_source_key": "ae_intermediate.AEOUTCOME",
+        "role": "outcome",
+        "resolution": "direct",
+        "evidence": [
+          {
+            "source_dataset": "ae_intermediate",
+            "source_variable": "AEOUTCOME",
+            "label": "Adverse event outcome",
+            "data_type": "character",
+            "example_values": "Recovered/Resolved | Recovering/Resolving | Not Recovered/not Resolved",
+            "missing_rate": 0,
+            "unique_count": 3,
+            "form_name": "Adverse Events",
+            "grain": "one_record_per_event",
+            "format_candidates": "",
+            "partial_tokens": "",
+            "record_count": 7
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "task_id": "AE_START_DATETIME",
+    "assembly_group_id": "AE_START",
+    "target_domain": "AE",
+    "clinical_action": "Combine adverse event start date and time as ISO 8601 datetime.",
+    "form_name": "Adverse Events",
+    "expected_cardinality": null,
+    "required": true,
+    "depends_on": [
+      "AE_UNIQUE_SUBJECT_IDENTIFIER"
+    ],
+    "source_refs": [
+      {
+        "ref_id": "ae_intermediate__AESTDAT",
+        "dataset": "ae_intermediate",
+        "variable": "AESTDAT",
+        "role": "date"
+      },
+      {
+        "ref_id": "ae_intermediate__AESTTIM",
+        "dataset": "ae_intermediate",
+        "variable": "AESTTIM",
+        "role": "time"
+      }
+    ],
+    "field_profiles": [
+      {
+        "declared_source_key": "ae_intermediate.AESTDAT",
+        "role": "date",
+        "resolution": "direct",
+        "evidence": [
+          {
+            "source_dataset": "ae_intermediate",
+            "source_variable": "AESTDAT",
+            "label": "AESTDAT",
+            "data_type": "character",
+            "example_values": "06-Jan-2025 | 08-Jan-2025 | 07-Jan-2025 | 09-Jan-2025 | 10-Jan-2025",
+            "missing_rate": 0,
+            "unique_count": 6,
+            "form_name": "Adverse Events",
+            "grain": "one_record_per_event",
+            "format_candidates": "dd-mmm-yyyy",
+            "partial_tokens": "",
+            "record_count": 7
+          }
+        ]
+      },
+      {
+        "declared_source_key": "ae_intermediate.AESTTIM",
+        "role": "time",
+        "resolution": "direct",
+        "evidence": [
+          {
+            "source_dataset": "ae_intermediate",
+            "source_variable": "AESTTIM",
+            "label": "AESTTIM",
+            "data_type": "hms",
+            "example_values": "10:30:00 | 12:15:30 | 09:05:15 | 08:00:00 | 13:40:20",
+            "missing_rate": 0,
+            "unique_count": 7,
+            "form_name": "Adverse Events",
+            "grain": "one_record_per_event",
+            "format_candidates": "H:M:S",
+            "partial_tokens": "",
+            "record_count": 7
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "task_id": "AE_START_STUDY_DAY",
+    "assembly_group_id": "AE_START",
+    "target_domain": "AE",
+    "clinical_action": "Derive adverse event start study day.",
+    "form_name": "Adverse Events",
+    "expected_cardinality": null,
+    "required": true,
+    "depends_on": [
+      "AE_START_DATETIME",
+      "DM_REFERENCE_START"
+    ],
+    "source_refs": [],
+    "field_profiles": []
+  },
+  {
+    "task_id": "AE_END_DATETIME",
+    "assembly_group_id": "AE_END",
+    "target_domain": "AE",
+    "clinical_action": "Combine adverse event end date and time as ISO 8601 datetime.",
+    "form_name": "Adverse Events",
+    "expected_cardinality": null,
+    "required": true,
+    "depends_on": [
+      "AE_UNIQUE_SUBJECT_IDENTIFIER"
+    ],
+    "source_refs": [
+      {
+        "ref_id": "ae_intermediate__AEENDDAT",
+        "dataset": "ae_intermediate",
+        "variable": "AEENDDAT",
+        "role": "date"
+      },
+      {
+        "ref_id": "ae_intermediate__AEENDTIM",
+        "dataset": "ae_intermediate",
+        "variable": "AEENDTIM",
+        "role": "time"
+      }
+    ],
+    "field_profiles": [
+      {
+        "declared_source_key": "ae_intermediate.AEENDDAT",
+        "role": "date",
+        "resolution": "direct",
+        "evidence": [
+          {
+            "source_dataset": "ae_intermediate",
+            "source_variable": "AEENDDAT",
+            "label": "AEENDDAT",
+            "data_type": "character",
+            "example_values": "07-Jan-2025 | 09-Jan-2025 | 12-Jan-2025 | 11-Jan-2025 | 14-Jan-2025",
+            "missing_rate": 0.2857,
+            "unique_count": 5,
+            "form_name": "Adverse Events",
+            "grain": "one_record_per_event",
+            "format_candidates": "dd-mmm-yyyy",
+            "partial_tokens": "",
+            "record_count": 7
+          }
+        ]
+      },
+      {
+        "declared_source_key": "ae_intermediate.AEENDTIM",
+        "role": "time",
+        "resolution": "direct",
+        "evidence": [
+          {
+            "source_dataset": "ae_intermediate",
+            "source_variable": "AEENDTIM",
+            "label": "AEENDTIM",
+            "data_type": "hms",
+            "example_values": "16:45:00 | 14:20:30 | 18:10:45 | 07:50:05 | 09:35:40",
+            "missing_rate": 0.2857,
+            "unique_count": 5,
+            "form_name": "Adverse Events",
+            "grain": "one_record_per_event",
+            "format_candidates": "H:M:S",
+            "partial_tokens": "",
+            "record_count": 7
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "task_id": "AE_ONGOING_STATUS",
+    "assembly_group_id": "AE_END",
+    "target_domain": "AE",
+    "clinical_action": "Derive the SDTM ongoing-event reference value.",
+    "form_name": "Adverse Events",
+    "expected_cardinality": null,
+    "required": true,
+    "depends_on": [
+      "AE_UNIQUE_SUBJECT_IDENTIFIER"
+    ],
+    "source_refs": [
+      {
+        "ref_id": "ae_intermediate__AEENDDAT",
+        "dataset": "ae_intermediate",
+        "variable": "AEENDDAT",
+        "role": "end_date"
+      },
+      {
+        "ref_id": "ae_intermediate__AEONGO",
+        "dataset": "ae_intermediate",
+        "variable": "AEONGO",
+        "role": "ongoing_indicator"
+      }
+    ],
+    "field_profiles": [
+      {
+        "declared_source_key": "ae_intermediate.AEENDDAT",
+        "role": "end_date",
+        "resolution": "direct",
+        "evidence": [
+          {
+            "source_dataset": "ae_intermediate",
+            "source_variable": "AEENDDAT",
+            "label": "AEENDDAT",
+            "data_type": "character",
+            "example_values": "07-Jan-2025 | 09-Jan-2025 | 12-Jan-2025 | 11-Jan-2025 | 14-Jan-2025",
+            "missing_rate": 0.2857,
+            "unique_count": 5,
+            "form_name": "Adverse Events",
+            "grain": "one_record_per_event",
+            "format_candidates": "dd-mmm-yyyy",
+            "partial_tokens": "",
+            "record_count": 7
+          }
+        ]
+      },
+      {
+        "declared_source_key": "ae_intermediate.AEONGO",
+        "role": "ongoing_indicator",
+        "resolution": "direct",
+        "evidence": [
+          {
+            "source_dataset": "ae_intermediate",
+            "source_variable": "AEONGO",
+            "label": "AEONGO",
+            "data_type": "character",
+            "example_values": "No | Yes",
+            "missing_rate": 0,
+            "unique_count": 2,
+            "form_name": "Adverse Events",
+            "grain": "one_record_per_event",
+            "format_candidates": "",
+            "partial_tokens": "",
+            "record_count": 7
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "task_id": "AE_END_STUDY_DAY",
+    "assembly_group_id": "AE_END",
+    "target_domain": "AE",
+    "clinical_action": "Derive adverse event end study day.",
+    "form_name": "Adverse Events",
+    "expected_cardinality": null,
+    "required": true,
+    "depends_on": [
+      "AE_END_DATETIME",
+      "DM_REFERENCE_START"
+    ],
+    "source_refs": [],
+    "field_profiles": []
+  },
+  {
+    "task_id": "AE_SEQUENCE",
+    "assembly_group_id": "AE_SEQUENCE",
+    "target_domain": "AE",
+    "clinical_action": "Derive a stable within-subject AE sequence.",
+    "form_name": "Adverse Events",
+    "expected_cardinality": null,
+    "required": true,
+    "depends_on": [
+      "AE_UNIQUE_SUBJECT_IDENTIFIER",
+      "AE_REPORTED_TERM",
+      "AE_CODED_TERM",
+      "AE_START_DATETIME"
+    ],
+    "source_refs": [],
+    "field_profiles": []
+  }
+]

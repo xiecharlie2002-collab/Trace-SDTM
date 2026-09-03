@@ -1,0 +1,682 @@
+{
+  "valid": {
+    "DM_STUDY_IDENTIFIER#1": {
+      "task_id": "DM_STUDY_IDENTIFIER",
+      "candidate_rank": 1,
+      "transform_id": "assign_no_ct",
+      "source_ref_ids": [
+        "dm_intermediate__STUDY"
+      ],
+      "score": 1,
+      "reason": "研究标识符来自单一字符字段，目标不受受控术语约束且无需改变值的语义或格式。",
+      "uncertainties": "",
+      "status": "proposed",
+      "review_required": true,
+      "structure_valid": true
+    },
+    "DM_DOMAIN_CONSTANT#1": {
+      "task_id": "DM_DOMAIN_CONSTANT",
+      "candidate_rank": 1,
+      "transform_id": "hardcode_no_ct",
+      "source_ref_ids": [],
+      "score": 1,
+      "reason": "域变量需要赋项目政策明确规定的固定值，且目标不受受控术语约束。",
+      "uncertainties": "",
+      "status": "proposed",
+      "review_required": true,
+      "structure_valid": true
+    },
+    "DM_UNIQUE_SUBJECT_IDENTIFIER#1": {
+      "task_id": "DM_UNIQUE_SUBJECT_IDENTIFIER",
+      "candidate_rank": 1,
+      "transform_id": "derive_usubjid",
+      "source_ref_ids": [
+        "dm_intermediate__STUDY",
+        "dm_intermediate__PATNUM"
+      ],
+      "score": 1,
+      "reason": "项目政策已明确唯一受试者标识符由研究标识符和受试者标识符按批准格式派生。",
+      "uncertainties": "",
+      "status": "proposed",
+      "review_required": true,
+      "structure_valid": true
+    },
+    "DM_SUBJECT_IDENTIFIER#1": {
+      "task_id": "DM_SUBJECT_IDENTIFIER",
+      "candidate_rank": 1,
+      "transform_id": "assign_no_ct",
+      "source_ref_ids": [
+        "dm_intermediate__PATNUM"
+      ],
+      "score": 1,
+      "reason": "申办方受试者标识符直接来自单一字符字段，且无需受控术语转换。",
+      "uncertainties": "",
+      "status": "proposed",
+      "review_required": true,
+      "structure_valid": true
+    },
+    "DM_SITE_IDENTIFIER#1": {
+      "task_id": "DM_SITE_IDENTIFIER",
+      "candidate_rank": 1,
+      "transform_id": "extract_delimited_part",
+      "source_ref_ids": [
+        "dm_intermediate__PATNUM"
+      ],
+      "score": 1,
+      "reason": "项目政策已明确从受试者标识符的固定分隔结构中抽取研究中心标识符。",
+      "uncertainties": "",
+      "status": "proposed",
+      "review_required": true,
+      "structure_valid": true
+    },
+    "DM_REFERENCE_START#1": {
+      "task_id": "DM_REFERENCE_START",
+      "candidate_rank": 1,
+      "transform_id": "to_iso8601_datetime",
+      "source_ref_ids": [
+        "dm_intermediate__FIRST_DOSE_DATE",
+        "dm_intermediate__FIRST_DOSE_TIME"
+      ],
+      "score": 1,
+      "reason": "首次给药日期和时间均为格式明确的完整信息，适合直接转换为完整 ISO 8601 日期时间。",
+      "uncertainties": "",
+      "status": "proposed",
+      "review_required": true,
+      "structure_valid": true
+    },
+    "DM_CONSENT#1": {
+      "task_id": "DM_CONSENT",
+      "candidate_rank": 1,
+      "transform_id": "to_iso8601_date",
+      "source_ref_ids": [
+        "dm_intermediate__IC_DATE"
+      ],
+      "score": 1,
+      "reason": "知情同意日期是格式明确的完整日期，适合转换为 ISO 8601 日期。",
+      "uncertainties": "",
+      "status": "proposed",
+      "review_required": true,
+      "structure_valid": true
+    },
+    "DM_AGE#1": {
+      "task_id": "DM_AGE",
+      "candidate_rank": 1,
+      "transform_id": "assign_no_ct",
+      "source_ref_ids": [
+        "dm_intermediate__AGE"
+      ],
+      "score": 1,
+      "reason": "年龄直接来自单一数值字段，且无需改变值的语义或格式。",
+      "uncertainties": "",
+      "status": "proposed",
+      "review_required": true,
+      "structure_valid": true
+    },
+    "DM_AGE_UNIT#1": {
+      "task_id": "DM_AGE_UNIT",
+      "candidate_rank": 1,
+      "transform_id": "hardcode_ct",
+      "source_ref_ids": [],
+      "score": 1,
+      "reason": "年龄单位是受控术语目标，项目政策已提供经过术语表约束的固定值。",
+      "uncertainties": "",
+      "status": "proposed",
+      "review_required": true,
+      "structure_valid": true
+    },
+    "DM_SEX#1": {
+      "task_id": "DM_SEX",
+      "candidate_rank": 1,
+      "transform_id": "assign_ct",
+      "source_ref_ids": [
+        "dm_intermediate__SEX"
+      ],
+      "score": 1,
+      "reason": "来源性别值需要映射到目标变量规定的受控术语。",
+      "uncertainties": "",
+      "status": "proposed",
+      "review_required": true,
+      "structure_valid": true
+    },
+    "DM_ETHNICITY#1": {
+      "task_id": "DM_ETHNICITY",
+      "candidate_rank": 1,
+      "transform_id": "assign_ct",
+      "source_ref_ids": [
+        "dm_intermediate__ETHNIC"
+      ],
+      "score": 1,
+      "reason": "来源民族属性值需要映射到目标变量规定的受控术语。",
+      "uncertainties": "",
+      "status": "proposed",
+      "review_required": true,
+      "structure_valid": true
+    },
+    "DM_RACE#1": {
+      "task_id": "DM_RACE",
+      "candidate_rank": 1,
+      "transform_id": "assign_ct",
+      "source_ref_ids": [
+        "dm_intermediate__RACE"
+      ],
+      "score": 1,
+      "reason": "来源种族值需要映射到目标变量规定的受控术语。",
+      "uncertainties": "",
+      "status": "proposed",
+      "review_required": true,
+      "structure_valid": true
+    },
+    "DM_COUNTRY#1": {
+      "task_id": "DM_COUNTRY",
+      "candidate_rank": 1,
+      "transform_id": "assign_no_ct",
+      "source_ref_ids": [
+        "dm_intermediate__COUNTRY"
+      ],
+      "score": 1,
+      "reason": "国家直接来自单一字符字段，目标目录未规定受控术语转换。",
+      "uncertainties": "",
+      "status": "proposed",
+      "review_required": true,
+      "structure_valid": true
+    },
+    "DM_PLANNED_ARM_CODE#1": {
+      "task_id": "DM_PLANNED_ARM_CODE",
+      "candidate_rank": 1,
+      "transform_id": "assign_no_ct",
+      "source_ref_ids": [
+        "dm_intermediate__PLANNED_ARMCD"
+      ],
+      "score": 1,
+      "reason": "计划治疗组代码直接来自对应的单一字符字段，且目标目录未规定受控术语。",
+      "uncertainties": "",
+      "status": "proposed",
+      "review_required": true,
+      "structure_valid": true
+    },
+    "DM_PLANNED_ARM#1": {
+      "task_id": "DM_PLANNED_ARM",
+      "candidate_rank": 1,
+      "transform_id": "assign_no_ct",
+      "source_ref_ids": [
+        "dm_intermediate__PLANNED_ARM"
+      ],
+      "score": 1,
+      "reason": "计划治疗组描述直接来自对应的单一字符字段，且无需改变值的语义或格式。",
+      "uncertainties": "",
+      "status": "proposed",
+      "review_required": true,
+      "structure_valid": true
+    },
+    "DM_ACTUAL_ARM_CODE#1": {
+      "task_id": "DM_ACTUAL_ARM_CODE",
+      "candidate_rank": 1,
+      "transform_id": "assign_no_ct",
+      "source_ref_ids": [
+        "dm_intermediate__ACTUAL_ARMCD"
+      ],
+      "score": 1,
+      "reason": "实际治疗组代码直接来自对应的单一字符字段，且目标目录未规定受控术语。",
+      "uncertainties": "",
+      "status": "proposed",
+      "review_required": true,
+      "structure_valid": true
+    },
+    "DM_ACTUAL_ARM#1": {
+      "task_id": "DM_ACTUAL_ARM",
+      "candidate_rank": 1,
+      "transform_id": "assign_no_ct",
+      "source_ref_ids": [
+        "dm_intermediate__ACTUAL_ARM"
+      ],
+      "score": 1,
+      "reason": "实际治疗组描述直接来自对应的单一字符字段，且无需改变值的语义或格式。",
+      "uncertainties": "",
+      "status": "proposed",
+      "review_required": true,
+      "structure_valid": true
+    },
+    "AE_STUDY_IDENTIFIER#1": {
+      "task_id": "AE_STUDY_IDENTIFIER",
+      "candidate_rank": 1,
+      "transform_id": "assign_no_ct",
+      "source_ref_ids": [
+        "ae_intermediate__STUDY"
+      ],
+      "score": 0.99,
+      "reason": "来源字段直接表示研究标识符，且该动作不需要改变值的语义或格式。",
+      "uncertainties": "",
+      "status": "proposed",
+      "review_required": true,
+      "structure_valid": true
+    },
+    "AE_DOMAIN_CONSTANT#1": {
+      "task_id": "AE_DOMAIN_CONSTANT",
+      "candidate_rank": 1,
+      "transform_id": "hardcode_no_ct",
+      "source_ref_ids": [],
+      "score": 0.99,
+      "reason": "该动作要求设置固定的域缩写，项目政策已提供对应常量。",
+      "uncertainties": "",
+      "status": "proposed",
+      "review_required": true,
+      "structure_valid": true
+    },
+    "AE_UNIQUE_SUBJECT_IDENTIFIER#1": {
+      "task_id": "AE_UNIQUE_SUBJECT_IDENTIFIER",
+      "candidate_rank": 1,
+      "transform_id": "derive_usubjid",
+      "source_ref_ids": [
+        "ae_intermediate__STUDY",
+        "ae_intermediate__PATNUM"
+      ],
+      "score": 1,
+      "reason": "项目政策明确规定由研究编号和受试者编号组成唯一受试者标识符。",
+      "uncertainties": "",
+      "status": "proposed",
+      "review_required": true,
+      "structure_valid": true
+    },
+    "AE_REPORTED_TERM#1": {
+      "task_id": "AE_REPORTED_TERM",
+      "candidate_rank": 1,
+      "transform_id": "assign_no_ct",
+      "source_ref_ids": [
+        "ae_intermediate__AETERM"
+      ],
+      "score": 0.99,
+      "reason": "来源字段直接表示报告的不良事件术语，无需改变值的语义或格式。",
+      "uncertainties": "",
+      "status": "proposed",
+      "review_required": true,
+      "structure_valid": true
+    },
+    "AE_CODED_TERM#1": {
+      "task_id": "AE_CODED_TERM",
+      "candidate_rank": 1,
+      "transform_id": "assign_no_ct",
+      "source_ref_ids": [
+        "ae_intermediate__AEDECOD"
+      ],
+      "score": 0.99,
+      "reason": "来源字段直接表示编码后的不良事件术语，可直接映射。",
+      "uncertainties": "",
+      "status": "proposed",
+      "review_required": true,
+      "structure_valid": true
+    },
+    "AE_BODY_SYSTEM#1": {
+      "task_id": "AE_BODY_SYSTEM",
+      "candidate_rank": 1,
+      "transform_id": "assign_no_ct",
+      "source_ref_ids": [
+        "ae_intermediate__AEBODSYS"
+      ],
+      "score": 0.94,
+      "reason": "来源字段已直接表示系统器官分类，观察值呈现为规范化术语。",
+      "uncertainties": "仍需人工确认来源术语已按项目采用的医学词典版本完成标准化。",
+      "status": "proposed",
+      "review_required": true,
+      "structure_valid": true
+    },
+    "AE_SEVERITY#1": {
+      "task_id": "AE_SEVERITY",
+      "candidate_rank": 1,
+      "transform_id": "assign_ct",
+      "source_ref_ids": [
+        "ae_intermediate__AESEV"
+      ],
+      "score": 0.99,
+      "reason": "来源严重程度用语需要转换为目标受控术语。",
+      "uncertainties": "",
+      "status": "proposed",
+      "review_required": true,
+      "structure_valid": true
+    },
+    "AE_SERIOUS#1": {
+      "task_id": "AE_SERIOUS",
+      "candidate_rank": 1,
+      "transform_id": "assign_ct",
+      "source_ref_ids": [
+        "ae_intermediate__AESER"
+      ],
+      "score": 0.99,
+      "reason": "来源的是或否取值需要转换为目标受控术语。",
+      "uncertainties": "",
+      "status": "proposed",
+      "review_required": true,
+      "structure_valid": true
+    },
+    "AE_HOSPITALIZATION#1": {
+      "task_id": "AE_HOSPITALIZATION",
+      "candidate_rank": 1,
+      "transform_id": "assign_ct",
+      "source_ref_ids": [
+        "ae_intermediate__AESHOSP"
+      ],
+      "score": 0.99,
+      "reason": "来源住院指示的是或否取值需要转换为目标受控术语。",
+      "uncertainties": "",
+      "status": "proposed",
+      "review_required": true,
+      "structure_valid": true
+    },
+    "AE_RELATIONSHIP#1": {
+      "task_id": "AE_RELATIONSHIP",
+      "candidate_rank": 1,
+      "transform_id": "assign_no_ct",
+      "source_ref_ids": [
+        "ae_intermediate__AEREL"
+      ],
+      "score": 0.98,
+      "reason": "来源字段直接表示与研究治疗的因果关系，可直接映射。",
+      "uncertainties": "",
+      "status": "proposed",
+      "review_required": true,
+      "structure_valid": true
+    },
+    "AE_OUTCOME#1": {
+      "task_id": "AE_OUTCOME",
+      "candidate_rank": 1,
+      "transform_id": "assign_ct",
+      "source_ref_ids": [
+        "ae_intermediate__AEOUTCOME"
+      ],
+      "score": 0.99,
+      "reason": "来源结局用语需要转换并规范到目标受控术语。",
+      "uncertainties": "",
+      "status": "proposed",
+      "review_required": true,
+      "structure_valid": true
+    },
+    "AE_START_DATETIME#1": {
+      "task_id": "AE_START_DATETIME",
+      "candidate_rank": 1,
+      "transform_id": "to_iso8601_datetime",
+      "source_ref_ids": [
+        "ae_intermediate__AESTDAT",
+        "ae_intermediate__AESTTIM"
+      ],
+      "score": 1,
+      "reason": "来源提供格式明确的完整日期和时间，适合转换为完整标准日期时间。",
+      "uncertainties": "",
+      "status": "proposed",
+      "review_required": true,
+      "structure_valid": true
+    },
+    "AE_START_STUDY_DAY#1": {
+      "task_id": "AE_START_STUDY_DAY",
+      "candidate_rank": 1,
+      "transform_id": "derive_study_day",
+      "source_ref_ids": [],
+      "score": 0.99,
+      "reason": "该动作依赖已派生的开始日期时间和受试者参考开始日期，符合研究日派生函数的用途。",
+      "uncertainties": "",
+      "status": "proposed",
+      "review_required": true,
+      "structure_valid": true
+    },
+    "AE_END_DATETIME#1": {
+      "task_id": "AE_END_DATETIME",
+      "candidate_rank": 1,
+      "transform_id": "to_iso8601_datetime",
+      "source_ref_ids": [
+        "ae_intermediate__AEENDDAT",
+        "ae_intermediate__AEENDTIM"
+      ],
+      "score": 0.98,
+      "reason": "非缺失记录提供格式明确的完整结束日期和时间，可转换为完整标准日期时间。",
+      "uncertainties": "部分记录的结束日期和时间同时缺失，人工审核时应确认这些记录保留缺失。",
+      "status": "proposed",
+      "review_required": true,
+      "structure_valid": true
+    },
+    "AE_ONGOING_STATUS#1": {
+      "task_id": "AE_ONGOING_STATUS",
+      "candidate_rank": 1,
+      "transform_id": "derive_ongoing_flag",
+      "source_ref_ids": [
+        "ae_intermediate__AEENDDAT",
+        "ae_intermediate__AEONGO"
+      ],
+      "score": 1,
+      "reason": "该函数专用于依据结束日期和明确的持续指示派生持续状态，且项目政策已规定肯定取值。",
+      "uncertainties": "",
+      "status": "proposed",
+      "review_required": true,
+      "structure_valid": true
+    },
+    "AE_END_STUDY_DAY#1": {
+      "task_id": "AE_END_STUDY_DAY",
+      "candidate_rank": 1,
+      "transform_id": "derive_study_day",
+      "source_ref_ids": [],
+      "score": 0.98,
+      "reason": "该动作依赖已派生的结束日期时间和受试者参考开始日期，符合研究日派生函数的用途。",
+      "uncertainties": "结束日期时间缺失时无法派生结束研究日。",
+      "status": "proposed",
+      "review_required": true,
+      "structure_valid": true
+    },
+    "AE_SEQUENCE#1": {
+      "task_id": "AE_SEQUENCE",
+      "candidate_rank": 1,
+      "transform_id": "derive_sequence",
+      "source_ref_ids": [],
+      "score": 1,
+      "reason": "项目政策已规定受试者内的稳定排序字段和起始序号，符合连续序号派生函数的用途。",
+      "uncertainties": "",
+      "status": "proposed",
+      "review_required": true,
+      "structure_valid": true
+    },
+    "VS_STUDY_IDENTIFIER#1": {
+      "task_id": "VS_STUDY_IDENTIFIER",
+      "candidate_rank": 1,
+      "transform_id": "assign_no_ct",
+      "source_ref_ids": [
+        "vs_intermediate__STUDY"
+      ],
+      "score": 1,
+      "reason": "研究标识符可由单个字符型来源字段直接赋值，且不涉及受控术语或格式转换。",
+      "uncertainties": "",
+      "status": "proposed",
+      "review_required": true,
+      "structure_valid": true
+    },
+    "VS_DOMAIN_CONSTANT#1": {
+      "task_id": "VS_DOMAIN_CONSTANT",
+      "candidate_rank": 1,
+      "transform_id": "hardcode_no_ct",
+      "source_ref_ids": [],
+      "score": 1,
+      "reason": "该动作要求设置固定域值，项目政策已给出相应常量，且不需要来源字段。",
+      "uncertainties": "",
+      "status": "proposed",
+      "review_required": true,
+      "structure_valid": true
+    },
+    "VS_UNIQUE_SUBJECT_IDENTIFIER#1": {
+      "task_id": "VS_UNIQUE_SUBJECT_IDENTIFIER",
+      "candidate_rank": 1,
+      "transform_id": "derive_usubjid",
+      "source_ref_ids": [
+        "vs_intermediate__STUDY",
+        "vs_intermediate__PATNUM"
+      ],
+      "score": 1,
+      "reason": "项目政策明确规定唯一受试者标识符由研究编号和受试者编号组成，所需两个来源引用均已提供。",
+      "uncertainties": "",
+      "status": "proposed",
+      "review_required": true,
+      "structure_valid": true
+    },
+    "VS_VISIT#1": {
+      "task_id": "VS_VISIT",
+      "candidate_rank": 1,
+      "transform_id": "assign_no_ct",
+      "source_ref_ids": [
+        "vs_intermediate__INSTANCE"
+      ],
+      "score": 1,
+      "reason": "访视名称可由单个字符型访视来源字段直接赋值，不需要格式或术语转换。",
+      "uncertainties": "",
+      "status": "proposed",
+      "review_required": true,
+      "structure_valid": true
+    },
+    "VS_VISIT_NUMBER#1": {
+      "task_id": "VS_VISIT_NUMBER",
+      "candidate_rank": 1,
+      "transform_id": "derive_visitnum",
+      "source_ref_ids": [
+        "vs_intermediate__INSTANCE"
+      ],
+      "score": 1,
+      "reason": "该动作明确要求依据批准的访视表把访视名称转换为数值型访视编号。",
+      "uncertainties": "",
+      "status": "proposed",
+      "review_required": true,
+      "structure_valid": true
+    },
+    "VS_DATETIME#1": {
+      "task_id": "VS_DATETIME",
+      "candidate_rank": 1,
+      "transform_id": "to_iso8601_datetime",
+      "source_ref_ids": [
+        "vs_intermediate__VSDAT",
+        "vs_intermediate__VSTIM"
+      ],
+      "score": 1,
+      "reason": "完整日期和时间分别来自两个已批准格式的字段，适合合并转换为完整的 ISO 8601 日期时间。",
+      "uncertainties": "",
+      "status": "proposed",
+      "review_required": true,
+      "structure_valid": true
+    },
+    "VS_POSITION#1": {
+      "task_id": "VS_POSITION",
+      "candidate_rank": 1,
+      "transform_id": "assign_ct",
+      "source_ref_ids": [
+        "vs_intermediate__SUBPOS"
+      ],
+      "score": 1,
+      "reason": "体位目标受受控术语约束，来源示例值需要映射为登记的标准术语。",
+      "uncertainties": "",
+      "status": "proposed",
+      "review_required": true,
+      "structure_valid": true
+    },
+    "VS_HEIGHT_RECORD#1": {
+      "task_id": "VS_HEIGHT_RECORD",
+      "candidate_rank": 1,
+      "transform_id": "transpose_findings",
+      "source_ref_ids": [
+        "vs_intermediate__HEIGHT"
+      ],
+      "score": 1,
+      "reason": "该动作要求将横向身高结果展开为一条检查记录，项目政策已确认检查信息和原始单位。",
+      "uncertainties": "",
+      "status": "proposed",
+      "review_required": true,
+      "structure_valid": true
+    },
+    "VS_WEIGHT_RECORD#1": {
+      "task_id": "VS_WEIGHT_RECORD",
+      "candidate_rank": 1,
+      "transform_id": "transpose_findings",
+      "source_ref_ids": [
+        "vs_intermediate__WEIGHT"
+      ],
+      "score": 1,
+      "reason": "该动作要求将横向体重结果展开为一条检查记录，项目政策已确认检查信息和原始单位。",
+      "uncertainties": "",
+      "status": "proposed",
+      "review_required": true,
+      "structure_valid": true
+    },
+    "VS_TEMP_RECORD#1": {
+      "task_id": "VS_TEMP_RECORD",
+      "candidate_rank": 1,
+      "transform_id": "transpose_findings",
+      "source_ref_ids": [
+        "vs_intermediate__TEMP"
+      ],
+      "score": 1,
+      "reason": "该动作要求将横向体温结果展开为一条检查记录，项目政策已确认检查信息和原始单位。",
+      "uncertainties": "",
+      "status": "proposed",
+      "review_required": true,
+      "structure_valid": true
+    },
+    "VS_SYSBP_RECORD#1": {
+      "task_id": "VS_SYSBP_RECORD",
+      "candidate_rank": 1,
+      "transform_id": "transpose_findings",
+      "source_ref_ids": [
+        "vs_intermediate__SYSBP"
+      ],
+      "score": 1,
+      "reason": "该动作要求将横向收缩压结果展开为一条检查记录，项目政策已确认检查信息和原始单位。",
+      "uncertainties": "",
+      "status": "proposed",
+      "review_required": true,
+      "structure_valid": true
+    },
+    "VS_DIABP_RECORD#1": {
+      "task_id": "VS_DIABP_RECORD",
+      "candidate_rank": 1,
+      "transform_id": "transpose_findings",
+      "source_ref_ids": [
+        "vs_intermediate__DIABP"
+      ],
+      "score": 1,
+      "reason": "该动作要求将横向舒张压结果展开为一条检查记录，项目政策已确认检查信息和原始单位。",
+      "uncertainties": "",
+      "status": "proposed",
+      "review_required": true,
+      "structure_valid": true
+    },
+    "VS_PULSE_RECORD#1": {
+      "task_id": "VS_PULSE_RECORD",
+      "candidate_rank": 1,
+      "transform_id": "transpose_findings",
+      "source_ref_ids": [
+        "vs_intermediate__PULSE"
+      ],
+      "score": 1,
+      "reason": "该动作要求将横向脉率结果展开为一条检查记录，项目政策已确认检查信息和原始单位。",
+      "uncertainties": "",
+      "status": "proposed",
+      "review_required": true,
+      "structure_valid": true
+    },
+    "VS_SEQUENCE#1": {
+      "task_id": "VS_SEQUENCE",
+      "candidate_rank": 1,
+      "transform_id": "derive_sequence",
+      "source_ref_ids": [],
+      "score": 1,
+      "reason": "该动作要求在受试者内生成稳定连续序号，项目政策已提供该域的稳定排序规则。",
+      "uncertainties": "",
+      "status": "proposed",
+      "review_required": true,
+      "structure_valid": true
+    },
+    "VS_STUDY_DAY#1": {
+      "task_id": "VS_STUDY_DAY",
+      "candidate_rank": 1,
+      "transform_id": "derive_study_day",
+      "source_ref_ids": [],
+      "score": 1,
+      "reason": "该动作要求依据完整测量日期和上游参考日期生成研究日，任务依赖关系和项目政策已明确所需上游结果。",
+      "uncertainties": "",
+      "status": "proposed",
+      "review_required": true,
+      "structure_valid": true
+    }
+  },
+  "failures": [],
+  "stage": "function_selection"
+}

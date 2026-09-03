@@ -1,0 +1,44 @@
+{
+  "run_id": "build_20260903_152528_20560",
+  "generated_at": "2026-09-03T07:25:28Z",
+  "scenario": "advanced",
+  "standard": "SDTMIG",
+  "standard_version": "3.4",
+  "specification_sha256": "bca200f9dc4cf7146da9c1f4372a4e120c7f891a70c6f1eabc199ff52f53ba18",
+  "registry_version": "1.2.0",
+  "registry_sha256": "e42bffb8d885af537ef2c37186966384599508d65952466524298d6c203d0c0f",
+  "sdtm_oak_version": "0.2.0",
+  "unit_conversion_version": "1.0.0",
+  "datasets": [
+    {
+      "domain": "DM",
+      "records": 4,
+      "variables": 17,
+      "data_sha256": "32aac490c41175eb2dabe83b170b6973d994101915dd7f80a1afc544f2459ece",
+      "csv_sha256": "92538ced1a4bc080c7deee39c0c7265c83fa28648c3569abf8ed208a352ab017",
+      "xpt_sha256": "8f78cb42ef95d303653ae11382c9f602a1bcd5163d65cc2ebeb10817e2b23124",
+      "csv_path": "D:/clinical_programming_10weeks/02_project/output/benchmark/v2/advanced/sdtm/csv/dm.csv",
+      "xpt_path": "D:/clinical_programming_10weeks/02_project/output/benchmark/v2/advanced/sdtm/xpt/dm.xpt"
+    },
+    {
+      "domain": "AE",
+      "records": 5,
+      "variables": 17,
+      "data_sha256": "da5d4c7b447140d3d5b9d7072a408919b3153cb88d12020c019435b227d58eaa",
+      "csv_sha256": "4607bd1d00940d268db60aae86096a15a83f8f2a9959e593cc2f5c758215c832",
+      "xpt_sha256": "5ab2d9be71e0e4640496aa7aad487c94ed910afd7b2ea933ec7a0ffa3788b161",
+      "csv_path": "D:/clinical_programming_10weeks/02_project/output/benchmark/v2/advanced/sdtm/csv/ae.csv",
+      "xpt_path": "D:/clinical_programming_10weeks/02_project/output/benchmark/v2/advanced/sdtm/xpt/ae.xpt"
+    },
+    {
+      "domain": "VS",
+      "records": 44,
+      "variables": 17,
+      "data_sha256": "a6a339741546e5c74ed21b7f7b07fe4867a5dd8c0941115f57ce4f46d240246e",
+      "csv_sha256": "432414e91250a678d9c5fe68e569b1d9ea2c75c65c4b117ec4b4e9eba771ff83",
+      "xpt_sha256": "7ad5a8240510b7e164e89d49d1c5e86466f8c17bea4cb24647842206dc26f267",
+      "csv_path": "D:/clinical_programming_10weeks/02_project/output/benchmark/v2/advanced/sdtm/csv/vs.csv",
+      "xpt_path": "D:/clinical_programming_10weeks/02_project/output/benchmark/v2/advanced/sdtm/xpt/vs.xpt"
+    }
+  ]
+}

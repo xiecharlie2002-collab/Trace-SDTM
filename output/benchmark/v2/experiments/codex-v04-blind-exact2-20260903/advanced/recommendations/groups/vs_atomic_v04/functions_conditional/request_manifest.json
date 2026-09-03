@@ -1,0 +1,64 @@
+{
+  "schema_version": "0.4",
+  "protocol": "fresh_codex_subagent_first_response",
+  "scenario": "advanced",
+  "domain": "VS",
+  "group_id": "vs_atomic_v04",
+  "task_ids": [
+    "VS_STUDY_IDENTIFIER",
+    "VS_DOMAIN_CONSTANT",
+    "VS_UNIQUE_SUBJECT_IDENTIFIER",
+    "VS_VISIT",
+    "VS_VISIT_NUMBER",
+    "VS_DATETIME",
+    "VS_POSITION",
+    "VS_HEIGHT_RECORD",
+    "VS_HEIGHT_STANDARDIZATION",
+    "VS_WEIGHT_RECORD",
+    "VS_WEIGHT_STANDARDIZATION",
+    "VS_TEMP_RECORD",
+    "VS_TEMP_STANDARDIZATION",
+    "VS_SYSBP_RECORD",
+    "VS_SYSBP_STANDARDIZATION",
+    "VS_DIABP_RECORD",
+    "VS_DIABP_STANDARDIZATION",
+    "VS_PULSE_RECORD",
+    "VS_PULSE_STANDARDIZATION",
+    "VS_SEQUENCE",
+    "VS_STUDY_DAY",
+    "VS_BASELINE_FLAG"
+  ],
+  "task_count": 22,
+  "stage": "functions_conditional",
+  "conditional": true,
+  "request_sha256": "90d1b465acf9e62e099ea61b29a3676bbcb980134dcfc33b1b83e51906932811",
+  "parent_hashes": {
+    "target_response": "8cf94340a9024325c116188b4cd873913cd50f206d34b2523816963050859609",
+    "cascade_function_response": "114c47d0f52f878f8361ba01ccce9eb5f7e58f022858f94c81144d38bbcff596"
+  },
+  "prepared_at": "2026-09-03T07:06:17Z",
+  "checksums": {
+    "configuration": {
+      "task_specification": "2dde6da31e1bf0c73c0733ab097682169b4a86d7bc5607d4d38880ea22e6f4ed",
+      "mapping_policy": "54b3be6a52e2effa02a256ba60659637f4a8e313b49d48352e456df88fee021a",
+      "target_metadata": "b75a11eda0181796fc3f866419c2c99f94908c039380f98198e72eb7bdf84275",
+      "transform_registry": "e42bffb8d885af537ef2c37186966384599508d65952466524298d6c203d0c0f",
+      "controlled_terminology": "45a61506850df1112330f983970e331e6e6ee771a94d332f59c6ace865031a10",
+      "unit_conversions": "4325719a1713256bdfd61df4ca378f4c155255bc38a16f797bc9f3f3840fff8c",
+      "gold_specification": "bfad2eeabc8d8367ef23e56c5138e20f60abeb5c6d6fa648f4f5ed0f29a55e29",
+      "source_profile": "9d4e1aa9f2f138572ae666092fa3b568ed45d2e9c120bc1197cff31199690ac7"
+    },
+    "code": {
+      "recommend": "219345fd08c876e6f3af043d275243a76b1dfc106d3c44dcfe87f6e7e824c23a",
+      "parameter_resolvers": "4bc7db57a1a39cc099ed5f631d8d9f653818a8004a92ee408b8b46b9f9fdc296",
+      "evaluator": "efd812b757466d82f2f40b504ef26e3e8983205465b9614345ea448476ee608d",
+      "orchestrator": "6299f7a92035f72fb261e4b32eb68879e619f877cc331cb66ea5208a45f37d0c"
+    },
+    "git": {
+      "commit": "483ee4717e1ae862f968ab3d2b688ea1fd389ba6",
+      "dirty": true
+    }
+  },
+  "api_key_used": false,
+  "isolation_limit": "过程约束，不属于操作系统级隔离"
+}

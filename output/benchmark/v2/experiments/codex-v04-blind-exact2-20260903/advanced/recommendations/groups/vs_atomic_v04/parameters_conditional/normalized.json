@@ -1,0 +1,578 @@
+{
+  "valid": [],
+  "failures": [],
+  "stage": "parameter_completion",
+  "skipped": true,
+  "provider": "automatic_injection",
+  "resolutions": {
+    "valid": {
+      "VS_STUDY_IDENTIFIER#1": {
+        "task_id": "VS_STUDY_IDENTIFIER",
+        "candidate_rank": 1,
+        "transform_id": "assign_no_ct",
+        "injected_parameters": {},
+        "parameter_sources": {},
+        "unresolved_parameters": [],
+        "parameter_options": [],
+        "unavailable_parameters": [],
+        "fully_resolved": true,
+        "status": "ready"
+      },
+      "VS_DOMAIN_CONSTANT#1": {
+        "task_id": "VS_DOMAIN_CONSTANT",
+        "candidate_rank": 1,
+        "transform_id": "hardcode_no_ct",
+        "injected_parameters": {
+          "value": "VS"
+        },
+        "parameter_sources": {
+          "value": {
+            "source": "policy",
+            "reference": "resolver:target_constant"
+          }
+        },
+        "unresolved_parameters": [],
+        "parameter_options": {},
+        "unavailable_parameters": [],
+        "fully_resolved": true,
+        "status": "ready"
+      },
+      "VS_UNIQUE_SUBJECT_IDENTIFIER#1": {
+        "task_id": "VS_UNIQUE_SUBJECT_IDENTIFIER",
+        "candidate_rank": 1,
+        "transform_id": "derive_usubjid",
+        "injected_parameters": {
+          "separator": "-"
+        },
+        "parameter_sources": {
+          "separator": {
+            "source": "policy",
+            "reference": "resolver:identifier_policy"
+          }
+        },
+        "unresolved_parameters": [],
+        "parameter_options": {},
+        "unavailable_parameters": [],
+        "fully_resolved": true,
+        "status": "ready"
+      },
+      "VS_VISIT#1": {
+        "task_id": "VS_VISIT",
+        "candidate_rank": 1,
+        "transform_id": "assign_no_ct",
+        "injected_parameters": {},
+        "parameter_sources": {},
+        "unresolved_parameters": [],
+        "parameter_options": [],
+        "unavailable_parameters": [],
+        "fully_resolved": true,
+        "status": "ready"
+      },
+      "VS_VISIT_NUMBER#1": {
+        "task_id": "VS_VISIT_NUMBER",
+        "candidate_rank": 1,
+        "transform_id": "derive_visitnum",
+        "injected_parameters": {
+          "visit_map_id": "trace_visits_v1"
+        },
+        "parameter_sources": {
+          "visit_map_id": {
+            "source": "resource",
+            "reference": "resolver:visit_policy"
+          }
+        },
+        "unresolved_parameters": [],
+        "parameter_options": {},
+        "unavailable_parameters": [],
+        "fully_resolved": true,
+        "status": "ready"
+      },
+      "VS_DATETIME#1": {
+        "task_id": "VS_DATETIME",
+        "candidate_rank": 1,
+        "transform_id": "to_iso8601_datetime",
+        "injected_parameters": {
+          "formats": [
+            "dd-mmm-yyyy",
+            "H:M"
+          ],
+          "unknown_tokens": [
+            "UNK",
+            "UN"
+          ]
+        },
+        "parameter_sources": {
+          "formats": {
+            "source": "policy",
+            "reference": "resolver:approved_formats"
+          },
+          "unknown_tokens": {
+            "source": "policy",
+            "reference": "resolver:partial_date_tokens"
+          }
+        },
+        "unresolved_parameters": [],
+        "parameter_options": {},
+        "unavailable_parameters": [],
+        "fully_resolved": true,
+        "status": "ready"
+      },
+      "VS_POSITION#1": {
+        "task_id": "VS_POSITION",
+        "candidate_rank": 1,
+        "transform_id": "assign_ct",
+        "injected_parameters": {
+          "codelist_id": "VSPOS"
+        },
+        "parameter_sources": {
+          "codelist_id": {
+            "source": "resource",
+            "reference": "resolver:target_codelist"
+          }
+        },
+        "unresolved_parameters": [],
+        "parameter_options": {},
+        "unavailable_parameters": [],
+        "fully_resolved": true,
+        "status": "ready"
+      },
+      "VS_HEIGHT_RECORD#1": {
+        "task_id": "VS_HEIGHT_RECORD",
+        "candidate_rank": 1,
+        "transform_id": "transpose_findings",
+        "injected_parameters": {
+          "test_code": "HEIGHT",
+          "test_name": "Height",
+          "original_unit": null,
+          "unit_source": "HEIGHTU"
+        },
+        "parameter_sources": {
+          "test_code": {
+            "source": "policy",
+            "reference": "resolver:findings_policy"
+          },
+          "test_name": {
+            "source": "policy",
+            "reference": "resolver:findings_policy"
+          },
+          "original_unit": {
+            "source": "policy",
+            "reference": "resolver:findings_policy"
+          },
+          "unit_source": {
+            "source": "policy",
+            "reference": "resolver:findings_policy"
+          }
+        },
+        "unresolved_parameters": [],
+        "parameter_options": {},
+        "unavailable_parameters": [],
+        "fully_resolved": true,
+        "status": "ready"
+      },
+      "VS_HEIGHT_STANDARDIZATION#1": {
+        "task_id": "VS_HEIGHT_STANDARDIZATION",
+        "candidate_rank": 1,
+        "transform_id": "standardize_unit",
+        "injected_parameters": {
+          "conversion_set_id": "vs_standard_v1",
+          "target_unit": "cm"
+        },
+        "parameter_sources": {
+          "conversion_set_id": {
+            "source": "resource",
+            "reference": "resolver:unit_policy"
+          },
+          "target_unit": {
+            "source": "policy",
+            "reference": "resolver:unit_policy"
+          }
+        },
+        "unresolved_parameters": [],
+        "parameter_options": {},
+        "unavailable_parameters": [],
+        "fully_resolved": true,
+        "status": "ready"
+      },
+      "VS_WEIGHT_RECORD#1": {
+        "task_id": "VS_WEIGHT_RECORD",
+        "candidate_rank": 1,
+        "transform_id": "transpose_findings",
+        "injected_parameters": {
+          "test_code": "WEIGHT",
+          "test_name": "Weight",
+          "original_unit": null,
+          "unit_source": "WEIGHTU"
+        },
+        "parameter_sources": {
+          "test_code": {
+            "source": "policy",
+            "reference": "resolver:findings_policy"
+          },
+          "test_name": {
+            "source": "policy",
+            "reference": "resolver:findings_policy"
+          },
+          "original_unit": {
+            "source": "policy",
+            "reference": "resolver:findings_policy"
+          },
+          "unit_source": {
+            "source": "policy",
+            "reference": "resolver:findings_policy"
+          }
+        },
+        "unresolved_parameters": [],
+        "parameter_options": {},
+        "unavailable_parameters": [],
+        "fully_resolved": true,
+        "status": "ready"
+      },
+      "VS_WEIGHT_STANDARDIZATION#1": {
+        "task_id": "VS_WEIGHT_STANDARDIZATION",
+        "candidate_rank": 1,
+        "transform_id": "standardize_unit",
+        "injected_parameters": {
+          "conversion_set_id": "vs_standard_v1",
+          "target_unit": "kg"
+        },
+        "parameter_sources": {
+          "conversion_set_id": {
+            "source": "resource",
+            "reference": "resolver:unit_policy"
+          },
+          "target_unit": {
+            "source": "policy",
+            "reference": "resolver:unit_policy"
+          }
+        },
+        "unresolved_parameters": [],
+        "parameter_options": {},
+        "unavailable_parameters": [],
+        "fully_resolved": true,
+        "status": "ready"
+      },
+      "VS_TEMP_RECORD#1": {
+        "task_id": "VS_TEMP_RECORD",
+        "candidate_rank": 1,
+        "transform_id": "transpose_findings",
+        "injected_parameters": {
+          "test_code": "TEMP",
+          "test_name": "Temperature",
+          "original_unit": null,
+          "unit_source": "TEMPU"
+        },
+        "parameter_sources": {
+          "test_code": {
+            "source": "policy",
+            "reference": "resolver:findings_policy"
+          },
+          "test_name": {
+            "source": "policy",
+            "reference": "resolver:findings_policy"
+          },
+          "original_unit": {
+            "source": "policy",
+            "reference": "resolver:findings_policy"
+          },
+          "unit_source": {
+            "source": "policy",
+            "reference": "resolver:findings_policy"
+          }
+        },
+        "unresolved_parameters": [],
+        "parameter_options": {},
+        "unavailable_parameters": [],
+        "fully_resolved": true,
+        "status": "ready"
+      },
+      "VS_TEMP_STANDARDIZATION#1": {
+        "task_id": "VS_TEMP_STANDARDIZATION",
+        "candidate_rank": 1,
+        "transform_id": "standardize_unit",
+        "injected_parameters": {
+          "conversion_set_id": "vs_standard_v1",
+          "target_unit": "C"
+        },
+        "parameter_sources": {
+          "conversion_set_id": {
+            "source": "resource",
+            "reference": "resolver:unit_policy"
+          },
+          "target_unit": {
+            "source": "policy",
+            "reference": "resolver:unit_policy"
+          }
+        },
+        "unresolved_parameters": [],
+        "parameter_options": {},
+        "unavailable_parameters": [],
+        "fully_resolved": true,
+        "status": "ready"
+      },
+      "VS_SYSBP_RECORD#1": {
+        "task_id": "VS_SYSBP_RECORD",
+        "candidate_rank": 1,
+        "transform_id": "transpose_findings",
+        "injected_parameters": {
+          "test_code": "SYSBP",
+          "test_name": "Systolic Blood Pressure",
+          "original_unit": null,
+          "unit_source": "SYS_BPU"
+        },
+        "parameter_sources": {
+          "test_code": {
+            "source": "policy",
+            "reference": "resolver:findings_policy"
+          },
+          "test_name": {
+            "source": "policy",
+            "reference": "resolver:findings_policy"
+          },
+          "original_unit": {
+            "source": "policy",
+            "reference": "resolver:findings_policy"
+          },
+          "unit_source": {
+            "source": "policy",
+            "reference": "resolver:findings_policy"
+          }
+        },
+        "unresolved_parameters": [],
+        "parameter_options": {},
+        "unavailable_parameters": [],
+        "fully_resolved": true,
+        "status": "ready"
+      },
+      "VS_SYSBP_STANDARDIZATION#1": {
+        "task_id": "VS_SYSBP_STANDARDIZATION",
+        "candidate_rank": 1,
+        "transform_id": "standardize_unit",
+        "injected_parameters": {
+          "conversion_set_id": "vs_standard_v1",
+          "target_unit": "mmHg"
+        },
+        "parameter_sources": {
+          "conversion_set_id": {
+            "source": "resource",
+            "reference": "resolver:unit_policy"
+          },
+          "target_unit": {
+            "source": "policy",
+            "reference": "resolver:unit_policy"
+          }
+        },
+        "unresolved_parameters": [],
+        "parameter_options": {},
+        "unavailable_parameters": [],
+        "fully_resolved": true,
+        "status": "ready"
+      },
+      "VS_DIABP_RECORD#1": {
+        "task_id": "VS_DIABP_RECORD",
+        "candidate_rank": 1,
+        "transform_id": "transpose_findings",
+        "injected_parameters": {
+          "test_code": "DIABP",
+          "test_name": "Diastolic Blood Pressure",
+          "original_unit": null,
+          "unit_source": "DIA_BPU"
+        },
+        "parameter_sources": {
+          "test_code": {
+            "source": "policy",
+            "reference": "resolver:findings_policy"
+          },
+          "test_name": {
+            "source": "policy",
+            "reference": "resolver:findings_policy"
+          },
+          "original_unit": {
+            "source": "policy",
+            "reference": "resolver:findings_policy"
+          },
+          "unit_source": {
+            "source": "policy",
+            "reference": "resolver:findings_policy"
+          }
+        },
+        "unresolved_parameters": [],
+        "parameter_options": {},
+        "unavailable_parameters": [],
+        "fully_resolved": true,
+        "status": "ready"
+      },
+      "VS_DIABP_STANDARDIZATION#1": {
+        "task_id": "VS_DIABP_STANDARDIZATION",
+        "candidate_rank": 1,
+        "transform_id": "standardize_unit",
+        "injected_parameters": {
+          "conversion_set_id": "vs_standard_v1",
+          "target_unit": "mmHg"
+        },
+        "parameter_sources": {
+          "conversion_set_id": {
+            "source": "resource",
+            "reference": "resolver:unit_policy"
+          },
+          "target_unit": {
+            "source": "policy",
+            "reference": "resolver:unit_policy"
+          }
+        },
+        "unresolved_parameters": [],
+        "parameter_options": {},
+        "unavailable_parameters": [],
+        "fully_resolved": true,
+        "status": "ready"
+      },
+      "VS_PULSE_RECORD#1": {
+        "task_id": "VS_PULSE_RECORD",
+        "candidate_rank": 1,
+        "transform_id": "transpose_findings",
+        "injected_parameters": {
+          "test_code": "PULSE",
+          "test_name": "Pulse Rate",
+          "original_unit": null,
+          "unit_source": "PULSEU"
+        },
+        "parameter_sources": {
+          "test_code": {
+            "source": "policy",
+            "reference": "resolver:findings_policy"
+          },
+          "test_name": {
+            "source": "policy",
+            "reference": "resolver:findings_policy"
+          },
+          "original_unit": {
+            "source": "policy",
+            "reference": "resolver:findings_policy"
+          },
+          "unit_source": {
+            "source": "policy",
+            "reference": "resolver:findings_policy"
+          }
+        },
+        "unresolved_parameters": [],
+        "parameter_options": {},
+        "unavailable_parameters": [],
+        "fully_resolved": true,
+        "status": "ready"
+      },
+      "VS_PULSE_STANDARDIZATION#1": {
+        "task_id": "VS_PULSE_STANDARDIZATION",
+        "candidate_rank": 1,
+        "transform_id": "standardize_unit",
+        "injected_parameters": {
+          "conversion_set_id": "vs_standard_v1",
+          "target_unit": "beats/min"
+        },
+        "parameter_sources": {
+          "conversion_set_id": {
+            "source": "resource",
+            "reference": "resolver:unit_policy"
+          },
+          "target_unit": {
+            "source": "policy",
+            "reference": "resolver:unit_policy"
+          }
+        },
+        "unresolved_parameters": [],
+        "parameter_options": {},
+        "unavailable_parameters": [],
+        "fully_resolved": true,
+        "status": "ready"
+      },
+      "VS_SEQUENCE#1": {
+        "task_id": "VS_SEQUENCE",
+        "candidate_rank": 1,
+        "transform_id": "derive_sequence",
+        "injected_parameters": {
+          "record_variables": [
+            "STUDYID",
+            "USUBJID",
+            "VSDTC",
+            "VSTESTCD",
+            "VSPOS",
+            "VISITNUM",
+            ".SOURCE_ROW"
+          ],
+          "start_at": 1
+        },
+        "parameter_sources": {
+          "record_variables": {
+            "source": "policy",
+            "reference": "resolver:sequence_policy"
+          },
+          "start_at": {
+            "source": "policy",
+            "reference": "resolver:sequence_policy"
+          }
+        },
+        "unresolved_parameters": [],
+        "parameter_options": {},
+        "unavailable_parameters": [],
+        "fully_resolved": true,
+        "status": "ready"
+      },
+      "VS_STUDY_DAY#1": {
+        "task_id": "VS_STUDY_DAY",
+        "candidate_rank": 1,
+        "transform_id": "derive_study_day",
+        "injected_parameters": {
+          "target_date": "VSDTC",
+          "reference_date": "RFSTDTC"
+        },
+        "parameter_sources": {
+          "target_date": {
+            "source": "derived",
+            "reference": "resolver:study_day_policy"
+          },
+          "reference_date": {
+            "source": "policy",
+            "reference": "resolver:study_day_policy"
+          }
+        },
+        "unresolved_parameters": [],
+        "parameter_options": {},
+        "unavailable_parameters": [],
+        "fully_resolved": true,
+        "status": "ready"
+      },
+      "VS_BASELINE_FLAG#1": {
+        "task_id": "VS_BASELINE_FLAG",
+        "candidate_rank": 1,
+        "transform_id": "derive_baseline_flag",
+        "injected_parameters": {
+          "reference_date": "RFSTDTC",
+          "baseline_visits": [
+            "Screening 1"
+          ],
+          "baseline_timepoints": []
+        },
+        "parameter_sources": {
+          "reference_date": {
+            "source": "policy",
+            "reference": "resolver:baseline_policy"
+          },
+          "baseline_visits": {
+            "source": "policy",
+            "reference": "resolver:baseline_policy"
+          },
+          "baseline_timepoints": {
+            "source": "policy",
+            "reference": "resolver:baseline_policy"
+          }
+        },
+        "unresolved_parameters": [],
+        "parameter_options": {},
+        "unavailable_parameters": [],
+        "fully_resolved": true,
+        "status": "ready"
+      }
+    },
+    "failures": [],
+    "stage": "known_parameter_resolution"
+  }
+}

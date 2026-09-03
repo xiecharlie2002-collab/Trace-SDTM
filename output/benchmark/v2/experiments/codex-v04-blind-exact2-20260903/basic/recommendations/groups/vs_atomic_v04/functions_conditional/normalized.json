@@ -1,0 +1,90 @@
+{
+  "valid": {
+    "VS_STUDY_IDENTIFIER#1": {
+      "task_id": "VS_STUDY_IDENTIFIER",
+      "candidate_rank": 1,
+      "transform_id": "assign_no_ct",
+      "source_ref_ids": [
+        "vs_basic__STUDY"
+      ],
+      "score": 1,
+      "reason": "The action directly copies one character source, with no controlled terminology or format conversion indicated.",
+      "uncertainties": "",
+      "status": "proposed",
+      "review_required": true,
+      "structure_valid": true
+    },
+    "VS_DOMAIN_CONSTANT#1": {
+      "task_id": "VS_DOMAIN_CONSTANT",
+      "candidate_rank": 1,
+      "transform_id": "hardcode_no_ct",
+      "source_ref_ids": [],
+      "score": 1,
+      "reason": "The action assigns a policy-defined constant from no source, with no controlled terminology indicated.",
+      "uncertainties": "",
+      "status": "proposed",
+      "review_required": true,
+      "structure_valid": true
+    },
+    "VS_UNIQUE_SUBJECT_IDENTIFIER#1": {
+      "task_id": "VS_UNIQUE_SUBJECT_IDENTIFIER",
+      "candidate_rank": 1,
+      "transform_id": "derive_usubjid",
+      "source_ref_ids": [
+        "vs_basic__STUDY",
+        "vs_basic__PATNUM"
+      ],
+      "score": 1,
+      "reason": "The policy provides the required study and subject identifier components for the approved unique-subject-identifier derivation.",
+      "uncertainties": "",
+      "status": "proposed",
+      "review_required": true,
+      "structure_valid": true
+    },
+    "VS_TEST_CODE#1": {
+      "task_id": "VS_TEST_CODE",
+      "candidate_rank": 1,
+      "transform_id": "assign_no_ct",
+      "source_ref_ids": [
+        "vs_basic__VSTESTCD"
+      ],
+      "score": 1,
+      "reason": "The action directly copies one character test-code source, and no controlled terminology conversion is specified.",
+      "uncertainties": "",
+      "status": "proposed",
+      "review_required": true,
+      "structure_valid": true
+    },
+    "VS_ORIGINAL_RESULT#1": {
+      "task_id": "VS_ORIGINAL_RESULT",
+      "candidate_rank": 1,
+      "transform_id": "assign_no_ct",
+      "source_ref_ids": [
+        "vs_basic__VSORRES"
+      ],
+      "score": 0.98,
+      "reason": "The action directly copies the single original-result source without changing its clinical meaning; the function accepts a numeric source.",
+      "uncertainties": "Human review should confirm the numeric source is represented appropriately in the destination.",
+      "status": "proposed",
+      "review_required": true,
+      "structure_valid": true
+    },
+    "VS_MEASUREMENT_DATE#1": {
+      "task_id": "VS_MEASUREMENT_DATE",
+      "candidate_rank": 1,
+      "transform_id": "to_iso8601_date",
+      "source_ref_ids": [
+        "vs_basic__VSDAT"
+      ],
+      "score": 1,
+      "reason": "The source is an approved complete date with an unambiguous format, and the action requires ISO 8601 date conversion.",
+      "uncertainties": "",
+      "status": "proposed",
+      "review_required": true,
+      "structure_valid": true
+    }
+  },
+  "failures": [],
+  "missing_task_ids": [],
+  "stage": "function_selection"
+}

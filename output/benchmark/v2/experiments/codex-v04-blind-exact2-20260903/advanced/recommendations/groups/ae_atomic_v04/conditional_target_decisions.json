@@ -1,0 +1,239 @@
+{
+  "valid": {
+    "AE_SOURCE_INTEGRATION": {
+      "task_id": "AE_SOURCE_INTEGRATION",
+      "target_domain": "AE",
+      "output_kind": "dataset",
+      "target_variables": [],
+      "score": 1,
+      "evidence": "条件评价给定正确目标。",
+      "uncertainties": "",
+      "status": "proposed",
+      "structure_valid": true
+    },
+    "AE_STUDY_IDENTIFIER": {
+      "task_id": "AE_STUDY_IDENTIFIER",
+      "target_domain": "AE",
+      "output_kind": "variables",
+      "target_variables": [
+        "STUDYID"
+      ],
+      "score": 1,
+      "evidence": "条件评价给定正确目标。",
+      "uncertainties": "",
+      "status": "proposed",
+      "structure_valid": true
+    },
+    "AE_DOMAIN_CONSTANT": {
+      "task_id": "AE_DOMAIN_CONSTANT",
+      "target_domain": "AE",
+      "output_kind": "variables",
+      "target_variables": [
+        "DOMAIN"
+      ],
+      "score": 1,
+      "evidence": "条件评价给定正确目标。",
+      "uncertainties": "",
+      "status": "proposed",
+      "structure_valid": true
+    },
+    "AE_UNIQUE_SUBJECT_IDENTIFIER": {
+      "task_id": "AE_UNIQUE_SUBJECT_IDENTIFIER",
+      "target_domain": "AE",
+      "output_kind": "variables",
+      "target_variables": [
+        "USUBJID"
+      ],
+      "score": 1,
+      "evidence": "条件评价给定正确目标。",
+      "uncertainties": "",
+      "status": "proposed",
+      "structure_valid": true
+    },
+    "AE_REPORTED_TERM": {
+      "task_id": "AE_REPORTED_TERM",
+      "target_domain": "AE",
+      "output_kind": "variables",
+      "target_variables": [
+        "AETERM"
+      ],
+      "score": 1,
+      "evidence": "条件评价给定正确目标。",
+      "uncertainties": "",
+      "status": "proposed",
+      "structure_valid": true
+    },
+    "AE_CODED_TERM": {
+      "task_id": "AE_CODED_TERM",
+      "target_domain": "AE",
+      "output_kind": "variables",
+      "target_variables": [
+        "AEDECOD"
+      ],
+      "score": 1,
+      "evidence": "条件评价给定正确目标。",
+      "uncertainties": "",
+      "status": "proposed",
+      "structure_valid": true
+    },
+    "AE_BODY_SYSTEM": {
+      "task_id": "AE_BODY_SYSTEM",
+      "target_domain": "AE",
+      "output_kind": "variables",
+      "target_variables": [
+        "AEBODSYS"
+      ],
+      "score": 1,
+      "evidence": "条件评价给定正确目标。",
+      "uncertainties": "",
+      "status": "proposed",
+      "structure_valid": true
+    },
+    "AE_SEVERITY": {
+      "task_id": "AE_SEVERITY",
+      "target_domain": "AE",
+      "output_kind": "variables",
+      "target_variables": [
+        "AESEV"
+      ],
+      "score": 1,
+      "evidence": "条件评价给定正确目标。",
+      "uncertainties": "",
+      "status": "proposed",
+      "structure_valid": true
+    },
+    "AE_SERIOUS": {
+      "task_id": "AE_SERIOUS",
+      "target_domain": "AE",
+      "output_kind": "variables",
+      "target_variables": [
+        "AESER"
+      ],
+      "score": 1,
+      "evidence": "条件评价给定正确目标。",
+      "uncertainties": "",
+      "status": "proposed",
+      "structure_valid": true
+    },
+    "AE_HOSPITALIZATION": {
+      "task_id": "AE_HOSPITALIZATION",
+      "target_domain": "AE",
+      "output_kind": "variables",
+      "target_variables": [
+        "AESHOSP"
+      ],
+      "score": 1,
+      "evidence": "条件评价给定正确目标。",
+      "uncertainties": "",
+      "status": "proposed",
+      "structure_valid": true
+    },
+    "AE_RELATIONSHIP": {
+      "task_id": "AE_RELATIONSHIP",
+      "target_domain": "AE",
+      "output_kind": "variables",
+      "target_variables": [
+        "AEREL"
+      ],
+      "score": 1,
+      "evidence": "条件评价给定正确目标。",
+      "uncertainties": "",
+      "status": "proposed",
+      "structure_valid": true
+    },
+    "AE_OUTCOME": {
+      "task_id": "AE_OUTCOME",
+      "target_domain": "AE",
+      "output_kind": "variables",
+      "target_variables": [
+        "AEOUT"
+      ],
+      "score": 1,
+      "evidence": "条件评价给定正确目标。",
+      "uncertainties": "",
+      "status": "proposed",
+      "structure_valid": true
+    },
+    "AE_START_DATETIME": {
+      "task_id": "AE_START_DATETIME",
+      "target_domain": "AE",
+      "output_kind": "variables",
+      "target_variables": [
+        "AESTDTC"
+      ],
+      "score": 1,
+      "evidence": "条件评价给定正确目标。",
+      "uncertainties": "",
+      "status": "proposed",
+      "structure_valid": true
+    },
+    "AE_START_STUDY_DAY": {
+      "task_id": "AE_START_STUDY_DAY",
+      "target_domain": "AE",
+      "output_kind": "variables",
+      "target_variables": [
+        "AESTDY"
+      ],
+      "score": 1,
+      "evidence": "条件评价给定正确目标。",
+      "uncertainties": "",
+      "status": "proposed",
+      "structure_valid": true
+    },
+    "AE_END_DATETIME": {
+      "task_id": "AE_END_DATETIME",
+      "target_domain": "AE",
+      "output_kind": "variables",
+      "target_variables": [
+        "AEENDTC"
+      ],
+      "score": 1,
+      "evidence": "条件评价给定正确目标。",
+      "uncertainties": "",
+      "status": "proposed",
+      "structure_valid": true
+    },
+    "AE_ONGOING_STATUS": {
+      "task_id": "AE_ONGOING_STATUS",
+      "target_domain": "AE",
+      "output_kind": "variables",
+      "target_variables": [
+        "AEENRF"
+      ],
+      "score": 1,
+      "evidence": "条件评价给定正确目标。",
+      "uncertainties": "",
+      "status": "proposed",
+      "structure_valid": true
+    },
+    "AE_END_STUDY_DAY": {
+      "task_id": "AE_END_STUDY_DAY",
+      "target_domain": "AE",
+      "output_kind": "variables",
+      "target_variables": [
+        "AEENDY"
+      ],
+      "score": 1,
+      "evidence": "条件评价给定正确目标。",
+      "uncertainties": "",
+      "status": "proposed",
+      "structure_valid": true
+    },
+    "AE_SEQUENCE": {
+      "task_id": "AE_SEQUENCE",
+      "target_domain": "AE",
+      "output_kind": "variables",
+      "target_variables": [
+        "AESEQ"
+      ],
+      "score": 1,
+      "evidence": "条件评价给定正确目标。",
+      "uncertainties": "",
+      "status": "proposed",
+      "structure_valid": true
+    }
+  },
+  "failures": [],
+  "missing_task_ids": [],
+  "stage": "target_identification"
+}

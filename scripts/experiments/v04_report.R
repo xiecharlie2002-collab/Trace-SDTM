@@ -32,8 +32,10 @@ read_required <- function(path) {
 }
 
 read_mode <- function(scenario, mode) {
+  scenario_value <- scenario
+  level_value <- unname(level_labels[[scenario_value]])
   directory <- file.path(
-    experiment_root, scenario, "evaluation",
+    experiment_root, scenario_value, "evaluation",
     if (identical(mode, "conditional")) "conditional" else ""
   )
   detail <- read_required(file.path(directory, "v04_atomic_evaluation.csv"))
@@ -41,14 +43,14 @@ read_mode <- function(scenario, mode) {
   parameters <- read_required(file.path(directory, "v04_parameter_accounting.csv"))
   list(
     detail = dplyr::mutate(
-      detail, evaluation_mode = mode, level = unname(level_labels[[scenario]]), .before = 1L
+      detail, evaluation_mode = mode, level = level_value, .before = 1L
     ),
     assembly = dplyr::mutate(
-      assembly, evaluation_mode = mode, level = unname(level_labels[[scenario]]), .before = 1L
+      assembly, evaluation_mode = mode, level = level_value, .before = 1L
     ),
     parameters = dplyr::mutate(
-      parameters, scenario = scenario, evaluation_mode = mode,
-      level = unname(level_labels[[scenario]]), .before = 1L
+      parameters, scenario = scenario_value, evaluation_mode = mode,
+      level = level_value, .before = 1L
     )
   )
 }
@@ -107,8 +109,13 @@ metrics_all <- detail |>
       dplyr::group_by(.data$metric) |>
       dplyr::summarise(level_equal_weight_mean = mean(.data$proportion), .groups = "drop")
     dplyr::left_join(
-      dplyr::select(pooled, .data$evaluation_mode, .data$scenario, .data$level,
-                    .data$metric, .data$numerator, .data$denominator, .data$proportion),
+      dplyr::select(
+        pooled,
+        dplyr::all_of(c(
+          "evaluation_mode", "scenario", "level", "metric",
+          "numerator", "denominator", "proportion"
+        ))
+      ),
       equal_weight, by = "metric"
     )
   })
@@ -160,6 +167,28 @@ v03_comparison <- if (file.exists(v03_comparison_path)) {
   readr::read_csv(v03_comparison_path, show_col_types = FALSE)
 } else tibble::tibble()
 
+delivery_audit_path <- file.path(experiment_root, "delivery_audit.json")
+delivery_audit <- if (file.exists(delivery_audit_path)) {
+  jsonlite::read_json(delivery_audit_path, simplifyVector = TRUE)
+} else NULL
+delivery_summary <- if (!is.null(delivery_audit)) {
+  values <- delivery_audit$verification_summary
+  tibble::tibble(
+    实际模型请求 = values$model_request_stage_count,
+    请求校验值一致 = values$transmitted_text_hash_matches_frozen_file_count,
+    响应证据一致 = values$frozen_file_hash_matches_evidence_count,
+    严格校验通过 = values$strict_validation_passed_count,
+    重试次数 = values$retry_count,
+    密钥记录数 = values$api_key_logged_count
+  )
+} else tibble::tibble()
+delivery_records <- if (!is.null(delivery_audit)) {
+  tibble::as_tibble(delivery_audit$delivery_records)
+} else tibble::tibble()
+
+if (nrow(delivery_summary)) write_csv(delivery_summary, file.path(report_root, "v04_delivery_summary.csv"))
+if (nrow(delivery_records)) write_csv(delivery_records, file.path(report_root, "v04_delivery_records.csv"))
+
 cascade_level <- metrics_by_level |>
   dplyr::filter(
     .data$evaluation_mode == "cascade",
@@ -175,6 +204,7 @@ summary <- list(
   level_task_counts = as.list(table(detail$scenario[detail$evaluation_mode == "cascade"])),
   cascade = split(cascade_level, cascade_level$scenario),
   parameter_summary = parameter_summary,
+  delivery_verification = delivery_audit$verification_summary %||% NULL,
   generated_at = utc_now(),
   interpretation_limits = list(
     "单次按域聚集实验，任务并非相互独立。",
@@ -236,6 +266,8 @@ document <- htmltools::tags$html(
     htmltools::tags$div(class = "note",
       "模型分三步完成目标变量识别、函数选择和有限参数补全；已知参数由程序从政策、注册表和资源目录确定性注入。"
     ),
+    htmltools::tags$h2("请求传输与盲评协议"), table_tag(delivery_summary),
+    htmltools::tags$p("校验值一致表示实际发送给子代理的文本与冻结请求文件逐字一致；盲法仍属于过程约束，不是操作系统级隔离。"),
     htmltools::tags$h2("真实串联评价"), table_tag(overview),
     htmltools::tags$h2("条件评价"),
     htmltools::tags$p("给定正确目标后评价函数；参数阶段给定正确上游决定，用于隔离各阶段能力。"),

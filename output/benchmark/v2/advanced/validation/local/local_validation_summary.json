@@ -1,0 +1,10 @@
+{
+  "run_id": "local_validation_20260903_152528_20560",
+  "generated_at": "2026-09-03T07:25:28Z",
+  "validator": "local",
+  "issue_count": 0,
+  "errors": 0,
+  "warnings": 0,
+  "result": "passed",
+  "report_sha256": "009f2676e881b48d52eb21cb2fbb01d4df7dbbd4323ab8a302f0e6a3ecd27ee2"
+}

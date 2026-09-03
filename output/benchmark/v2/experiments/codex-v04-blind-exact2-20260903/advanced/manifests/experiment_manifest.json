@@ -1,0 +1,453 @@
+{
+  "schema_version": "0.4",
+  "experiment_id": "codex-v04-blind-exact2-20260903",
+  "scenario": "advanced",
+  "provider": "codex_subagent",
+  "protocol": "first_response_no_retry",
+  "task_count": 57,
+  "group_runs": {
+    "DM": {
+      "domain": "DM",
+      "group_id": "dm_atomic_v04",
+      "subagent_task": "/root/v04_exact_remediation/exact_advanced_dm",
+      "target": {
+        "schema_version": "0.4",
+        "scenario": "advanced",
+        "domain": "DM",
+        "group_id": "dm_atomic_v04",
+        "stage": "targets",
+        "validation_status": "passed",
+        "failure_reason": null,
+        "request_sha256": "274b39185b0016eca58893744040df292db877574cb4895cb03eccc18b81fe10",
+        "response_sha256": "42a841333186916daf69ca8ad15dd4a56460b1ea716bd5c76bf393c42c6dc766",
+        "normalized_sha256": "b4c343c13d4356d680735254927581e81c3faa053acf57a6ce05752ef9c08945",
+        "valid_count": 17,
+        "failure_count": 0,
+        "subagent_task": "/root/v04_exact_remediation/exact_advanced_dm",
+        "received_at": "2026-09-03T06:32:32Z",
+        "attempt_number": 1,
+        "retry_performed": false,
+        "checksums": {
+          "configuration": {
+            "task_specification": "2dde6da31e1bf0c73c0733ab097682169b4a86d7bc5607d4d38880ea22e6f4ed",
+            "mapping_policy": "54b3be6a52e2effa02a256ba60659637f4a8e313b49d48352e456df88fee021a",
+            "target_metadata": "b75a11eda0181796fc3f866419c2c99f94908c039380f98198e72eb7bdf84275",
+            "transform_registry": "e42bffb8d885af537ef2c37186966384599508d65952466524298d6c203d0c0f",
+            "controlled_terminology": "45a61506850df1112330f983970e331e6e6ee771a94d332f59c6ace865031a10",
+            "unit_conversions": "4325719a1713256bdfd61df4ca378f4c155255bc38a16f797bc9f3f3840fff8c",
+            "gold_specification": "bfad2eeabc8d8367ef23e56c5138e20f60abeb5c6d6fa648f4f5ed0f29a55e29",
+            "source_profile": "9d4e1aa9f2f138572ae666092fa3b568ed45d2e9c120bc1197cff31199690ac7"
+          },
+          "code": {
+            "recommend": "219345fd08c876e6f3af043d275243a76b1dfc106d3c44dcfe87f6e7e824c23a",
+            "parameter_resolvers": "4bc7db57a1a39cc099ed5f631d8d9f653818a8004a92ee408b8b46b9f9fdc296",
+            "evaluator": "efd812b757466d82f2f40b504ef26e3e8983205465b9614345ea448476ee608d",
+            "orchestrator": "6299f7a92035f72fb261e4b32eb68879e619f877cc331cb66ea5208a45f37d0c"
+          },
+          "git": {
+            "commit": "483ee4717e1ae862f968ab3d2b688ea1fd389ba6",
+            "dirty": true
+          }
+        },
+        "api_key_logged": false
+      },
+      "function_cascade": {
+        "schema_version": "0.4",
+        "scenario": "advanced",
+        "domain": "DM",
+        "group_id": "dm_atomic_v04",
+        "stage": "functions_cascade",
+        "validation_status": "passed",
+        "failure_reason": null,
+        "request_sha256": "11548897d7c93d20a27f34fb569da3dd0722ad216c8a63d09ea47c87ecb51b32",
+        "response_sha256": "9499efcf0f633bf334372b2d54a10299a7673e8d36c1095adfc801dd78b3ffbf",
+        "normalized_sha256": "030f0a04d83129919a80b1d995c3a0b706cb46f1a64dbf84dcfbe75c19994a80",
+        "valid_count": 17,
+        "failure_count": 0,
+        "subagent_task": "/root/v04_exact_remediation/exact_advanced_dm",
+        "received_at": "2026-09-03T06:36:49Z",
+        "attempt_number": 1,
+        "retry_performed": false,
+        "checksums": {
+          "configuration": {
+            "task_specification": "2dde6da31e1bf0c73c0733ab097682169b4a86d7bc5607d4d38880ea22e6f4ed",
+            "mapping_policy": "54b3be6a52e2effa02a256ba60659637f4a8e313b49d48352e456df88fee021a",
+            "target_metadata": "b75a11eda0181796fc3f866419c2c99f94908c039380f98198e72eb7bdf84275",
+            "transform_registry": "e42bffb8d885af537ef2c37186966384599508d65952466524298d6c203d0c0f",
+            "controlled_terminology": "45a61506850df1112330f983970e331e6e6ee771a94d332f59c6ace865031a10",
+            "unit_conversions": "4325719a1713256bdfd61df4ca378f4c155255bc38a16f797bc9f3f3840fff8c",
+            "gold_specification": "bfad2eeabc8d8367ef23e56c5138e20f60abeb5c6d6fa648f4f5ed0f29a55e29",
+            "source_profile": "9d4e1aa9f2f138572ae666092fa3b568ed45d2e9c120bc1197cff31199690ac7"
+          },
+          "code": {
+            "recommend": "219345fd08c876e6f3af043d275243a76b1dfc106d3c44dcfe87f6e7e824c23a",
+            "parameter_resolvers": "4bc7db57a1a39cc099ed5f631d8d9f653818a8004a92ee408b8b46b9f9fdc296",
+            "evaluator": "efd812b757466d82f2f40b504ef26e3e8983205465b9614345ea448476ee608d",
+            "orchestrator": "6299f7a92035f72fb261e4b32eb68879e619f877cc331cb66ea5208a45f37d0c"
+          },
+          "git": {
+            "commit": "483ee4717e1ae862f968ab3d2b688ea1fd389ba6",
+            "dirty": true
+          }
+        },
+        "api_key_logged": false
+      },
+      "function_conditional": {
+        "schema_version": "0.4",
+        "scenario": "advanced",
+        "domain": "DM",
+        "group_id": "dm_atomic_v04",
+        "stage": "functions_conditional",
+        "validation_status": "passed",
+        "failure_reason": null,
+        "request_sha256": "29c8699c64f8a345b8c95dbe476d0f188cd6723617e43f79876ef55aa8cd6643",
+        "response_sha256": "33cc44df09111ff61382fea8ee4951fcfcc0c76607a9a3aceba44d156c68a530",
+        "normalized_sha256": "8d3c26b82b9ed2eb31c726f5b29cf11608e7f77838f5a74563636bf74bf3e7cd",
+        "valid_count": 17,
+        "failure_count": 0,
+        "subagent_task": "/root/v04_exact_remediation/exact_advanced_dm",
+        "received_at": "2026-09-03T06:44:00Z",
+        "attempt_number": 1,
+        "retry_performed": false,
+        "checksums": {
+          "configuration": {
+            "task_specification": "2dde6da31e1bf0c73c0733ab097682169b4a86d7bc5607d4d38880ea22e6f4ed",
+            "mapping_policy": "54b3be6a52e2effa02a256ba60659637f4a8e313b49d48352e456df88fee021a",
+            "target_metadata": "b75a11eda0181796fc3f866419c2c99f94908c039380f98198e72eb7bdf84275",
+            "transform_registry": "e42bffb8d885af537ef2c37186966384599508d65952466524298d6c203d0c0f",
+            "controlled_terminology": "45a61506850df1112330f983970e331e6e6ee771a94d332f59c6ace865031a10",
+            "unit_conversions": "4325719a1713256bdfd61df4ca378f4c155255bc38a16f797bc9f3f3840fff8c",
+            "gold_specification": "bfad2eeabc8d8367ef23e56c5138e20f60abeb5c6d6fa648f4f5ed0f29a55e29",
+            "source_profile": "9d4e1aa9f2f138572ae666092fa3b568ed45d2e9c120bc1197cff31199690ac7"
+          },
+          "code": {
+            "recommend": "219345fd08c876e6f3af043d275243a76b1dfc106d3c44dcfe87f6e7e824c23a",
+            "parameter_resolvers": "4bc7db57a1a39cc099ed5f631d8d9f653818a8004a92ee408b8b46b9f9fdc296",
+            "evaluator": "efd812b757466d82f2f40b504ef26e3e8983205465b9614345ea448476ee608d",
+            "orchestrator": "6299f7a92035f72fb261e4b32eb68879e619f877cc331cb66ea5208a45f37d0c"
+          },
+          "git": {
+            "commit": "483ee4717e1ae862f968ab3d2b688ea1fd389ba6",
+            "dirty": true
+          }
+        },
+        "api_key_logged": false
+      }
+    },
+    "AE": {
+      "domain": "AE",
+      "group_id": "ae_atomic_v04",
+      "subagent_task": "/root/v04_exact_remediation/exact_advanced_ae",
+      "target": {
+        "schema_version": "0.4",
+        "scenario": "advanced",
+        "domain": "AE",
+        "group_id": "ae_atomic_v04",
+        "stage": "targets",
+        "validation_status": "passed",
+        "failure_reason": null,
+        "request_sha256": "137ec1fde3641f9811b2df41b87e44f108e2dfc25eab95ea6f85595a4e78041e",
+        "response_sha256": "c281cf8e35f2a26ce584607e838a3efd4bca1d37a401cb30e506b79bd807d797",
+        "normalized_sha256": "21b1f26275b36f12b2af3116c90c41144a8aa437b3fcbbe026d34b15ca31816f",
+        "valid_count": 18,
+        "failure_count": 0,
+        "subagent_task": "/root/v04_exact_remediation/exact_advanced_ae",
+        "received_at": "2026-09-03T06:50:18Z",
+        "attempt_number": 1,
+        "retry_performed": false,
+        "checksums": {
+          "configuration": {
+            "task_specification": "2dde6da31e1bf0c73c0733ab097682169b4a86d7bc5607d4d38880ea22e6f4ed",
+            "mapping_policy": "54b3be6a52e2effa02a256ba60659637f4a8e313b49d48352e456df88fee021a",
+            "target_metadata": "b75a11eda0181796fc3f866419c2c99f94908c039380f98198e72eb7bdf84275",
+            "transform_registry": "e42bffb8d885af537ef2c37186966384599508d65952466524298d6c203d0c0f",
+            "controlled_terminology": "45a61506850df1112330f983970e331e6e6ee771a94d332f59c6ace865031a10",
+            "unit_conversions": "4325719a1713256bdfd61df4ca378f4c155255bc38a16f797bc9f3f3840fff8c",
+            "gold_specification": "bfad2eeabc8d8367ef23e56c5138e20f60abeb5c6d6fa648f4f5ed0f29a55e29",
+            "source_profile": "9d4e1aa9f2f138572ae666092fa3b568ed45d2e9c120bc1197cff31199690ac7"
+          },
+          "code": {
+            "recommend": "219345fd08c876e6f3af043d275243a76b1dfc106d3c44dcfe87f6e7e824c23a",
+            "parameter_resolvers": "4bc7db57a1a39cc099ed5f631d8d9f653818a8004a92ee408b8b46b9f9fdc296",
+            "evaluator": "efd812b757466d82f2f40b504ef26e3e8983205465b9614345ea448476ee608d",
+            "orchestrator": "6299f7a92035f72fb261e4b32eb68879e619f877cc331cb66ea5208a45f37d0c"
+          },
+          "git": {
+            "commit": "483ee4717e1ae862f968ab3d2b688ea1fd389ba6",
+            "dirty": true
+          }
+        },
+        "api_key_logged": false
+      },
+      "function_cascade": {
+        "schema_version": "0.4",
+        "scenario": "advanced",
+        "domain": "AE",
+        "group_id": "ae_atomic_v04",
+        "stage": "functions_cascade",
+        "validation_status": "passed",
+        "failure_reason": null,
+        "request_sha256": "7b1eb294d255548ad381edc61d10a7144a07fd0df5dc92694c04dc05b41d78d7",
+        "response_sha256": "e2cff70d77ab54affd39ab2b699dc719d0f99291c511279bb52559d5d2364fea",
+        "normalized_sha256": "428dd23e78b7867f7143ea156ecfa0912ebba1217e9ff398491d73688d3e948b",
+        "valid_count": 18,
+        "failure_count": 0,
+        "subagent_task": "/root/v04_exact_remediation/exact_advanced_ae",
+        "received_at": "2026-09-03T07:02:01Z",
+        "attempt_number": 1,
+        "retry_performed": false,
+        "checksums": {
+          "configuration": {
+            "task_specification": "2dde6da31e1bf0c73c0733ab097682169b4a86d7bc5607d4d38880ea22e6f4ed",
+            "mapping_policy": "54b3be6a52e2effa02a256ba60659637f4a8e313b49d48352e456df88fee021a",
+            "target_metadata": "b75a11eda0181796fc3f866419c2c99f94908c039380f98198e72eb7bdf84275",
+            "transform_registry": "e42bffb8d885af537ef2c37186966384599508d65952466524298d6c203d0c0f",
+            "controlled_terminology": "45a61506850df1112330f983970e331e6e6ee771a94d332f59c6ace865031a10",
+            "unit_conversions": "4325719a1713256bdfd61df4ca378f4c155255bc38a16f797bc9f3f3840fff8c",
+            "gold_specification": "bfad2eeabc8d8367ef23e56c5138e20f60abeb5c6d6fa648f4f5ed0f29a55e29",
+            "source_profile": "9d4e1aa9f2f138572ae666092fa3b568ed45d2e9c120bc1197cff31199690ac7"
+          },
+          "code": {
+            "recommend": "219345fd08c876e6f3af043d275243a76b1dfc106d3c44dcfe87f6e7e824c23a",
+            "parameter_resolvers": "4bc7db57a1a39cc099ed5f631d8d9f653818a8004a92ee408b8b46b9f9fdc296",
+            "evaluator": "efd812b757466d82f2f40b504ef26e3e8983205465b9614345ea448476ee608d",
+            "orchestrator": "6299f7a92035f72fb261e4b32eb68879e619f877cc331cb66ea5208a45f37d0c"
+          },
+          "git": {
+            "commit": "483ee4717e1ae862f968ab3d2b688ea1fd389ba6",
+            "dirty": true
+          }
+        },
+        "api_key_logged": false
+      },
+      "function_conditional": {
+        "schema_version": "0.4",
+        "scenario": "advanced",
+        "domain": "AE",
+        "group_id": "ae_atomic_v04",
+        "stage": "functions_conditional",
+        "validation_status": "passed",
+        "failure_reason": null,
+        "request_sha256": "af6bc36d064e68e76e7feb388f654e5737f49d51b14e3d244a890471c38e1799",
+        "response_sha256": "c27050546bd6d2e377f6b5838a60745ae8383673556424a85a860a61a2138b79",
+        "normalized_sha256": "4eb07e112c0b47a9ac2a46ac35d0d559c998a317779b1c9a5224af68b26f994e",
+        "valid_count": 18,
+        "failure_count": 0,
+        "subagent_task": "/root/v04_exact_remediation/exact_advanced_ae",
+        "received_at": "2026-09-03T07:11:28Z",
+        "attempt_number": 1,
+        "retry_performed": false,
+        "checksums": {
+          "configuration": {
+            "task_specification": "2dde6da31e1bf0c73c0733ab097682169b4a86d7bc5607d4d38880ea22e6f4ed",
+            "mapping_policy": "54b3be6a52e2effa02a256ba60659637f4a8e313b49d48352e456df88fee021a",
+            "target_metadata": "b75a11eda0181796fc3f866419c2c99f94908c039380f98198e72eb7bdf84275",
+            "transform_registry": "e42bffb8d885af537ef2c37186966384599508d65952466524298d6c203d0c0f",
+            "controlled_terminology": "45a61506850df1112330f983970e331e6e6ee771a94d332f59c6ace865031a10",
+            "unit_conversions": "4325719a1713256bdfd61df4ca378f4c155255bc38a16f797bc9f3f3840fff8c",
+            "gold_specification": "bfad2eeabc8d8367ef23e56c5138e20f60abeb5c6d6fa648f4f5ed0f29a55e29",
+            "source_profile": "9d4e1aa9f2f138572ae666092fa3b568ed45d2e9c120bc1197cff31199690ac7"
+          },
+          "code": {
+            "recommend": "219345fd08c876e6f3af043d275243a76b1dfc106d3c44dcfe87f6e7e824c23a",
+            "parameter_resolvers": "4bc7db57a1a39cc099ed5f631d8d9f653818a8004a92ee408b8b46b9f9fdc296",
+            "evaluator": "efd812b757466d82f2f40b504ef26e3e8983205465b9614345ea448476ee608d",
+            "orchestrator": "6299f7a92035f72fb261e4b32eb68879e619f877cc331cb66ea5208a45f37d0c"
+          },
+          "git": {
+            "commit": "483ee4717e1ae862f968ab3d2b688ea1fd389ba6",
+            "dirty": true
+          }
+        },
+        "api_key_logged": false
+      }
+    },
+    "VS": {
+      "domain": "VS",
+      "group_id": "vs_atomic_v04",
+      "subagent_task": "/root/v04_exact_remediation/exact_advanced_vs",
+      "target": {
+        "schema_version": "0.4",
+        "scenario": "advanced",
+        "domain": "VS",
+        "group_id": "vs_atomic_v04",
+        "stage": "targets",
+        "validation_status": "passed",
+        "failure_reason": null,
+        "request_sha256": "393fa49df403ccc7fd0882dda7dd5a489bbe43588dbccf89cd9a1e320274993e",
+        "response_sha256": "8876748854759cf14a086b02074070e2159563b9e90268e1e867350acae510ae",
+        "normalized_sha256": "daba5d6b11e5b0e9fb83cfa34b7a0a49681045a05d548e6345d34759734787cd",
+        "valid_count": 22,
+        "failure_count": 0,
+        "subagent_task": "/root/v04_exact_remediation/exact_advanced_vs",
+        "received_at": "2026-09-03T06:57:11Z",
+        "attempt_number": 1,
+        "retry_performed": false,
+        "checksums": {
+          "configuration": {
+            "task_specification": "2dde6da31e1bf0c73c0733ab097682169b4a86d7bc5607d4d38880ea22e6f4ed",
+            "mapping_policy": "54b3be6a52e2effa02a256ba60659637f4a8e313b49d48352e456df88fee021a",
+            "target_metadata": "b75a11eda0181796fc3f866419c2c99f94908c039380f98198e72eb7bdf84275",
+            "transform_registry": "e42bffb8d885af537ef2c37186966384599508d65952466524298d6c203d0c0f",
+            "controlled_terminology": "45a61506850df1112330f983970e331e6e6ee771a94d332f59c6ace865031a10",
+            "unit_conversions": "4325719a1713256bdfd61df4ca378f4c155255bc38a16f797bc9f3f3840fff8c",
+            "gold_specification": "bfad2eeabc8d8367ef23e56c5138e20f60abeb5c6d6fa648f4f5ed0f29a55e29",
+            "source_profile": "9d4e1aa9f2f138572ae666092fa3b568ed45d2e9c120bc1197cff31199690ac7"
+          },
+          "code": {
+            "recommend": "219345fd08c876e6f3af043d275243a76b1dfc106d3c44dcfe87f6e7e824c23a",
+            "parameter_resolvers": "4bc7db57a1a39cc099ed5f631d8d9f653818a8004a92ee408b8b46b9f9fdc296",
+            "evaluator": "efd812b757466d82f2f40b504ef26e3e8983205465b9614345ea448476ee608d",
+            "orchestrator": "6299f7a92035f72fb261e4b32eb68879e619f877cc331cb66ea5208a45f37d0c"
+          },
+          "git": {
+            "commit": "483ee4717e1ae862f968ab3d2b688ea1fd389ba6",
+            "dirty": true
+          }
+        },
+        "api_key_logged": false
+      },
+      "function_cascade": {
+        "schema_version": "0.4",
+        "scenario": "advanced",
+        "domain": "VS",
+        "group_id": "vs_atomic_v04",
+        "stage": "functions_cascade",
+        "validation_status": "passed",
+        "failure_reason": null,
+        "request_sha256": "94cb91a99f2450c2b2d29f95d21b5548dff47e3ba3e8d9c924840b65c982f6ad",
+        "response_sha256": "6baf813b5242e89577a602cd8cbee210d5452d3562216b5e593c300c68cab11b",
+        "normalized_sha256": "f2e487fb11660af6b0cdc1affa37152267e20aa83f60e8454cc3d03439cb2038",
+        "valid_count": 22,
+        "failure_count": 0,
+        "subagent_task": "/root/v04_exact_remediation/exact_advanced_vs",
+        "received_at": "2026-09-03T07:06:11Z",
+        "attempt_number": 1,
+        "retry_performed": false,
+        "checksums": {
+          "configuration": {
+            "task_specification": "2dde6da31e1bf0c73c0733ab097682169b4a86d7bc5607d4d38880ea22e6f4ed",
+            "mapping_policy": "54b3be6a52e2effa02a256ba60659637f4a8e313b49d48352e456df88fee021a",
+            "target_metadata": "b75a11eda0181796fc3f866419c2c99f94908c039380f98198e72eb7bdf84275",
+            "transform_registry": "e42bffb8d885af537ef2c37186966384599508d65952466524298d6c203d0c0f",
+            "controlled_terminology": "45a61506850df1112330f983970e331e6e6ee771a94d332f59c6ace865031a10",
+            "unit_conversions": "4325719a1713256bdfd61df4ca378f4c155255bc38a16f797bc9f3f3840fff8c",
+            "gold_specification": "bfad2eeabc8d8367ef23e56c5138e20f60abeb5c6d6fa648f4f5ed0f29a55e29",
+            "source_profile": "9d4e1aa9f2f138572ae666092fa3b568ed45d2e9c120bc1197cff31199690ac7"
+          },
+          "code": {
+            "recommend": "219345fd08c876e6f3af043d275243a76b1dfc106d3c44dcfe87f6e7e824c23a",
+            "parameter_resolvers": "4bc7db57a1a39cc099ed5f631d8d9f653818a8004a92ee408b8b46b9f9fdc296",
+            "evaluator": "efd812b757466d82f2f40b504ef26e3e8983205465b9614345ea448476ee608d",
+            "orchestrator": "6299f7a92035f72fb261e4b32eb68879e619f877cc331cb66ea5208a45f37d0c"
+          },
+          "git": {
+            "commit": "483ee4717e1ae862f968ab3d2b688ea1fd389ba6",
+            "dirty": true
+          }
+        },
+        "api_key_logged": false
+      },
+      "function_conditional": {
+        "schema_version": "0.4",
+        "scenario": "advanced",
+        "domain": "VS",
+        "group_id": "vs_atomic_v04",
+        "stage": "functions_conditional",
+        "validation_status": "passed",
+        "failure_reason": null,
+        "request_sha256": "fce0487abbcb77688a42d3067a4974133ef39bfce060d3a55b61725820d391fa",
+        "response_sha256": "2fb88259e7706688e50e3d0ef03d11e3c8b6c55c4a98c3135f5746f4a7ed5f77",
+        "normalized_sha256": "c6d762ae9fcf53453eb5c70da22e03b56b026c9f2044ee223b599112e50c9044",
+        "valid_count": 22,
+        "failure_count": 0,
+        "subagent_task": "/root/v04_exact_remediation/exact_advanced_vs",
+        "received_at": "2026-09-03T07:14:10Z",
+        "attempt_number": 1,
+        "retry_performed": false,
+        "checksums": {
+          "configuration": {
+            "task_specification": "2dde6da31e1bf0c73c0733ab097682169b4a86d7bc5607d4d38880ea22e6f4ed",
+            "mapping_policy": "54b3be6a52e2effa02a256ba60659637f4a8e313b49d48352e456df88fee021a",
+            "target_metadata": "b75a11eda0181796fc3f866419c2c99f94908c039380f98198e72eb7bdf84275",
+            "transform_registry": "e42bffb8d885af537ef2c37186966384599508d65952466524298d6c203d0c0f",
+            "controlled_terminology": "45a61506850df1112330f983970e331e6e6ee771a94d332f59c6ace865031a10",
+            "unit_conversions": "4325719a1713256bdfd61df4ca378f4c155255bc38a16f797bc9f3f3840fff8c",
+            "gold_specification": "bfad2eeabc8d8367ef23e56c5138e20f60abeb5c6d6fa648f4f5ed0f29a55e29",
+            "source_profile": "9d4e1aa9f2f138572ae666092fa3b568ed45d2e9c120bc1197cff31199690ac7"
+          },
+          "code": {
+            "recommend": "219345fd08c876e6f3af043d275243a76b1dfc106d3c44dcfe87f6e7e824c23a",
+            "parameter_resolvers": "4bc7db57a1a39cc099ed5f631d8d9f653818a8004a92ee408b8b46b9f9fdc296",
+            "evaluator": "efd812b757466d82f2f40b504ef26e3e8983205465b9614345ea448476ee608d",
+            "orchestrator": "6299f7a92035f72fb261e4b32eb68879e619f877cc331cb66ea5208a45f37d0c"
+          },
+          "git": {
+            "commit": "483ee4717e1ae862f968ab3d2b688ea1fd389ba6",
+            "dirty": true
+          }
+        },
+        "api_key_logged": false
+      }
+    }
+  },
+  "cascading_result": {
+    "schema_version": "0.4",
+    "scenario": "advanced",
+    "task_count": 57,
+    "assembly_group_count": 21,
+    "semantic_correct": 57,
+    "structural_correct": 57,
+    "complete_plan_top1_correct": 56,
+    "complete_plan_top3_correct": 56,
+    "parameters_total": 89,
+    "parameters_injected": 88,
+    "parameters_requested_from_model": 1,
+    "parameters_completed_by_model": 1,
+    "model_parameter_completions_correct": 1,
+    "parameter_conflicts": 0,
+    "generated_at": "2026-09-03T07:15:04Z"
+  },
+  "conditional_result": {
+    "schema_version": "0.4",
+    "scenario": "advanced",
+    "task_count": 57,
+    "assembly_group_count": 21,
+    "semantic_correct": 57,
+    "structural_correct": 57,
+    "complete_plan_top1_correct": 56,
+    "complete_plan_top3_correct": 56,
+    "parameters_total": 89,
+    "parameters_injected": 88,
+    "parameters_requested_from_model": 1,
+    "parameters_completed_by_model": 1,
+    "model_parameter_completions_correct": 1,
+    "parameter_conflicts": 0,
+    "generated_at": "2026-09-03T07:15:07Z"
+  },
+  "checksums": {
+    "configuration": {
+      "task_specification": "2dde6da31e1bf0c73c0733ab097682169b4a86d7bc5607d4d38880ea22e6f4ed",
+      "mapping_policy": "54b3be6a52e2effa02a256ba60659637f4a8e313b49d48352e456df88fee021a",
+      "target_metadata": "b75a11eda0181796fc3f866419c2c99f94908c039380f98198e72eb7bdf84275",
+      "transform_registry": "e42bffb8d885af537ef2c37186966384599508d65952466524298d6c203d0c0f",
+      "controlled_terminology": "45a61506850df1112330f983970e331e6e6ee771a94d332f59c6ace865031a10",
+      "unit_conversions": "4325719a1713256bdfd61df4ca378f4c155255bc38a16f797bc9f3f3840fff8c",
+      "gold_specification": "bfad2eeabc8d8367ef23e56c5138e20f60abeb5c6d6fa648f4f5ed0f29a55e29",
+      "source_profile": "9d4e1aa9f2f138572ae666092fa3b568ed45d2e9c120bc1197cff31199690ac7"
+    },
+    "code": {
+      "recommend": "219345fd08c876e6f3af043d275243a76b1dfc106d3c44dcfe87f6e7e824c23a",
+      "parameter_resolvers": "4bc7db57a1a39cc099ed5f631d8d9f653818a8004a92ee408b8b46b9f9fdc296",
+      "evaluator": "efd812b757466d82f2f40b504ef26e3e8983205465b9614345ea448476ee608d",
+      "orchestrator": "6299f7a92035f72fb261e4b32eb68879e619f877cc331cb66ea5208a45f37d0c"
+    },
+    "git": {
+      "commit": "483ee4717e1ae862f968ab3d2b688ea1fd389ba6",
+      "dirty": true
+    }
+  },
+  "finalized_at": "2026-09-03T07:15:07Z",
+  "api_key_used": false,
+  "isolation_limit": "fork_turns=none 与任务约束是过程盲法，不属于操作系统级隔离"
+}

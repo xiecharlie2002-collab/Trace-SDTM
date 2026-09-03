@@ -1,0 +1,208 @@
+{
+  "schema_version": "0.4-report",
+  "experiment_id": "codex-v04-blind-exact2-20260903",
+  "protocol": "nine_fresh_domain_subagents_first_response_no_retry",
+  "atomic_task_count": 124,
+  "assembly_group_count": 59,
+  "level_task_counts": {
+    "advanced": 57,
+    "basic": 18,
+    "intermediate": 49
+  },
+  "cascade": {
+    "advanced": [
+      {
+        "evaluation_mode": "cascade",
+        "scenario": "advanced",
+        "level": "高级",
+        "numerator": 57,
+        "denominator": 57,
+        "metric": "语义正确",
+        "proportion": 1
+      },
+      {
+        "evaluation_mode": "cascade",
+        "scenario": "advanced",
+        "level": "高级",
+        "numerator": 57,
+        "denominator": 57,
+        "metric": "端到端结构正确",
+        "proportion": 1
+      },
+      {
+        "evaluation_mode": "cascade",
+        "scenario": "advanced",
+        "level": "高级",
+        "numerator": 56,
+        "denominator": 57,
+        "metric": "完整计划首选正确",
+        "proportion": 0.9825
+      }
+    ],
+    "basic": [
+      {
+        "evaluation_mode": "cascade",
+        "scenario": "basic",
+        "level": "基础",
+        "numerator": 18,
+        "denominator": 18,
+        "metric": "语义正确",
+        "proportion": 1
+      },
+      {
+        "evaluation_mode": "cascade",
+        "scenario": "basic",
+        "level": "基础",
+        "numerator": 18,
+        "denominator": 18,
+        "metric": "端到端结构正确",
+        "proportion": 1
+      },
+      {
+        "evaluation_mode": "cascade",
+        "scenario": "basic",
+        "level": "基础",
+        "numerator": 18,
+        "denominator": 18,
+        "metric": "完整计划首选正确",
+        "proportion": 1
+      }
+    ],
+    "intermediate": [
+      {
+        "evaluation_mode": "cascade",
+        "scenario": "intermediate",
+        "level": "中等",
+        "numerator": 49,
+        "denominator": 49,
+        "metric": "语义正确",
+        "proportion": 1
+      },
+      {
+        "evaluation_mode": "cascade",
+        "scenario": "intermediate",
+        "level": "中等",
+        "numerator": 49,
+        "denominator": 49,
+        "metric": "端到端结构正确",
+        "proportion": 1
+      },
+      {
+        "evaluation_mode": "cascade",
+        "scenario": "intermediate",
+        "level": "中等",
+        "numerator": 47,
+        "denominator": 49,
+        "metric": "完整计划首选正确",
+        "proportion": 0.9592
+      }
+    ]
+  },
+  "parameter_summary": [
+    {
+      "evaluation_mode": "cascade",
+      "scenario": "advanced",
+      "level": "高级",
+      "parameter_total": 89,
+      "automatically_injected": 88,
+      "requested_from_model": 1,
+      "model_completion_received": 1,
+      "model_once_correct": 1,
+      "reviewer_corrected": 0,
+      "parameter_conflicts": 0,
+      "unavailable": 0,
+      "fully_resolved_candidates": 56,
+      "candidate_count": 57
+    },
+    {
+      "evaluation_mode": "cascade",
+      "scenario": "basic",
+      "level": "基础",
+      "parameter_total": 11,
+      "automatically_injected": 11,
+      "requested_from_model": 0,
+      "model_completion_received": 0,
+      "model_once_correct": 0,
+      "reviewer_corrected": 0,
+      "parameter_conflicts": 0,
+      "unavailable": 0,
+      "fully_resolved_candidates": 18,
+      "candidate_count": 18
+    },
+    {
+      "evaluation_mode": "cascade",
+      "scenario": "intermediate",
+      "level": "中等",
+      "parameter_total": 60,
+      "automatically_injected": 60,
+      "requested_from_model": 0,
+      "model_completion_received": 0,
+      "model_once_correct": 0,
+      "reviewer_corrected": 0,
+      "parameter_conflicts": 0,
+      "unavailable": 0,
+      "fully_resolved_candidates": 49,
+      "candidate_count": 49
+    },
+    {
+      "evaluation_mode": "conditional",
+      "scenario": "advanced",
+      "level": "高级",
+      "parameter_total": 89,
+      "automatically_injected": 88,
+      "requested_from_model": 1,
+      "model_completion_received": 1,
+      "model_once_correct": 1,
+      "reviewer_corrected": 0,
+      "parameter_conflicts": 0,
+      "unavailable": 0,
+      "fully_resolved_candidates": 56,
+      "candidate_count": 57
+    },
+    {
+      "evaluation_mode": "conditional",
+      "scenario": "basic",
+      "level": "基础",
+      "parameter_total": 11,
+      "automatically_injected": 11,
+      "requested_from_model": 0,
+      "model_completion_received": 0,
+      "model_once_correct": 0,
+      "reviewer_corrected": 0,
+      "parameter_conflicts": 0,
+      "unavailable": 0,
+      "fully_resolved_candidates": 18,
+      "candidate_count": 18
+    },
+    {
+      "evaluation_mode": "conditional",
+      "scenario": "intermediate",
+      "level": "中等",
+      "parameter_total": 61,
+      "automatically_injected": 60,
+      "requested_from_model": 1,
+      "model_completion_received": 1,
+      "model_once_correct": 1,
+      "reviewer_corrected": 0,
+      "parameter_conflicts": 0,
+      "unavailable": 0,
+      "fully_resolved_candidates": 48,
+      "candidate_count": 49
+    }
+  ],
+  "delivery_verification": {
+    "model_request_stage_count": 30,
+    "frozen_file_hash_matches_evidence_count": 30,
+    "transmitted_text_hash_matches_frozen_file_count": 30,
+    "strict_validation_passed_count": 30,
+    "retry_count": 0,
+    "api_key_logged_count": 0
+  },
+  "generated_at": "2026-09-03T07:23:06Z",
+  "interpretation_limits": [
+    "单次按域聚集实验，任务并非相互独立。",
+    "不计算二项分布置信区间，不能估计长期稳定性。",
+    "v0.3 与 v0.4 的协议和任务粒度不同，前后对照仅作描述。",
+    "子代理盲法是过程约束，不属于操作系统级隔离。"
+  ]
+}

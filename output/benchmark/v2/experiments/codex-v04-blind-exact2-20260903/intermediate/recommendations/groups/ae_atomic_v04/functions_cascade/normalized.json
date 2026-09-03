@@ -1,0 +1,241 @@
+{
+  "valid": {
+    "AE_STUDY_IDENTIFIER#1": {
+      "task_id": "AE_STUDY_IDENTIFIER",
+      "candidate_rank": 1,
+      "transform_id": "assign_no_ct",
+      "source_ref_ids": [
+        "ae_intermediate__STUDY"
+      ],
+      "score": 0.99,
+      "reason": "来源字段直接表示研究标识符，且该动作不需要改变值的语义或格式。",
+      "uncertainties": "",
+      "status": "proposed",
+      "review_required": true,
+      "structure_valid": true
+    },
+    "AE_DOMAIN_CONSTANT#1": {
+      "task_id": "AE_DOMAIN_CONSTANT",
+      "candidate_rank": 1,
+      "transform_id": "hardcode_no_ct",
+      "source_ref_ids": [],
+      "score": 0.99,
+      "reason": "该动作要求设置固定的域缩写，项目政策已提供对应常量。",
+      "uncertainties": "",
+      "status": "proposed",
+      "review_required": true,
+      "structure_valid": true
+    },
+    "AE_UNIQUE_SUBJECT_IDENTIFIER#1": {
+      "task_id": "AE_UNIQUE_SUBJECT_IDENTIFIER",
+      "candidate_rank": 1,
+      "transform_id": "derive_usubjid",
+      "source_ref_ids": [
+        "ae_intermediate__STUDY",
+        "ae_intermediate__PATNUM"
+      ],
+      "score": 1,
+      "reason": "项目政策明确规定由研究编号和受试者编号组成唯一受试者标识符。",
+      "uncertainties": "",
+      "status": "proposed",
+      "review_required": true,
+      "structure_valid": true
+    },
+    "AE_REPORTED_TERM#1": {
+      "task_id": "AE_REPORTED_TERM",
+      "candidate_rank": 1,
+      "transform_id": "assign_no_ct",
+      "source_ref_ids": [
+        "ae_intermediate__AETERM"
+      ],
+      "score": 0.99,
+      "reason": "来源字段直接表示报告的不良事件术语，无需改变值的语义或格式。",
+      "uncertainties": "",
+      "status": "proposed",
+      "review_required": true,
+      "structure_valid": true
+    },
+    "AE_CODED_TERM#1": {
+      "task_id": "AE_CODED_TERM",
+      "candidate_rank": 1,
+      "transform_id": "assign_no_ct",
+      "source_ref_ids": [
+        "ae_intermediate__AEDECOD"
+      ],
+      "score": 0.99,
+      "reason": "来源字段直接表示编码后的不良事件术语，可直接映射。",
+      "uncertainties": "",
+      "status": "proposed",
+      "review_required": true,
+      "structure_valid": true
+    },
+    "AE_BODY_SYSTEM#1": {
+      "task_id": "AE_BODY_SYSTEM",
+      "candidate_rank": 1,
+      "transform_id": "assign_no_ct",
+      "source_ref_ids": [
+        "ae_intermediate__AEBODSYS"
+      ],
+      "score": 0.94,
+      "reason": "来源字段已直接表示系统器官分类，观察值呈现为规范化术语。",
+      "uncertainties": "仍需人工确认来源术语已按项目采用的医学词典版本完成标准化。",
+      "status": "proposed",
+      "review_required": true,
+      "structure_valid": true
+    },
+    "AE_SEVERITY#1": {
+      "task_id": "AE_SEVERITY",
+      "candidate_rank": 1,
+      "transform_id": "assign_ct",
+      "source_ref_ids": [
+        "ae_intermediate__AESEV"
+      ],
+      "score": 0.99,
+      "reason": "来源严重程度用语需要转换为目标受控术语。",
+      "uncertainties": "",
+      "status": "proposed",
+      "review_required": true,
+      "structure_valid": true
+    },
+    "AE_SERIOUS#1": {
+      "task_id": "AE_SERIOUS",
+      "candidate_rank": 1,
+      "transform_id": "assign_ct",
+      "source_ref_ids": [
+        "ae_intermediate__AESER"
+      ],
+      "score": 0.99,
+      "reason": "来源的是或否取值需要转换为目标受控术语。",
+      "uncertainties": "",
+      "status": "proposed",
+      "review_required": true,
+      "structure_valid": true
+    },
+    "AE_HOSPITALIZATION#1": {
+      "task_id": "AE_HOSPITALIZATION",
+      "candidate_rank": 1,
+      "transform_id": "assign_ct",
+      "source_ref_ids": [
+        "ae_intermediate__AESHOSP"
+      ],
+      "score": 0.99,
+      "reason": "来源住院指示的是或否取值需要转换为目标受控术语。",
+      "uncertainties": "",
+      "status": "proposed",
+      "review_required": true,
+      "structure_valid": true
+    },
+    "AE_RELATIONSHIP#1": {
+      "task_id": "AE_RELATIONSHIP",
+      "candidate_rank": 1,
+      "transform_id": "assign_no_ct",
+      "source_ref_ids": [
+        "ae_intermediate__AEREL"
+      ],
+      "score": 0.98,
+      "reason": "来源字段直接表示与研究治疗的因果关系，可直接映射。",
+      "uncertainties": "",
+      "status": "proposed",
+      "review_required": true,
+      "structure_valid": true
+    },
+    "AE_OUTCOME#1": {
+      "task_id": "AE_OUTCOME",
+      "candidate_rank": 1,
+      "transform_id": "assign_ct",
+      "source_ref_ids": [
+        "ae_intermediate__AEOUTCOME"
+      ],
+      "score": 0.99,
+      "reason": "来源结局用语需要转换并规范到目标受控术语。",
+      "uncertainties": "",
+      "status": "proposed",
+      "review_required": true,
+      "structure_valid": true
+    },
+    "AE_START_DATETIME#1": {
+      "task_id": "AE_START_DATETIME",
+      "candidate_rank": 1,
+      "transform_id": "to_iso8601_datetime",
+      "source_ref_ids": [
+        "ae_intermediate__AESTDAT",
+        "ae_intermediate__AESTTIM"
+      ],
+      "score": 1,
+      "reason": "来源提供格式明确的完整日期和时间，适合转换为完整标准日期时间。",
+      "uncertainties": "",
+      "status": "proposed",
+      "review_required": true,
+      "structure_valid": true
+    },
+    "AE_START_STUDY_DAY#1": {
+      "task_id": "AE_START_STUDY_DAY",
+      "candidate_rank": 1,
+      "transform_id": "derive_study_day",
+      "source_ref_ids": [],
+      "score": 0.99,
+      "reason": "该动作依赖已派生的开始日期时间和受试者参考开始日期，符合研究日派生函数的用途。",
+      "uncertainties": "",
+      "status": "proposed",
+      "review_required": true,
+      "structure_valid": true
+    },
+    "AE_END_DATETIME#1": {
+      "task_id": "AE_END_DATETIME",
+      "candidate_rank": 1,
+      "transform_id": "to_iso8601_datetime",
+      "source_ref_ids": [
+        "ae_intermediate__AEENDDAT",
+        "ae_intermediate__AEENDTIM"
+      ],
+      "score": 0.98,
+      "reason": "非缺失记录提供格式明确的完整结束日期和时间，可转换为完整标准日期时间。",
+      "uncertainties": "部分记录的结束日期和时间同时缺失，人工审核时应确认这些记录保留缺失。",
+      "status": "proposed",
+      "review_required": true,
+      "structure_valid": true
+    },
+    "AE_ONGOING_STATUS#1": {
+      "task_id": "AE_ONGOING_STATUS",
+      "candidate_rank": 1,
+      "transform_id": "derive_ongoing_flag",
+      "source_ref_ids": [
+        "ae_intermediate__AEENDDAT",
+        "ae_intermediate__AEONGO"
+      ],
+      "score": 1,
+      "reason": "该函数专用于依据结束日期和明确的持续指示派生持续状态，且项目政策已规定肯定取值。",
+      "uncertainties": "",
+      "status": "proposed",
+      "review_required": true,
+      "structure_valid": true
+    },
+    "AE_END_STUDY_DAY#1": {
+      "task_id": "AE_END_STUDY_DAY",
+      "candidate_rank": 1,
+      "transform_id": "derive_study_day",
+      "source_ref_ids": [],
+      "score": 0.98,
+      "reason": "该动作依赖已派生的结束日期时间和受试者参考开始日期，符合研究日派生函数的用途。",
+      "uncertainties": "结束日期时间缺失时无法派生结束研究日。",
+      "status": "proposed",
+      "review_required": true,
+      "structure_valid": true
+    },
+    "AE_SEQUENCE#1": {
+      "task_id": "AE_SEQUENCE",
+      "candidate_rank": 1,
+      "transform_id": "derive_sequence",
+      "source_ref_ids": [],
+      "score": 1,
+      "reason": "项目政策已规定受试者内的稳定排序字段和起始序号，符合连续序号派生函数的用途。",
+      "uncertainties": "",
+      "status": "proposed",
+      "review_required": true,
+      "structure_valid": true
+    }
+  },
+  "failures": [],
+  "missing_task_ids": [],
+  "stage": "function_selection"
+}

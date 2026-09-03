@@ -1,0 +1,213 @@
+{
+  "valid": {
+    "VS_STUDY_IDENTIFIER#1": {
+      "task_id": "VS_STUDY_IDENTIFIER",
+      "candidate_rank": 1,
+      "transform_id": "assign_no_ct",
+      "source_ref_ids": [
+        "vs_intermediate__STUDY"
+      ],
+      "score": 1,
+      "reason": "研究标识符可由单个字符型来源字段直接赋值，且不涉及受控术语或格式转换。",
+      "uncertainties": "",
+      "status": "proposed",
+      "review_required": true,
+      "structure_valid": true
+    },
+    "VS_DOMAIN_CONSTANT#1": {
+      "task_id": "VS_DOMAIN_CONSTANT",
+      "candidate_rank": 1,
+      "transform_id": "hardcode_no_ct",
+      "source_ref_ids": [],
+      "score": 1,
+      "reason": "该动作要求设置固定域值，项目政策已给出相应常量，且不需要来源字段。",
+      "uncertainties": "",
+      "status": "proposed",
+      "review_required": true,
+      "structure_valid": true
+    },
+    "VS_UNIQUE_SUBJECT_IDENTIFIER#1": {
+      "task_id": "VS_UNIQUE_SUBJECT_IDENTIFIER",
+      "candidate_rank": 1,
+      "transform_id": "derive_usubjid",
+      "source_ref_ids": [
+        "vs_intermediate__STUDY",
+        "vs_intermediate__PATNUM"
+      ],
+      "score": 1,
+      "reason": "项目政策明确规定唯一受试者标识符由研究编号和受试者编号组成，所需两个来源引用均已提供。",
+      "uncertainties": "",
+      "status": "proposed",
+      "review_required": true,
+      "structure_valid": true
+    },
+    "VS_VISIT#1": {
+      "task_id": "VS_VISIT",
+      "candidate_rank": 1,
+      "transform_id": "assign_no_ct",
+      "source_ref_ids": [
+        "vs_intermediate__INSTANCE"
+      ],
+      "score": 1,
+      "reason": "访视名称可由单个字符型访视来源字段直接赋值，不需要格式或术语转换。",
+      "uncertainties": "",
+      "status": "proposed",
+      "review_required": true,
+      "structure_valid": true
+    },
+    "VS_VISIT_NUMBER#1": {
+      "task_id": "VS_VISIT_NUMBER",
+      "candidate_rank": 1,
+      "transform_id": "derive_visitnum",
+      "source_ref_ids": [
+        "vs_intermediate__INSTANCE"
+      ],
+      "score": 1,
+      "reason": "该动作明确要求依据批准的访视表把访视名称转换为数值型访视编号。",
+      "uncertainties": "",
+      "status": "proposed",
+      "review_required": true,
+      "structure_valid": true
+    },
+    "VS_DATETIME#1": {
+      "task_id": "VS_DATETIME",
+      "candidate_rank": 1,
+      "transform_id": "to_iso8601_datetime",
+      "source_ref_ids": [
+        "vs_intermediate__VSDAT",
+        "vs_intermediate__VSTIM"
+      ],
+      "score": 1,
+      "reason": "完整日期和时间分别来自两个已批准格式的字段，适合合并转换为完整的 ISO 8601 日期时间。",
+      "uncertainties": "",
+      "status": "proposed",
+      "review_required": true,
+      "structure_valid": true
+    },
+    "VS_POSITION#1": {
+      "task_id": "VS_POSITION",
+      "candidate_rank": 1,
+      "transform_id": "assign_ct",
+      "source_ref_ids": [
+        "vs_intermediate__SUBPOS"
+      ],
+      "score": 1,
+      "reason": "体位目标受受控术语约束，来源示例值需要映射为登记的标准术语。",
+      "uncertainties": "",
+      "status": "proposed",
+      "review_required": true,
+      "structure_valid": true
+    },
+    "VS_HEIGHT_RECORD#1": {
+      "task_id": "VS_HEIGHT_RECORD",
+      "candidate_rank": 1,
+      "transform_id": "transpose_findings",
+      "source_ref_ids": [
+        "vs_intermediate__HEIGHT"
+      ],
+      "score": 1,
+      "reason": "该动作要求将横向身高结果展开为一条检查记录，项目政策已确认检查信息和原始单位。",
+      "uncertainties": "",
+      "status": "proposed",
+      "review_required": true,
+      "structure_valid": true
+    },
+    "VS_WEIGHT_RECORD#1": {
+      "task_id": "VS_WEIGHT_RECORD",
+      "candidate_rank": 1,
+      "transform_id": "transpose_findings",
+      "source_ref_ids": [
+        "vs_intermediate__WEIGHT"
+      ],
+      "score": 1,
+      "reason": "该动作要求将横向体重结果展开为一条检查记录，项目政策已确认检查信息和原始单位。",
+      "uncertainties": "",
+      "status": "proposed",
+      "review_required": true,
+      "structure_valid": true
+    },
+    "VS_TEMP_RECORD#1": {
+      "task_id": "VS_TEMP_RECORD",
+      "candidate_rank": 1,
+      "transform_id": "transpose_findings",
+      "source_ref_ids": [
+        "vs_intermediate__TEMP"
+      ],
+      "score": 1,
+      "reason": "该动作要求将横向体温结果展开为一条检查记录，项目政策已确认检查信息和原始单位。",
+      "uncertainties": "",
+      "status": "proposed",
+      "review_required": true,
+      "structure_valid": true
+    },
+    "VS_SYSBP_RECORD#1": {
+      "task_id": "VS_SYSBP_RECORD",
+      "candidate_rank": 1,
+      "transform_id": "transpose_findings",
+      "source_ref_ids": [
+        "vs_intermediate__SYSBP"
+      ],
+      "score": 1,
+      "reason": "该动作要求将横向收缩压结果展开为一条检查记录，项目政策已确认检查信息和原始单位。",
+      "uncertainties": "",
+      "status": "proposed",
+      "review_required": true,
+      "structure_valid": true
+    },
+    "VS_DIABP_RECORD#1": {
+      "task_id": "VS_DIABP_RECORD",
+      "candidate_rank": 1,
+      "transform_id": "transpose_findings",
+      "source_ref_ids": [
+        "vs_intermediate__DIABP"
+      ],
+      "score": 1,
+      "reason": "该动作要求将横向舒张压结果展开为一条检查记录，项目政策已确认检查信息和原始单位。",
+      "uncertainties": "",
+      "status": "proposed",
+      "review_required": true,
+      "structure_valid": true
+    },
+    "VS_PULSE_RECORD#1": {
+      "task_id": "VS_PULSE_RECORD",
+      "candidate_rank": 1,
+      "transform_id": "transpose_findings",
+      "source_ref_ids": [
+        "vs_intermediate__PULSE"
+      ],
+      "score": 1,
+      "reason": "该动作要求将横向脉率结果展开为一条检查记录，项目政策已确认检查信息和原始单位。",
+      "uncertainties": "",
+      "status": "proposed",
+      "review_required": true,
+      "structure_valid": true
+    },
+    "VS_SEQUENCE#1": {
+      "task_id": "VS_SEQUENCE",
+      "candidate_rank": 1,
+      "transform_id": "derive_sequence",
+      "source_ref_ids": [],
+      "score": 1,
+      "reason": "该动作要求在受试者内生成稳定连续序号，项目政策已提供该域的稳定排序规则。",
+      "uncertainties": "",
+      "status": "proposed",
+      "review_required": true,
+      "structure_valid": true
+    },
+    "VS_STUDY_DAY#1": {
+      "task_id": "VS_STUDY_DAY",
+      "candidate_rank": 1,
+      "transform_id": "derive_study_day",
+      "source_ref_ids": [],
+      "score": 1,
+      "reason": "该动作要求依据完整测量日期和上游参考日期生成研究日，任务依赖关系和项目政策已明确所需上游结果。",
+      "uncertainties": "",
+      "status": "proposed",
+      "review_required": true,
+      "structure_valid": true
+    }
+  },
+  "failures": [],
+  "missing_task_ids": [],
+  "stage": "function_selection"
+}

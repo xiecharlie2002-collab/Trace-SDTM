@@ -1,0 +1,90 @@
+{
+  "schema_version": "0.4-exact-summary-1",
+  "experiment_id": "codex-v04-blind-exact2-20260903",
+  "protocol": "first_response_no_retry_verbatim_request",
+  "scenarios": {
+    "basic": {
+      "task_count": 18,
+      "assembly_group_count": 18,
+      "semantic_correct": 18,
+      "structural_correct": 18,
+      "cascade_complete_plan_top1_correct": 18,
+      "cascade_complete_plan_top3_correct": 18,
+      "conditional_complete_plan_top1_correct": 18,
+      "conditional_complete_plan_top3_correct": 18,
+      "agent_tasks": {
+        "DM": "/root/v04_nine_blind_final/blind_v04_basic_dm",
+        "AE": "/root/v04_nine_blind_final/blind_v04_basic_ae",
+        "VS": "/root/v04_nine_blind_final/blind_v04_basic_vs"
+      },
+      "provenance": "copied intact from codex-v04-blind-final-20260903"
+    },
+    "intermediate": {
+      "task_count": 49,
+      "assembly_group_count": 20,
+      "semantic_correct": 49,
+      "structural_correct": 49,
+      "cascade_complete_plan_top1_correct": 47,
+      "cascade_complete_plan_top3_correct": 47,
+      "conditional_complete_plan_top1_correct": 48,
+      "conditional_complete_plan_top3_correct": 48,
+      "cascade_incorrect_tasks": ["AE_BODY_SYSTEM", "AE_RELATIONSHIP"],
+      "conditional_incorrect_tasks": ["AE_RELATIONSHIP"],
+      "agent_tasks": {
+        "DM": "/root/v04_exact_remediation/exact_intermediate_dm",
+        "AE": "/root/v04_exact_remediation/exact_intermediate_ae",
+        "VS": "/root/v04_exact_remediation/exact_intermediate_vs"
+      }
+    },
+    "advanced": {
+      "task_count": 57,
+      "assembly_group_count": 21,
+      "semantic_correct": 57,
+      "structural_correct": 57,
+      "cascade_complete_plan_top1_correct": 56,
+      "cascade_complete_plan_top3_correct": 56,
+      "conditional_complete_plan_top1_correct": 56,
+      "conditional_complete_plan_top3_correct": 56,
+      "cascade_incorrect_tasks": ["AE_RELATIONSHIP"],
+      "conditional_incorrect_tasks": ["AE_RELATIONSHIP"],
+      "agent_tasks": {
+        "DM": "/root/v04_exact_remediation/exact_advanced_dm",
+        "AE": "/root/v04_exact_remediation/exact_advanced_ae",
+        "VS": "/root/v04_exact_remediation/exact_advanced_vs"
+      }
+    }
+  },
+  "combined": {
+    "task_count": 124,
+    "assembly_group_count": 59,
+    "semantic_correct": 124,
+    "semantic_proportion": 1.0,
+    "structural_correct": 124,
+    "structural_proportion": 1.0,
+    "cascade_complete_plan_top1_correct": 121,
+    "cascade_complete_plan_top1_proportion": 0.9758064516,
+    "cascade_complete_plan_top3_correct": 121,
+    "cascade_complete_plan_top3_proportion": 0.9758064516,
+    "conditional_complete_plan_top1_correct": 122,
+    "conditional_complete_plan_top1_proportion": 0.9838709677,
+    "conditional_complete_plan_top3_correct": 122,
+    "conditional_complete_plan_top3_proportion": 0.9838709677
+  },
+  "agent_task_ids": [
+    "/root/v04_nine_blind_final/blind_v04_basic_dm",
+    "/root/v04_nine_blind_final/blind_v04_basic_ae",
+    "/root/v04_nine_blind_final/blind_v04_basic_vs",
+    "/root/v04_exact_remediation/exact_intermediate_dm",
+    "/root/v04_exact_remediation/exact_intermediate_ae",
+    "/root/v04_exact_remediation/exact_intermediate_vs",
+    "/root/v04_exact_remediation/exact_advanced_dm",
+    "/root/v04_exact_remediation/exact_advanced_ae",
+    "/root/v04_exact_remediation/exact_advanced_vs"
+  ],
+  "artifacts": {
+    "basic_manifest": "basic/manifests/experiment_manifest.json",
+    "intermediate_manifest": "intermediate/manifests/experiment_manifest.json",
+    "advanced_manifest": "advanced/manifests/experiment_manifest.json",
+    "delivery_audit": "delivery_audit.json"
+  }
+}
