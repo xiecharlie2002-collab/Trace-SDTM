@@ -127,12 +127,13 @@ generate_report <- function(config = load_project_config()) {
 }
 
 # -----------------------------------------------------------------------------
-# 0.2 离线报告：展示两阶段推荐、函数链审核和高级场景证据。
+# 0.4 离线报告：展示三阶段推荐、原子任务审核和高级场景证据。
 
 comparison_manifest_v02 <- function() {
   paths <- c(
-    basic = trace_path("output", "v0.2", "basic", "manifests", "dataset_manifest.csv"),
-    advanced = trace_path("output", "scenarios", "advanced", "manifests", "dataset_manifest.csv")
+    basic = trace_path("output", "benchmark", "v2", "basic", "manifests", "dataset_manifest.csv"),
+    intermediate = trace_path("output", "benchmark", "v2", "intermediate", "manifests", "dataset_manifest.csv"),
+    advanced = trace_path("output", "benchmark", "v2", "advanced", "manifests", "dataset_manifest.csv")
   )
   purrr::imap_dfr(paths, function(path, scenario) {
     if (!file.exists(path)) return(tibble::tibble())
@@ -142,17 +143,39 @@ comparison_manifest_v02 <- function() {
 
 generate_report <- function(config = load_project_config()) {
   ensure_output_directories(config)
-  evaluation_result <- evaluate_recommendations(config)
-  evaluation <- evaluation_result$summary
+  is_v04 <- identical(as.character(config$project$version), "0.4.0")
+  if (is_v04) {
+    stage_paths <- file.path(trace_path(config$paths$recommendation_dir), c(
+      "target_decisions.json", "function_candidates.json",
+      "parameter_completions.json", "assembled_recommendations.json"
+    ))
+    if (all(file.exists(stage_paths))) {
+      stages <- lapply(stage_paths, jsonlite::read_json, simplifyVector = FALSE)
+      evaluation_result <- evaluate_three_stage_v04(
+        config, stages[[1]], stages[[2]], stages[[3]], stages[[4]]
+      )
+      evaluation <- c(evaluation_result$summary, list(
+        evaluated_concepts = evaluation_result$summary$task_count,
+        concepts_with_candidate = sum(evaluation_result$detail$end_to_end_structural_correct),
+        rejected_groups = sum(!evaluation_result$detail$end_to_end_structural_correct)
+      ))
+    } else {
+      evaluation_result <- list(detail = tibble::tibble())
+      evaluation <- list(evaluated_concepts = 0L, concepts_with_candidate = 0L, rejected_groups = 0L)
+    }
+  } else {
+    evaluation_result <- evaluate_recommendations(config)
+    evaluation <- evaluation_result$summary
+  }
   dictionary <- read_optional_csv(trace_path(config$paths$profile_dir, "source_dictionary.csv"))
-  classifications <- read_optional_csv(trace_path(config$paths$recommendation_dir, "classification_evaluation.csv"))
-  mapping_detail <- read_optional_csv(trace_path(config$paths$recommendation_dir, "mapping_evaluation.csv"))
+  classifications <- if (is_v04) tibble::tibble() else read_optional_csv(trace_path(config$paths$recommendation_dir, "classification_evaluation.csv"))
+  mapping_detail <- if (is_v04) evaluation_result$detail else read_optional_csv(trace_path(config$paths$recommendation_dir, "mapping_evaluation.csv"))
   manifest <- read_optional_csv(trace_path(config$paths$manifest_dir, "dataset_manifest.csv"))
   comparison <- comparison_manifest_v02()
   lineage <- read_optional_csv(trace_path(config$paths$lineage_dir, "field_lineage.csv"))
   partial_dates <- read_optional_csv(trace_path(config$paths$lineage_dir, "partial_date_notes.csv"))
   final_steps <- read_optional_csv(trace_path(config$paths$review_dir, "final_steps_audit.csv"))
-  review <- read_optional_csv(trace_path(config$paths$review_dir, "concept_review_audit.csv"))
+  review <- read_optional_csv(trace_path(config$paths$review_dir, if (is_v04) "task_review_audit.csv" else "concept_review_audit.csv"))
   review_summary <- read_optional_json(trace_path(config$paths$review_dir, "expert_review_summary.json"), list())
   local_issues <- read_optional_csv(trace_path(config$paths$local_validation_dir, "local_issues.csv"))
   p21_issues <- read_optional_csv(trace_path(config$paths$p21_validation_dir, "p21_issues.csv"))
@@ -196,16 +219,16 @@ generate_report <- function(config = load_project_config()) {
   document <- htmltools::tags$html(
     htmltools::tags$head(
       htmltools::tags$meta(charset = "utf-8"),
-      htmltools::tags$title("TraceSDTM 0.2 项目报告"),
+      htmltools::tags$title("TraceSDTM 0.4 项目报告"),
       htmltools::tags$style(htmltools::HTML(css))
     ),
     htmltools::tags$body(htmltools::tags$main(
-      htmltools::tags$h1("TraceSDTM 0.2"),
+      htmltools::tags$h1("TraceSDTM 0.4"),
       htmltools::tags$p(class = "subtitle", sprintf("%s 场景：人工监督、注册表约束、规格驱动、可追溯的 SDTM 自动化生成", config$project$scenario)),
       htmltools::tags$div(class = "grid",
         metric_card("原始字段", nrow(dictionary)),
-        metric_card("临床概念", evaluation$evaluated_concepts %||% 0L),
-        metric_card("有效候选概念", evaluation$concepts_with_candidate %||% 0L,
+        metric_card("原子任务", evaluation$evaluated_concepts %||% 0L),
+        metric_card("结构有效任务", evaluation$concepts_with_candidate %||% 0L,
                     if (identical(evaluation$concepts_with_candidate, evaluation$evaluated_concepts)) "good" else "warning"),
         metric_card("拒绝的推荐组", evaluation$rejected_groups %||% 0L,
                     if ((evaluation$rejected_groups %||% 0L) == 0L) "good" else "warning"),
@@ -217,27 +240,29 @@ generate_report <- function(config = load_project_config()) {
       htmltools::tags$h2("职责边界和执行架构"),
       htmltools::tags$div(class = "flow",
         htmltools::tags$span("来源登记与画像"), htmltools::tags$b("→"),
-        htmltools::tags$span("概念依赖分组"), htmltools::tags$b("→"),
-        htmltools::tags$span("第一阶段：类别"), htmltools::tags$b("→"),
-        htmltools::tags$span("第二阶段：函数链"), htmltools::tags$b("→"),
+        htmltools::tags$span("原子任务与依赖"), htmltools::tags$b("→"),
+        htmltools::tags$span("第一阶段：目标"), htmltools::tags$b("→"),
+        htmltools::tags$span("第二阶段：函数"), htmltools::tags$b("→"),
+        htmltools::tags$span("确定性参数注入"), htmltools::tags$b("→"),
+        htmltools::tags$span("第三阶段：有限参数"), htmltools::tags$b("→"),
         htmltools::tags$span("人工审核"), htmltools::tags$b("→"),
         htmltools::tags$span("确定性 R 构建"), htmltools::tags$b("→"),
         htmltools::tags$span("本地 + Pinnacle 21")
       ),
       htmltools::tags$p("模型只提出候选；注册表限制来源、目标、参数和函数。审核后的 YAML 是唯一构建输入，构建期间不调用模型。"),
-      if (identical(model_run$provenance, "reference_seed")) htmltools::tags$div(class = "callout", "当前推荐来自专家金标准种子，不是实际模型输出；评价数字只证明评价程序和流程可复现。") else NULL,
+      if (identical(model_run$provenance, "reference_seed") || identical(model_run$provider, "seed")) htmltools::tags$div(class = "callout", "当前推荐来自专家金标准种子，不是实际模型输出；评价数字只证明评价程序和流程可复现。") else NULL,
       htmltools::tags$h2("运行信息"),
       html_table(data.frame(
         item = c("场景", "标准", "注册表版本", "注册表校验值", "推荐来源", "模型", "sdtm.oak 版本", "单位换算版本", "Pinnacle 21 引擎", "受控术语版本", "报告时间"),
         value = c(
           config$project$scenario, paste(config$project$standard, config$project$standard_version),
           registry$registry_version, file_sha256(trace_path(config$paths$transform_registry)),
-          model_run$provenance %||% "not_run", model_run$model %||% "not_run",
+          model_run$provenance %||% model_run$provider %||% "not_run", model_run$model %||% "not_run",
           build_run$sdtm_oak_version %||% "not_run", build_run$unit_conversion_version %||% "not_run",
           p21_run$engine_name %||% "not_run", p21_run$controlled_terminology_version %||% "not_run", utc_now()
         ), stringsAsFactors = FALSE
       )),
-      htmltools::tags$h2("两阶段推荐评价"),
+      htmltools::tags$h2("三阶段推荐评价"),
       html_table(summary_table),
       htmltools::tags$h3("严格校验拒绝"), html_table(group_failures, 20L),
       htmltools::tags$h3("类别判断"), html_table(classifications, 60L),
@@ -273,6 +298,6 @@ generate_report <- function(config = load_project_config()) {
   output <- trace_path(config$paths$report_dir, "trace_sdtm_report.html")
   ensure_parent(output)
   htmltools::save_html(document, output, background = "white")
-  trace_info("已生成 0.2 离线报告：%s", output)
+  trace_info("已生成 0.4 离线报告：%s", output)
   invisible(output)
 }

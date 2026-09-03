@@ -61,8 +61,8 @@ canonicalize_by_schema <- function(value, schema = list()) {
   # For union schemas the concrete R scalar determines the selected branch.
   # Pure array schemas were handled above, so a scalar allowed alongside an
   # array remains a scalar rather than being silently promoted.
-  if ("integer" %in% types && !("number" %in% types)) return(as.integer(value[[1L]]))
-  if ("number" %in% types) return(as.numeric(value[[1L]]))
+  if ("integer" %in% types && !("number" %in% types)) return(suppressWarnings(as.integer(value[[1L]])))
+  if ("number" %in% types) return(suppressWarnings(as.numeric(value[[1L]])))
   if ("boolean" %in% types) return(as.logical(value[[1L]]))
   if ("string" %in% types) return(as.character(value[[1L]]))
 

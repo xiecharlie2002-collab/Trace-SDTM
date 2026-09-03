@@ -34,3 +34,15 @@ test_that("高级v0.4批准规格可重复构建并通过本地检查", {
   expect_true(all(c("task_id", "assembly_group_id", "concept_id") %in% names(lineage)))
   expect_true(all(c("VS_HEIGHT_RECORD", "VS_HEIGHT_STANDARDIZATION") %in% lineage$task_id))
 })
+
+test_that("项目报告使用v0.4三阶段口径", {
+  config <- load_project_config("advanced")
+  result <- run_recommendation_v04(config, provider = "seed")
+  path <- generate_report(config)
+  html <- paste(readLines(path, warn = FALSE, encoding = "UTF-8"), collapse = "\n")
+  expect_match(html, "TraceSDTM 0.4", fixed = TRUE)
+  expect_match(html, "三阶段推荐评价", fixed = TRUE)
+  expect_match(html, "原子任务", fixed = TRUE)
+  expect_false(grepl("TraceSDTM 0.2 项目报告", html, fixed = TRUE))
+  expect_identical(result$run$schema_version, "0.4")
+})
