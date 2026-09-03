@@ -157,4 +157,4 @@ Rscript -e "renv::restore()"
 
 本项目不包含 Define-XML、aCRF、完整试验设计域、ADaM、TLF、电子签名、多用户权限、法规申报级系统验证或 CDISC CORE。所有输出仍需合格的临床数据标准专家审核。
 
-五分钟演示见 `docs/demo.md`。0.1 阶段的真实 DeepSeek 盲评记录保留在 `docs/deepseek_v4_flash_blind_experiment.md`。
+五分钟演示见 `docs/demo.md`，v0.4 评价设计见 `docs/v04_three_stage_benchmark.md`。0.1 阶段的真实 DeepSeek 盲评记录保留在 `docs/deepseek_v4_flash_blind_experiment.md`。
