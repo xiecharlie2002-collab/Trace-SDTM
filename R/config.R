@@ -7,15 +7,15 @@ scenario_from_args <- function(args = commandArgs(trailingOnly = TRUE)) {
   Sys.getenv("TRACE_SDTM_SCENARIO", unset = "basic")
 }
 
-load_project_config <- function(scenario = Sys.getenv("TRACE_SDTM_SCENARIO", unset = "basic")) {
-  config <- yaml::read_yaml(trace_path("config", "project.yml"))
-  if (!scenario %in% names(config$scenarios)) {
-    trace_abort(sprintf("未知场景：%s。允许值为 %s。", scenario, paste(names(config$scenarios), collapse = "、")))
-  }
-  scenario_config <- config$scenarios[[scenario]]
-  config$project$scenario <- scenario
-  config$paths <- c(config$paths, scenario_config)
-  output_base <- scenario_config$output_base
+argument_value <- function(args, name, default = NULL) {
+  position <- match(name, args)
+  if (is.na(position)) return(default)
+  if (position == length(args)) trace_abort(sprintf("%s 后必须提供值。", name))
+  as.character(args[[position + 1L]])
+}
+
+configure_output_paths <- function(config, output_base) {
+  config$paths$output_base <- output_base
   generated_paths <- c(
     profile_dir = "profile", recommendation_dir = "recommendations",
     review_dir = "review", csv_dir = file.path("sdtm", "csv"),
@@ -26,6 +26,19 @@ load_project_config <- function(scenario = Sys.getenv("TRACE_SDTM_SCENARIO", uns
   )
   for (key in names(generated_paths)) config$paths[[key]] <- file.path(output_base, generated_paths[[key]])
   config$paths$approved_specification <- file.path(output_base, "specs", "approved_mapping.yml")
+  config
+}
+
+load_project_config <- function(scenario = Sys.getenv("TRACE_SDTM_SCENARIO", unset = "basic")) {
+  config <- yaml::read_yaml(trace_path("config", "project.yml"))
+  if (!scenario %in% names(config$scenarios)) {
+    trace_abort(sprintf("未知场景：%s。允许值为 %s。", scenario, paste(names(config$scenarios), collapse = "、")))
+  }
+  scenario_config <- config$scenarios[[scenario]]
+  config$project$scenario <- scenario
+  config$paths <- c(config$paths, scenario_config)
+  output_base <- scenario_config$output_base
+  config <- configure_output_paths(config, output_base)
   experiment_id <- Sys.getenv("TRACE_SDTM_EXPERIMENT_ID", unset = "")
   if (nzchar(experiment_id)) config <- apply_experiment_paths(config, experiment_id)
   config
@@ -96,6 +109,9 @@ load_mapping_template <- function(config = load_project_config()) {
 }
 
 load_gold_specification <- function(config = load_project_config()) {
+  if (isTRUE(config$project$studio) || !nzchar(as.character(config$paths$gold_specification %||% ""))) {
+    trace_abort("普通工作台项目不包含金标准，不能使用离线种子或准确率评价。")
+  }
   yaml::read_yaml(trace_path(config$paths$gold_specification))
 }
 

@@ -1,8 +1,0 @@
-source_dataset,file,derived,form_name,grain,keys
-dm_subject,dm_subject.csv,FALSE,Demographics,one_record_per_subject,STUDY | PATNUM
-ex_a_raw,ex_a_raw.csv,FALSE,Exposure A,many_records_per_subject,STUDY | PATNUM
-ex_b_raw,ex_b_raw.csv,FALSE,Exposure B,many_records_per_subject,STUDY | PATNUM
-ae_main,ae_main.csv,FALSE,Adverse Events,one_record_per_event,STUDY | PATNUM | AEID
-sae_detail,sae_detail.csv,FALSE,Serious Adverse Event Details,one_record_per_event,STUDY | PATNUM | AEID
-ae_merged,,TRUE,Adverse Events plus SAE Details,one_record_per_event,STUDY | PATNUM | AEID
-vs_mixed,vs_mixed.csv,FALSE,Vital Signs,one_record_per_subject_visit,STUDY | PATNUM | INSTANCE

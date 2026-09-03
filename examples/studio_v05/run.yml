@@ -1,0 +1,52 @@
+schema_version: '0.5'
+run_id: run_20260903_200120_15232_858
+project_id: studio-v05-release
+template: advanced
+study_id: TRACE002
+created_at: '2026-09-03T12:01:20Z'
+updated_at: '2026-09-03T12:02:00Z'
+stale: no
+status: completed
+current_stage: report
+stages:
+  profile: completed
+  recommend_targets: completed
+  recommend_functions: completed
+  recommend_parameters: completed
+  assemble: completed
+  review: completed
+  approve: completed
+  build: completed
+  validate_local: completed
+  validate_p21: completed
+  report: completed
+inputs:
+  dm_subject:
+    file: inputs/dm_subject.csv
+    sha256: 9e937001c1041e29f78e0462aed6725792addb4fa34c0369bb33b77f4b81fac5
+  ex_a_raw:
+    file: inputs/ex_a_raw.csv
+    sha256: 18349bb7ac417b2d867afb74751188147ef457b597c64883a17860a5a3f77b0b
+  ex_b_raw:
+    file: inputs/ex_b_raw.csv
+    sha256: 807e12779dd2ed1f8633c2b71c311f907629c5b8a94cd70a737098d0ba60233a
+  ae_main:
+    file: inputs/ae_main.csv
+    sha256: fed982f3a9376b6381fa5d710534f532daa93315cff61f4552eba2e46df386a3
+  sae_detail:
+    file: inputs/sae_detail.csv
+    sha256: 36adf842b068118672c72d774fa66ba0cf47781d6786fd994ff59119e6af2e5b
+  vs_mixed:
+    file: inputs/vs_mixed.csv
+    sha256: daa123fb6502e89b6a5fc0ff61b93eacd39c79dd649cdfd527a2464b35ccef4e
+configuration_sha256:
+  tasks.yml: 2dde6da31e1bf0c73c0733ab097682169b4a86d7bc5607d4d38880ea22e6f4ed
+  metadata.yml: b75a11eda0181796fc3f866419c2c99f94908c039380f98198e72eb7bdf84275
+  transform_registry.yml: e42bffb8d885af537ef2c37186966384599508d65952466524298d6c203d0c0f
+  transform_registry.schema.json: 88887ef1c3d3a96aa332110d206c4f1b6fe924ae95816df8994bf82fb50e9f3d
+  controlled_terminology.yml: 45a61506850df1112330f983970e331e6e6ee771a94d332f59c6ace865031a10
+  unit_conversions.yml: 4325719a1713256bdfd61df4ca378f4c155255bc38a16f797bc9f3f3840fff8c
+  mapping_policies.yml: 54b3be6a52e2effa02a256ba60659637f4a8e313b49d48352e456df88fee021a
+studio_version: 0.5.0
+contains_gold_standard: no
+last_message: ''

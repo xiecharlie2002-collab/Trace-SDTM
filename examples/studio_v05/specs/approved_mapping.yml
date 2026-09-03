@@ -1,0 +1,2362 @@
+schema_version: '0.4'
+specification:
+  name: TraceSDTM v0.4 advanced atomic tasks
+  version: 2.0.0
+  status: approved
+  standard: SDTMIG 3.4
+  scenario: advanced
+  benchmark_level: advanced
+  expected_task_count: 57
+  approval:
+    reviewer: acceptance-reviewer
+    approved_at: '2026-09-03T12:01:31Z'
+    review_artifact_sha256: 51af93218ceef02c8099240a401e92b55537b37e72d2ea9338c8829f1bbf3e91
+    review_workbook_sha256: 51af93218ceef02c8099240a401e92b55537b37e72d2ea9338c8829f1bbf3e91
+    registry_version: 1.2.0
+    registry_sha256: e42bffb8d885af537ef2c37186966384599508d65952466524298d6c203d0c0f
+source_catalog:
+  dm_subject:
+    file: dm_subject.csv
+    form_name: Demographics
+    grain: one_record_per_subject
+    keys:
+    - STUDY
+    - PATNUM
+  ex_a_raw:
+    file: ex_a_raw.csv
+    form_name: Exposure A
+    grain: many_records_per_subject
+    keys:
+    - STUDY
+    - PATNUM
+  ex_b_raw:
+    file: ex_b_raw.csv
+    form_name: Exposure B
+    grain: many_records_per_subject
+    keys:
+    - STUDY
+    - PATNUM
+  ae_main:
+    file: ae_main.csv
+    form_name: Adverse Events
+    grain: one_record_per_event
+    keys:
+    - STUDY
+    - PATNUM
+    - AEID
+  sae_detail:
+    file: sae_detail.csv
+    form_name: Serious Adverse Event Details
+    grain: one_record_per_event
+    keys:
+    - STUDY
+    - PATNUM
+    - AEID
+  ae_merged:
+    derived: yes
+    profile_parents:
+    - ae_main
+    - sae_detail
+    form_name: Adverse Events plus SAE Details
+    grain: one_record_per_event
+    keys:
+    - STUDY
+    - PATNUM
+    - AEID
+  vs_mixed:
+    file: vs_mixed.csv
+    form_name: Vital Signs
+    grain: one_record_per_subject_visit
+    keys:
+    - STUDY
+    - PATNUM
+    - INSTANCE
+domain_sources:
+  DM: dm_subject
+  AE: ae_main
+  VS: vs_mixed
+tasks:
+- task_id: DM_STUDY_IDENTIFIER
+  assembly_group_id: DM_CORE
+  target_domain: DM
+  form_name: Demographics
+  source_refs:
+  - ref_id: dm_subject__STUDY
+    dataset: dm_subject
+    variable: STUDY
+    role: study_identifier
+  depends_on: []
+  required: yes
+  intent: Map the study identifier.
+  semantic_decision:
+    output_kind: variables
+    target_variables:
+    - STUDYID
+  approved_plan:
+    steps:
+    - transform_id: assign_no_ct
+      source_ref_ids: dm_subject__STUDY
+      target_variables: STUDYID
+      parameters: {}
+      step_id: DM_STUDY_IDENTIFIER_STEP_01
+      parameter_sources: []
+  review:
+    decision: accept
+    reviewer: acceptance-reviewer
+    reviewed_at: '2026-09-03T12:01:31Z'
+    comment: 固定响应集成验收
+- task_id: DM_DOMAIN_CONSTANT
+  assembly_group_id: DM_CORE
+  target_domain: DM
+  form_name: Demographics
+  source_refs: []
+  depends_on: []
+  required: yes
+  intent: Set the DM domain constant.
+  semantic_decision:
+    output_kind: variables
+    target_variables:
+    - DOMAIN
+  approved_plan:
+    steps:
+    - transform_id: hardcode_no_ct
+      source_ref_ids: []
+      target_variables: DOMAIN
+      parameters:
+        value: DM
+      step_id: DM_DOMAIN_CONSTANT_STEP_01
+      parameter_sources:
+        value:
+          source: reviewer
+          reference: fixed_test_response
+  review:
+    decision: accept
+    reviewer: acceptance-reviewer
+    reviewed_at: '2026-09-03T12:01:31Z'
+    comment: 固定响应集成验收
+- task_id: DM_UNIQUE_SUBJECT_IDENTIFIER
+  assembly_group_id: DM_CORE
+  target_domain: DM
+  form_name: Demographics
+  source_refs:
+  - ref_id: dm_subject__STUDY
+    dataset: dm_subject
+    variable: STUDY
+    role: study_identifier
+  - ref_id: dm_subject__PATNUM
+    dataset: dm_subject
+    variable: PATNUM
+    role: subject_identifier
+  depends_on: []
+  required: yes
+  intent: Derive the unique subject identifier.
+  semantic_decision:
+    output_kind: variables
+    target_variables:
+    - USUBJID
+  approved_plan:
+    steps:
+    - transform_id: derive_usubjid
+      source_ref_ids:
+      - dm_subject__STUDY
+      - dm_subject__PATNUM
+      target_variables: USUBJID
+      parameters:
+        separator: '-'
+      step_id: DM_UNIQUE_SUBJECT_IDENTIFIER_STEP_01
+      parameter_sources:
+        separator:
+          source: reviewer
+          reference: fixed_test_response
+  review:
+    decision: accept
+    reviewer: acceptance-reviewer
+    reviewed_at: '2026-09-03T12:01:31Z'
+    comment: 固定响应集成验收
+- task_id: DM_SUBJECT_IDENTIFIER
+  assembly_group_id: DM_CORE
+  target_domain: DM
+  form_name: Demographics
+  source_refs:
+  - ref_id: dm_subject__PATNUM
+    dataset: dm_subject
+    variable: PATNUM
+    role: subject_identifier
+  depends_on: []
+  required: yes
+  intent: Map the sponsor subject identifier.
+  semantic_decision:
+    output_kind: variables
+    target_variables:
+    - SUBJID
+  approved_plan:
+    steps:
+    - transform_id: assign_no_ct
+      source_ref_ids: dm_subject__PATNUM
+      target_variables: SUBJID
+      parameters: {}
+      step_id: DM_SUBJECT_IDENTIFIER_STEP_01
+      parameter_sources: []
+  review:
+    decision: accept
+    reviewer: acceptance-reviewer
+    reviewed_at: '2026-09-03T12:01:31Z'
+    comment: 固定响应集成验收
+- task_id: DM_SITE_IDENTIFIER
+  assembly_group_id: DM_CORE
+  target_domain: DM
+  form_name: Demographics
+  source_refs:
+  - ref_id: dm_subject__PATNUM
+    dataset: dm_subject
+    variable: PATNUM
+    role: site_and_subject_identifier
+  depends_on: []
+  required: yes
+  intent: Extract the site identifier from the sponsor subject identifier.
+  semantic_decision:
+    output_kind: variables
+    target_variables:
+    - SITEID
+  approved_plan:
+    steps:
+    - transform_id: extract_delimited_part
+      source_ref_ids: dm_subject__PATNUM
+      target_variables: SITEID
+      parameters:
+        separator: '-'
+        position: 1
+      step_id: DM_SITE_IDENTIFIER_STEP_01
+      parameter_sources:
+        separator:
+          source: reviewer
+          reference: fixed_test_response
+        position:
+          source: reviewer
+          reference: fixed_test_response
+  review:
+    decision: accept
+    reviewer: acceptance-reviewer
+    reviewed_at: '2026-09-03T12:01:31Z'
+    comment: 固定响应集成验收
+- task_id: DM_REFERENCE_START
+  assembly_group_id: DM_REFERENCE_START
+  target_domain: DM
+  form_name: Exposure A plus Exposure B
+  source_refs:
+  - ref_id: ex_a_raw__EXSTDAT
+    dataset: ex_a_raw
+    variable: EXSTDAT
+    role: date
+  - ref_id: ex_a_raw__EXSTTIM
+    dataset: ex_a_raw
+    variable: EXSTTIM
+    role: time
+  - ref_id: ex_b_raw__DOSE_DATE
+    dataset: ex_b_raw
+    variable: DOSE_DATE
+    role: date
+  - ref_id: ex_b_raw__DOSE_TIME
+    dataset: ex_b_raw
+    variable: DOSE_TIME
+    role: time
+  depends_on: DM_UNIQUE_SUBJECT_IDENTIFIER
+  required: yes
+  intent: Derive the earliest subject reference-start datetime from both exposure
+    sources.
+  semantic_decision:
+    output_kind: variables
+    target_variables:
+    - RFSTDTC
+  approved_plan:
+    steps:
+    - transform_id: derive_reference_datetime
+      source_ref_ids:
+      - ex_a_raw__EXSTDAT
+      - ex_a_raw__EXSTTIM
+      - ex_b_raw__DOSE_DATE
+      - ex_b_raw__DOSE_TIME
+      target_variables: RFSTDTC
+      parameters:
+        selection: min
+        subject_keys: PATNUM
+        sources:
+        - dataset: ex_a_raw
+          date_variable: EXSTDAT
+          time_variable: EXSTTIM
+          date_formats: m/d/y
+          time_formats: H:M
+        - dataset: ex_b_raw
+          date_variable: DOSE_DATE
+          time_variable: DOSE_TIME
+          date_formats: dd-mmm-yyyy
+          time_formats: H:M
+      step_id: DM_REFERENCE_START_STEP_01
+      parameter_sources:
+        selection:
+          source: reviewer
+          reference: fixed_test_response
+        subject_keys:
+          source: reviewer
+          reference: fixed_test_response
+        sources:
+          source: reviewer
+          reference: fixed_test_response
+  review:
+    decision: accept
+    reviewer: acceptance-reviewer
+    reviewed_at: '2026-09-03T12:01:31Z'
+    comment: 固定响应集成验收
+- task_id: DM_CONSENT
+  assembly_group_id: DM_CONSENT
+  target_domain: DM
+  form_name: Demographics
+  source_refs:
+  - ref_id: dm_subject__IC_DT
+    dataset: dm_subject
+    variable: IC_DT
+    role: date
+  depends_on: DM_UNIQUE_SUBJECT_IDENTIFIER
+  required: yes
+  intent: Convert informed consent date to ISO 8601.
+  semantic_decision:
+    output_kind: variables
+    target_variables:
+    - RFICDTC
+  approved_plan:
+    steps:
+    - transform_id: to_iso8601_date
+      source_ref_ids: dm_subject__IC_DT
+      target_variables: RFICDTC
+      parameters:
+        formats: m/d/y
+      step_id: DM_CONSENT_STEP_01
+      parameter_sources:
+        formats:
+          source: reviewer
+          reference: fixed_test_response
+  review:
+    decision: accept
+    reviewer: acceptance-reviewer
+    reviewed_at: '2026-09-03T12:01:31Z'
+    comment: 固定响应集成验收
+- task_id: DM_AGE
+  assembly_group_id: DM_DEMOGRAPHICS
+  target_domain: DM
+  form_name: Demographics
+  source_refs:
+  - ref_id: dm_subject__AGE
+    dataset: dm_subject
+    variable: AGE
+    role: age
+  depends_on: DM_UNIQUE_SUBJECT_IDENTIFIER
+  required: yes
+  intent: Map age.
+  semantic_decision:
+    output_kind: variables
+    target_variables:
+    - AGE
+  approved_plan:
+    steps:
+    - transform_id: assign_no_ct
+      source_ref_ids: dm_subject__AGE
+      target_variables: AGE
+      parameters: {}
+      step_id: DM_AGE_STEP_01
+      parameter_sources: []
+  review:
+    decision: accept
+    reviewer: acceptance-reviewer
+    reviewed_at: '2026-09-03T12:01:31Z'
+    comment: 固定响应集成验收
+- task_id: DM_AGE_UNIT
+  assembly_group_id: DM_DEMOGRAPHICS
+  target_domain: DM
+  form_name: Demographics
+  source_refs: []
+  depends_on: DM_AGE
+  required: yes
+  intent: Set the controlled age unit.
+  semantic_decision:
+    output_kind: variables
+    target_variables:
+    - AGEU
+  approved_plan:
+    steps:
+    - transform_id: hardcode_ct
+      source_ref_ids: []
+      target_variables: AGEU
+      parameters:
+        value: YEARS
+        codelist_id: AGEU
+      step_id: DM_AGE_UNIT_STEP_01
+      parameter_sources:
+        value:
+          source: reviewer
+          reference: fixed_test_response
+        codelist_id:
+          source: reviewer
+          reference: fixed_test_response
+  review:
+    decision: accept
+    reviewer: acceptance-reviewer
+    reviewed_at: '2026-09-03T12:01:31Z'
+    comment: 固定响应集成验收
+- task_id: DM_SEX
+  assembly_group_id: DM_DEMOGRAPHICS
+  target_domain: DM
+  form_name: Demographics
+  source_refs:
+  - ref_id: dm_subject__SEX
+    dataset: dm_subject
+    variable: SEX
+    role: sex
+  depends_on: DM_UNIQUE_SUBJECT_IDENTIFIER
+  required: yes
+  intent: Map sex using controlled terminology.
+  semantic_decision:
+    output_kind: variables
+    target_variables:
+    - SEX
+  approved_plan:
+    steps:
+    - transform_id: assign_ct
+      source_ref_ids: dm_subject__SEX
+      target_variables: SEX
+      parameters:
+        codelist_id: SEX
+      step_id: DM_SEX_STEP_01
+      parameter_sources:
+        codelist_id:
+          source: reviewer
+          reference: fixed_test_response
+  review:
+    decision: accept
+    reviewer: acceptance-reviewer
+    reviewed_at: '2026-09-03T12:01:31Z'
+    comment: 固定响应集成验收
+- task_id: DM_ETHNICITY
+  assembly_group_id: DM_DEMOGRAPHICS
+  target_domain: DM
+  form_name: Demographics
+  source_refs:
+  - ref_id: dm_subject__ETHNIC
+    dataset: dm_subject
+    variable: ETHNIC
+    role: ethnicity
+  depends_on: DM_UNIQUE_SUBJECT_IDENTIFIER
+  required: yes
+  intent: Map ethnicity using controlled terminology.
+  semantic_decision:
+    output_kind: variables
+    target_variables:
+    - ETHNIC
+  approved_plan:
+    steps:
+    - transform_id: assign_ct
+      source_ref_ids: dm_subject__ETHNIC
+      target_variables: ETHNIC
+      parameters:
+        codelist_id: ETHNIC
+      step_id: DM_ETHNICITY_STEP_01
+      parameter_sources:
+        codelist_id:
+          source: reviewer
+          reference: fixed_test_response
+  review:
+    decision: accept
+    reviewer: acceptance-reviewer
+    reviewed_at: '2026-09-03T12:01:31Z'
+    comment: 固定响应集成验收
+- task_id: DM_RACE
+  assembly_group_id: DM_DEMOGRAPHICS
+  target_domain: DM
+  form_name: Demographics
+  source_refs:
+  - ref_id: dm_subject__RACE
+    dataset: dm_subject
+    variable: RACE
+    role: race
+  depends_on: DM_UNIQUE_SUBJECT_IDENTIFIER
+  required: yes
+  intent: Map race using controlled terminology.
+  semantic_decision:
+    output_kind: variables
+    target_variables:
+    - RACE
+  approved_plan:
+    steps:
+    - transform_id: assign_ct
+      source_ref_ids: dm_subject__RACE
+      target_variables: RACE
+      parameters:
+        codelist_id: RACE
+      step_id: DM_RACE_STEP_01
+      parameter_sources:
+        codelist_id:
+          source: reviewer
+          reference: fixed_test_response
+  review:
+    decision: accept
+    reviewer: acceptance-reviewer
+    reviewed_at: '2026-09-03T12:01:31Z'
+    comment: 固定响应集成验收
+- task_id: DM_COUNTRY
+  assembly_group_id: DM_DEMOGRAPHICS
+  target_domain: DM
+  form_name: Demographics
+  source_refs:
+  - ref_id: dm_subject__COUNTRY
+    dataset: dm_subject
+    variable: COUNTRY
+    role: country
+  depends_on: DM_UNIQUE_SUBJECT_IDENTIFIER
+  required: yes
+  intent: Map country.
+  semantic_decision:
+    output_kind: variables
+    target_variables:
+    - COUNTRY
+  approved_plan:
+    steps:
+    - transform_id: assign_no_ct
+      source_ref_ids: dm_subject__COUNTRY
+      target_variables: COUNTRY
+      parameters: {}
+      step_id: DM_COUNTRY_STEP_01
+      parameter_sources: []
+  review:
+    decision: accept
+    reviewer: acceptance-reviewer
+    reviewed_at: '2026-09-03T12:01:31Z'
+    comment: 固定响应集成验收
+- task_id: DM_PLANNED_ARM_CODE
+  assembly_group_id: DM_TREATMENT
+  target_domain: DM
+  form_name: Demographics
+  source_refs:
+  - ref_id: dm_subject__PLANNED_ARMCD
+    dataset: dm_subject
+    variable: PLANNED_ARMCD
+    role: planned_arm_code
+  depends_on: DM_UNIQUE_SUBJECT_IDENTIFIER
+  required: yes
+  intent: Map the planned arm code.
+  semantic_decision:
+    output_kind: variables
+    target_variables:
+    - ARMCD
+  approved_plan:
+    steps:
+    - transform_id: assign_no_ct
+      source_ref_ids: dm_subject__PLANNED_ARMCD
+      target_variables: ARMCD
+      parameters: {}
+      step_id: DM_PLANNED_ARM_CODE_STEP_01
+      parameter_sources: []
+  review:
+    decision: accept
+    reviewer: acceptance-reviewer
+    reviewed_at: '2026-09-03T12:01:31Z'
+    comment: 固定响应集成验收
+- task_id: DM_PLANNED_ARM
+  assembly_group_id: DM_TREATMENT
+  target_domain: DM
+  form_name: Demographics
+  source_refs:
+  - ref_id: dm_subject__PLANNED_ARM
+    dataset: dm_subject
+    variable: PLANNED_ARM
+    role: planned_arm
+  depends_on: DM_UNIQUE_SUBJECT_IDENTIFIER
+  required: yes
+  intent: Map the planned arm description.
+  semantic_decision:
+    output_kind: variables
+    target_variables:
+    - ARM
+  approved_plan:
+    steps:
+    - transform_id: assign_no_ct
+      source_ref_ids: dm_subject__PLANNED_ARM
+      target_variables: ARM
+      parameters: {}
+      step_id: DM_PLANNED_ARM_STEP_01
+      parameter_sources: []
+  review:
+    decision: accept
+    reviewer: acceptance-reviewer
+    reviewed_at: '2026-09-03T12:01:31Z'
+    comment: 固定响应集成验收
+- task_id: DM_ACTUAL_ARM_CODE
+  assembly_group_id: DM_TREATMENT
+  target_domain: DM
+  form_name: Demographics
+  source_refs:
+  - ref_id: dm_subject__ACTUAL_ARMCD
+    dataset: dm_subject
+    variable: ACTUAL_ARMCD
+    role: actual_arm_code
+  depends_on: DM_UNIQUE_SUBJECT_IDENTIFIER
+  required: yes
+  intent: Map the actual arm code.
+  semantic_decision:
+    output_kind: variables
+    target_variables:
+    - ACTARMCD
+  approved_plan:
+    steps:
+    - transform_id: assign_no_ct
+      source_ref_ids: dm_subject__ACTUAL_ARMCD
+      target_variables: ACTARMCD
+      parameters: {}
+      step_id: DM_ACTUAL_ARM_CODE_STEP_01
+      parameter_sources: []
+  review:
+    decision: accept
+    reviewer: acceptance-reviewer
+    reviewed_at: '2026-09-03T12:01:31Z'
+    comment: 固定响应集成验收
+- task_id: DM_ACTUAL_ARM
+  assembly_group_id: DM_TREATMENT
+  target_domain: DM
+  form_name: Demographics
+  source_refs:
+  - ref_id: dm_subject__ACTUAL_ARM
+    dataset: dm_subject
+    variable: ACTUAL_ARM
+    role: actual_arm
+  depends_on: DM_UNIQUE_SUBJECT_IDENTIFIER
+  required: yes
+  intent: Map the actual arm description.
+  semantic_decision:
+    output_kind: variables
+    target_variables:
+    - ACTARM
+  approved_plan:
+    steps:
+    - transform_id: assign_no_ct
+      source_ref_ids: dm_subject__ACTUAL_ARM
+      target_variables: ACTARM
+      parameters: {}
+      step_id: DM_ACTUAL_ARM_STEP_01
+      parameter_sources: []
+  review:
+    decision: accept
+    reviewer: acceptance-reviewer
+    reviewed_at: '2026-09-03T12:01:31Z'
+    comment: 固定响应集成验收
+- task_id: AE_SOURCE_INTEGRATION
+  assembly_group_id: AE_SOURCE_INTEGRATION
+  target_domain: AE
+  form_name: Adverse Events plus SAE Details
+  source_refs:
+  - ref_id: ae_main__STUDY
+    dataset: ae_main
+    variable: STUDY
+    role: join_key
+  - ref_id: ae_main__PATNUM
+    dataset: ae_main
+    variable: PATNUM
+    role: join_key
+  - ref_id: ae_main__AEID
+    dataset: ae_main
+    variable: AEID
+    role: join_key
+  - ref_id: sae_detail__STUDY
+    dataset: sae_detail
+    variable: STUDY
+    role: join_key
+  - ref_id: sae_detail__PATNUM
+    dataset: sae_detail
+    variable: PATNUM
+    role: join_key
+  - ref_id: sae_detail__AEID
+    dataset: sae_detail
+    variable: AEID
+    role: join_key
+  - ref_id: sae_detail__AESHOSP
+    dataset: sae_detail
+    variable: AESHOSP
+    role: hospitalization_indicator
+  depends_on: []
+  required: yes
+  intent: Left-join SAE hospitalization details onto the event-level AE source with
+    a verified one-to-one relationship.
+  semantic_decision:
+    output_kind: dataset
+    target_variables: []
+  approved_plan:
+    steps:
+    - transform_id: merge_sources
+      source_ref_ids:
+      - ae_main__STUDY
+      - ae_main__PATNUM
+      - ae_main__AEID
+      - sae_detail__STUDY
+      - sae_detail__PATNUM
+      - sae_detail__AEID
+      - sae_detail__AESHOSP
+      target_variables: []
+      parameters:
+        left_dataset: ae_main
+        right_dataset: sae_detail
+        output_dataset: ae_merged
+        by:
+          STUDY: STUDY
+          PATNUM: PATNUM
+          AEID: AEID
+        relationship: one-to-one
+        join_type: left
+        select: AESHOSP
+        conflict_policy: error
+      step_id: AE_SOURCE_INTEGRATION_STEP_01
+      parameter_sources:
+        left_dataset:
+          source: reviewer
+          reference: fixed_test_response
+        right_dataset:
+          source: reviewer
+          reference: fixed_test_response
+        output_dataset:
+          source: reviewer
+          reference: fixed_test_response
+        by:
+          source: reviewer
+          reference: fixed_test_response
+        relationship:
+          source: reviewer
+          reference: fixed_test_response
+        join_type:
+          source: reviewer
+          reference: fixed_test_response
+        select:
+          source: reviewer
+          reference: fixed_test_response
+        conflict_policy:
+          source: reviewer
+          reference: fixed_test_response
+  review:
+    decision: accept
+    reviewer: acceptance-reviewer
+    reviewed_at: '2026-09-03T12:01:31Z'
+    comment: 固定响应集成验收
+- task_id: AE_STUDY_IDENTIFIER
+  assembly_group_id: AE_CORE
+  target_domain: AE
+  form_name: Adverse Events
+  source_refs:
+  - ref_id: ae_merged__STUDY
+    dataset: ae_merged
+    variable: STUDY
+    role: study_identifier
+  depends_on:
+  - AE_SOURCE_INTEGRATION
+  - DM_STUDY_IDENTIFIER
+  required: yes
+  intent: Map the study identifier to AE.
+  semantic_decision:
+    output_kind: variables
+    target_variables:
+    - STUDYID
+  approved_plan:
+    steps:
+    - transform_id: assign_no_ct
+      source_ref_ids: ae_merged__STUDY
+      target_variables: STUDYID
+      parameters: {}
+      step_id: AE_STUDY_IDENTIFIER_STEP_01
+      parameter_sources: []
+  review:
+    decision: accept
+    reviewer: acceptance-reviewer
+    reviewed_at: '2026-09-03T12:01:31Z'
+    comment: 固定响应集成验收
+- task_id: AE_DOMAIN_CONSTANT
+  assembly_group_id: AE_CORE
+  target_domain: AE
+  form_name: Adverse Events
+  source_refs: []
+  depends_on: AE_SOURCE_INTEGRATION
+  required: yes
+  intent: Set the AE domain constant.
+  semantic_decision:
+    output_kind: variables
+    target_variables:
+    - DOMAIN
+  approved_plan:
+    steps:
+    - transform_id: hardcode_no_ct
+      source_ref_ids: []
+      target_variables: DOMAIN
+      parameters:
+        value: AE
+      step_id: AE_DOMAIN_CONSTANT_STEP_01
+      parameter_sources:
+        value:
+          source: reviewer
+          reference: fixed_test_response
+  review:
+    decision: accept
+    reviewer: acceptance-reviewer
+    reviewed_at: '2026-09-03T12:01:31Z'
+    comment: 固定响应集成验收
+- task_id: AE_UNIQUE_SUBJECT_IDENTIFIER
+  assembly_group_id: AE_CORE
+  target_domain: AE
+  form_name: Adverse Events
+  source_refs:
+  - ref_id: ae_merged__STUDY
+    dataset: ae_merged
+    variable: STUDY
+    role: study_identifier
+  - ref_id: ae_merged__PATNUM
+    dataset: ae_merged
+    variable: PATNUM
+    role: subject_identifier
+  depends_on:
+  - AE_SOURCE_INTEGRATION
+  - DM_UNIQUE_SUBJECT_IDENTIFIER
+  required: yes
+  intent: Derive the unique subject identifier for AE.
+  semantic_decision:
+    output_kind: variables
+    target_variables:
+    - USUBJID
+  approved_plan:
+    steps:
+    - transform_id: derive_usubjid
+      source_ref_ids:
+      - ae_merged__STUDY
+      - ae_merged__PATNUM
+      target_variables: USUBJID
+      parameters:
+        separator: '-'
+      step_id: AE_UNIQUE_SUBJECT_IDENTIFIER_STEP_01
+      parameter_sources:
+        separator:
+          source: reviewer
+          reference: fixed_test_response
+  review:
+    decision: accept
+    reviewer: acceptance-reviewer
+    reviewed_at: '2026-09-03T12:01:31Z'
+    comment: 固定响应集成验收
+- task_id: AE_REPORTED_TERM
+  assembly_group_id: AE_TERMS
+  target_domain: AE
+  form_name: Adverse Events
+  source_refs:
+  - ref_id: ae_merged__AETERM
+    dataset: ae_merged
+    variable: AETERM
+    role: reported_term
+  depends_on: AE_SOURCE_INTEGRATION
+  required: yes
+  intent: Map the reported adverse event term.
+  semantic_decision:
+    output_kind: variables
+    target_variables:
+    - AETERM
+  approved_plan:
+    steps:
+    - transform_id: assign_no_ct
+      source_ref_ids: ae_merged__AETERM
+      target_variables: AETERM
+      parameters: {}
+      step_id: AE_REPORTED_TERM_STEP_01
+      parameter_sources: []
+  review:
+    decision: accept
+    reviewer: acceptance-reviewer
+    reviewed_at: '2026-09-03T12:01:31Z'
+    comment: 固定响应集成验收
+- task_id: AE_CODED_TERM
+  assembly_group_id: AE_TERMS
+  target_domain: AE
+  form_name: Adverse Events
+  source_refs:
+  - ref_id: ae_merged__AEDECOD
+    dataset: ae_merged
+    variable: AEDECOD
+    role: coded_term
+  depends_on: AE_SOURCE_INTEGRATION
+  required: yes
+  intent: Map the coded adverse event term.
+  semantic_decision:
+    output_kind: variables
+    target_variables:
+    - AEDECOD
+  approved_plan:
+    steps:
+    - transform_id: assign_no_ct
+      source_ref_ids: ae_merged__AEDECOD
+      target_variables: AEDECOD
+      parameters: {}
+      step_id: AE_CODED_TERM_STEP_01
+      parameter_sources: []
+  review:
+    decision: accept
+    reviewer: acceptance-reviewer
+    reviewed_at: '2026-09-03T12:01:31Z'
+    comment: 固定响应集成验收
+- task_id: AE_BODY_SYSTEM
+  assembly_group_id: AE_TERMS
+  target_domain: AE
+  form_name: Adverse Events
+  source_refs:
+  - ref_id: ae_merged__AEBODSYS
+    dataset: ae_merged
+    variable: AEBODSYS
+    role: body_system
+  depends_on: AE_SOURCE_INTEGRATION
+  required: yes
+  intent: Normalize and map the body system term.
+  semantic_decision:
+    output_kind: variables
+    target_variables:
+    - AEBODSYS
+  approved_plan:
+    steps:
+    - transform_id: normalize_case
+      source_ref_ids: ae_merged__AEBODSYS
+      target_variables: AEBODSYS
+      parameters:
+        case: upper
+      step_id: AE_BODY_SYSTEM_STEP_01
+      parameter_sources:
+        case:
+          source: reviewer
+          reference: fixed_test_response
+  review:
+    decision: accept
+    reviewer: acceptance-reviewer
+    reviewed_at: '2026-09-03T12:01:31Z'
+    comment: 固定响应集成验收
+- task_id: AE_SEVERITY
+  assembly_group_id: AE_SAFETY
+  target_domain: AE
+  form_name: Adverse Events
+  source_refs:
+  - ref_id: ae_merged__AESEV
+    dataset: ae_merged
+    variable: AESEV
+    role: severity
+  depends_on: AE_SOURCE_INTEGRATION
+  required: yes
+  intent: Map adverse event severity.
+  semantic_decision:
+    output_kind: variables
+    target_variables:
+    - AESEV
+  approved_plan:
+    steps:
+    - transform_id: assign_ct
+      source_ref_ids: ae_merged__AESEV
+      target_variables: AESEV
+      parameters:
+        codelist_id: AESEV
+      step_id: AE_SEVERITY_STEP_01
+      parameter_sources:
+        codelist_id:
+          source: reviewer
+          reference: fixed_test_response
+  review:
+    decision: accept
+    reviewer: acceptance-reviewer
+    reviewed_at: '2026-09-03T12:01:31Z'
+    comment: 固定响应集成验收
+- task_id: AE_SERIOUS
+  assembly_group_id: AE_SAFETY
+  target_domain: AE
+  form_name: Adverse Events
+  source_refs:
+  - ref_id: ae_merged__AESER
+    dataset: ae_merged
+    variable: AESER
+    role: serious_indicator
+  depends_on: AE_SOURCE_INTEGRATION
+  required: yes
+  intent: Map the serious-event indicator.
+  semantic_decision:
+    output_kind: variables
+    target_variables:
+    - AESER
+  approved_plan:
+    steps:
+    - transform_id: assign_ct
+      source_ref_ids: ae_merged__AESER
+      target_variables: AESER
+      parameters:
+        codelist_id: NY
+      step_id: AE_SERIOUS_STEP_01
+      parameter_sources:
+        codelist_id:
+          source: reviewer
+          reference: fixed_test_response
+  review:
+    decision: accept
+    reviewer: acceptance-reviewer
+    reviewed_at: '2026-09-03T12:01:31Z'
+    comment: 固定响应集成验收
+- task_id: AE_HOSPITALIZATION
+  assembly_group_id: AE_SAFETY
+  target_domain: AE
+  form_name: Adverse Events plus SAE Details
+  source_refs:
+  - ref_id: ae_merged__AESHOSP
+    dataset: ae_merged
+    variable: AESHOSP
+    role: hospitalization_indicator
+  depends_on: AE_SOURCE_INTEGRATION
+  required: yes
+  intent: Map the hospitalization indicator.
+  semantic_decision:
+    output_kind: variables
+    target_variables:
+    - AESHOSP
+  approved_plan:
+    steps:
+    - transform_id: assign_ct
+      source_ref_ids: ae_merged__AESHOSP
+      target_variables: AESHOSP
+      parameters:
+        codelist_id: NY
+      step_id: AE_HOSPITALIZATION_STEP_01
+      parameter_sources:
+        codelist_id:
+          source: reviewer
+          reference: fixed_test_response
+  review:
+    decision: accept
+    reviewer: acceptance-reviewer
+    reviewed_at: '2026-09-03T12:01:31Z'
+    comment: 固定响应集成验收
+- task_id: AE_RELATIONSHIP
+  assembly_group_id: AE_REL_OUTCOME
+  target_domain: AE
+  form_name: Adverse Events
+  source_refs:
+  - ref_id: ae_merged__AEREL
+    dataset: ae_merged
+    variable: AEREL
+    role: causality
+  depends_on: AE_SOURCE_INTEGRATION
+  required: yes
+  intent: Map relationship to study treatment.
+  semantic_decision:
+    output_kind: variables
+    target_variables:
+    - AEREL
+  approved_plan:
+    steps:
+    - transform_id: assign_ct
+      source_ref_ids: ae_merged__AEREL
+      target_variables: AEREL
+      parameters:
+        codelist_id: AEREL
+      step_id: AE_RELATIONSHIP_STEP_01
+      parameter_sources:
+        codelist_id:
+          source: reviewer
+          reference: fixed_test_response
+  review:
+    decision: accept
+    reviewer: acceptance-reviewer
+    reviewed_at: '2026-09-03T12:01:31Z'
+    comment: 固定响应集成验收
+- task_id: AE_OUTCOME
+  assembly_group_id: AE_REL_OUTCOME
+  target_domain: AE
+  form_name: Adverse Events
+  source_refs:
+  - ref_id: ae_merged__AEOUTCOME
+    dataset: ae_merged
+    variable: AEOUTCOME
+    role: outcome
+  depends_on: AE_SOURCE_INTEGRATION
+  required: yes
+  intent: Map adverse event outcome.
+  semantic_decision:
+    output_kind: variables
+    target_variables:
+    - AEOUT
+  approved_plan:
+    steps:
+    - transform_id: assign_ct
+      source_ref_ids: ae_merged__AEOUTCOME
+      target_variables: AEOUT
+      parameters:
+        codelist_id: AEOUT
+      step_id: AE_OUTCOME_STEP_01
+      parameter_sources:
+        codelist_id:
+          source: reviewer
+          reference: fixed_test_response
+  review:
+    decision: accept
+    reviewer: acceptance-reviewer
+    reviewed_at: '2026-09-03T12:01:31Z'
+    comment: 固定响应集成验收
+- task_id: AE_START_DATETIME
+  assembly_group_id: AE_START
+  target_domain: AE
+  form_name: Adverse Events
+  source_refs:
+  - ref_id: ae_merged__AESTDAT
+    dataset: ae_merged
+    variable: AESTDAT
+    role: partial_date
+  - ref_id: ae_merged__AESTTIM
+    dataset: ae_merged
+    variable: AESTTIM
+    role: optional_time
+  depends_on:
+  - AE_SOURCE_INTEGRATION
+  - AE_UNIQUE_SUBJECT_IDENTIFIER
+  required: yes
+  intent: Preserve the maximum known precision while combining partial start date
+    and optional time.
+  semantic_decision:
+    output_kind: variables
+    target_variables:
+    - AESTDTC
+  approved_plan:
+    steps:
+    - transform_id: to_iso8601_partial_datetime
+      source_ref_ids:
+      - ae_merged__AESTDAT
+      - ae_merged__AESTTIM
+      target_variables: AESTDTC
+      parameters:
+        formats:
+        - dd-mmm-yyyy
+        - H:M
+        unknown_tokens:
+        - UNK
+        - UN
+      step_id: AE_START_DATETIME_STEP_01
+      parameter_sources:
+        formats:
+          source: reviewer
+          reference: fixed_test_response
+        unknown_tokens:
+          source: reviewer
+          reference: fixed_test_response
+  review:
+    decision: accept
+    reviewer: acceptance-reviewer
+    reviewed_at: '2026-09-03T12:01:31Z'
+    comment: 固定响应集成验收
+- task_id: AE_START_STUDY_DAY
+  assembly_group_id: AE_START
+  target_domain: AE
+  form_name: Adverse Events
+  source_refs: []
+  depends_on:
+  - AE_START_DATETIME
+  - DM_REFERENCE_START
+  required: yes
+  intent: Derive start study day only when the start date is complete.
+  semantic_decision:
+    output_kind: variables
+    target_variables:
+    - AESTDY
+  approved_plan:
+    steps:
+    - transform_id: derive_study_day
+      source_ref_ids: []
+      target_variables: AESTDY
+      parameters:
+        target_date: AESTDTC
+        reference_date: RFSTDTC
+      step_id: AE_START_STUDY_DAY_STEP_01
+      parameter_sources:
+        target_date:
+          source: reviewer
+          reference: fixed_test_response
+        reference_date:
+          source: reviewer
+          reference: fixed_test_response
+  review:
+    decision: accept
+    reviewer: acceptance-reviewer
+    reviewed_at: '2026-09-03T12:01:31Z'
+    comment: 固定响应集成验收
+- task_id: AE_END_DATETIME
+  assembly_group_id: AE_END
+  target_domain: AE
+  form_name: Adverse Events
+  source_refs:
+  - ref_id: ae_merged__AEENDDAT
+    dataset: ae_merged
+    variable: AEENDDAT
+    role: partial_date
+  - ref_id: ae_merged__AEENDTIM
+    dataset: ae_merged
+    variable: AEENDTIM
+    role: optional_time
+  depends_on:
+  - AE_SOURCE_INTEGRATION
+  - AE_UNIQUE_SUBJECT_IDENTIFIER
+  required: yes
+  intent: Preserve the maximum known precision while combining partial end date and
+    optional time.
+  semantic_decision:
+    output_kind: variables
+    target_variables:
+    - AEENDTC
+  approved_plan:
+    steps:
+    - transform_id: to_iso8601_partial_datetime
+      source_ref_ids:
+      - ae_merged__AEENDDAT
+      - ae_merged__AEENDTIM
+      target_variables: AEENDTC
+      parameters:
+        formats:
+        - dd-mmm-yyyy
+        - H:M
+        unknown_tokens:
+        - UNK
+        - UN
+      step_id: AE_END_DATETIME_STEP_01
+      parameter_sources:
+        formats:
+          source: reviewer
+          reference: fixed_test_response
+        unknown_tokens:
+          source: reviewer
+          reference: fixed_test_response
+  review:
+    decision: accept
+    reviewer: acceptance-reviewer
+    reviewed_at: '2026-09-03T12:01:31Z'
+    comment: 固定响应集成验收
+- task_id: AE_ONGOING_STATUS
+  assembly_group_id: AE_END
+  target_domain: AE
+  form_name: Adverse Events
+  source_refs:
+  - ref_id: ae_merged__AEENDDAT
+    dataset: ae_merged
+    variable: AEENDDAT
+    role: end_date
+  - ref_id: ae_merged__AEONGO
+    dataset: ae_merged
+    variable: AEONGO
+    role: ongoing_indicator
+  depends_on: AE_SOURCE_INTEGRATION
+  required: yes
+  intent: Derive the SDTM ongoing-event reference value.
+  semantic_decision:
+    output_kind: variables
+    target_variables:
+    - AEENRF
+  approved_plan:
+    steps:
+    - transform_id: derive_ongoing_flag
+      source_ref_ids:
+      - ae_merged__AEENDDAT
+      - ae_merged__AEONGO
+      target_variables: AEENRF
+      parameters:
+        ongoing_value: ONGOING
+        affirmative_values:
+        - 'Y'
+        - 'Yes'
+      step_id: AE_ONGOING_STATUS_STEP_01
+      parameter_sources:
+        ongoing_value:
+          source: reviewer
+          reference: fixed_test_response
+        affirmative_values:
+          source: reviewer
+          reference: fixed_test_response
+  review:
+    decision: accept
+    reviewer: acceptance-reviewer
+    reviewed_at: '2026-09-03T12:01:31Z'
+    comment: 固定响应集成验收
+- task_id: AE_END_STUDY_DAY
+  assembly_group_id: AE_END
+  target_domain: AE
+  form_name: Adverse Events
+  source_refs: []
+  depends_on:
+  - AE_END_DATETIME
+  - DM_REFERENCE_START
+  required: yes
+  intent: Derive end study day only when the end date is complete.
+  semantic_decision:
+    output_kind: variables
+    target_variables:
+    - AEENDY
+  approved_plan:
+    steps:
+    - transform_id: derive_study_day
+      source_ref_ids: []
+      target_variables: AEENDY
+      parameters:
+        target_date: AEENDTC
+        reference_date: RFSTDTC
+      step_id: AE_END_STUDY_DAY_STEP_01
+      parameter_sources:
+        target_date:
+          source: reviewer
+          reference: fixed_test_response
+        reference_date:
+          source: reviewer
+          reference: fixed_test_response
+  review:
+    decision: accept
+    reviewer: acceptance-reviewer
+    reviewed_at: '2026-09-03T12:01:31Z'
+    comment: 固定响应集成验收
+- task_id: AE_SEQUENCE
+  assembly_group_id: AE_SEQUENCE
+  target_domain: AE
+  form_name: Adverse Events
+  source_refs: []
+  depends_on:
+  - AE_UNIQUE_SUBJECT_IDENTIFIER
+  - AE_REPORTED_TERM
+  - AE_CODED_TERM
+  - AE_START_DATETIME
+  required: yes
+  intent: Derive a stable within-subject AE sequence.
+  semantic_decision:
+    output_kind: variables
+    target_variables:
+    - AESEQ
+  approved_plan:
+    steps:
+    - transform_id: derive_sequence
+      source_ref_ids: []
+      target_variables: AESEQ
+      parameters:
+        record_variables:
+        - STUDYID
+        - USUBJID
+        - AESTDTC
+        - AETERM
+        - AEDECOD
+        - .SOURCE_ROW
+        start_at: 1
+      step_id: AE_SEQUENCE_STEP_01
+      parameter_sources:
+        record_variables:
+          source: reviewer
+          reference: fixed_test_response
+        start_at:
+          source: reviewer
+          reference: fixed_test_response
+  review:
+    decision: accept
+    reviewer: acceptance-reviewer
+    reviewed_at: '2026-09-03T12:01:31Z'
+    comment: 固定响应集成验收
+- task_id: VS_STUDY_IDENTIFIER
+  assembly_group_id: VS_CORE
+  target_domain: VS
+  form_name: Vital Signs
+  source_refs:
+  - ref_id: vs_mixed__STUDY
+    dataset: vs_mixed
+    variable: STUDY
+    role: study_identifier
+  depends_on: DM_STUDY_IDENTIFIER
+  required: yes
+  intent: Map the study identifier to VS.
+  semantic_decision:
+    output_kind: variables
+    target_variables:
+    - STUDYID
+  approved_plan:
+    steps:
+    - transform_id: assign_no_ct
+      source_ref_ids: vs_mixed__STUDY
+      target_variables: STUDYID
+      parameters: {}
+      step_id: VS_STUDY_IDENTIFIER_STEP_01
+      parameter_sources: []
+  review:
+    decision: accept
+    reviewer: acceptance-reviewer
+    reviewed_at: '2026-09-03T12:01:31Z'
+    comment: 固定响应集成验收
+- task_id: VS_DOMAIN_CONSTANT
+  assembly_group_id: VS_CORE
+  target_domain: VS
+  form_name: Vital Signs
+  source_refs: []
+  depends_on: []
+  required: yes
+  intent: Set the VS domain constant.
+  semantic_decision:
+    output_kind: variables
+    target_variables:
+    - DOMAIN
+  approved_plan:
+    steps:
+    - transform_id: hardcode_no_ct
+      source_ref_ids: []
+      target_variables: DOMAIN
+      parameters:
+        value: VS
+      step_id: VS_DOMAIN_CONSTANT_STEP_01
+      parameter_sources:
+        value:
+          source: reviewer
+          reference: fixed_test_response
+  review:
+    decision: accept
+    reviewer: acceptance-reviewer
+    reviewed_at: '2026-09-03T12:01:31Z'
+    comment: 固定响应集成验收
+- task_id: VS_UNIQUE_SUBJECT_IDENTIFIER
+  assembly_group_id: VS_CORE
+  target_domain: VS
+  form_name: Vital Signs
+  source_refs:
+  - ref_id: vs_mixed__STUDY
+    dataset: vs_mixed
+    variable: STUDY
+    role: study_identifier
+  - ref_id: vs_mixed__PATNUM
+    dataset: vs_mixed
+    variable: PATNUM
+    role: subject_identifier
+  depends_on: DM_UNIQUE_SUBJECT_IDENTIFIER
+  required: yes
+  intent: Derive the unique subject identifier for VS.
+  semantic_decision:
+    output_kind: variables
+    target_variables:
+    - USUBJID
+  approved_plan:
+    steps:
+    - transform_id: derive_usubjid
+      source_ref_ids:
+      - vs_mixed__STUDY
+      - vs_mixed__PATNUM
+      target_variables: USUBJID
+      parameters:
+        separator: '-'
+      step_id: VS_UNIQUE_SUBJECT_IDENTIFIER_STEP_01
+      parameter_sources:
+        separator:
+          source: reviewer
+          reference: fixed_test_response
+  review:
+    decision: accept
+    reviewer: acceptance-reviewer
+    reviewed_at: '2026-09-03T12:01:31Z'
+    comment: 固定响应集成验收
+- task_id: VS_VISIT
+  assembly_group_id: VS_CORE
+  target_domain: VS
+  form_name: Vital Signs
+  source_refs:
+  - ref_id: vs_mixed__INSTANCE
+    dataset: vs_mixed
+    variable: INSTANCE
+    role: visit
+  depends_on: VS_UNIQUE_SUBJECT_IDENTIFIER
+  required: yes
+  intent: Map the visit name.
+  semantic_decision:
+    output_kind: variables
+    target_variables:
+    - VISIT
+  approved_plan:
+    steps:
+    - transform_id: assign_no_ct
+      source_ref_ids: vs_mixed__INSTANCE
+      target_variables: VISIT
+      parameters: {}
+      step_id: VS_VISIT_STEP_01
+      parameter_sources: []
+  review:
+    decision: accept
+    reviewer: acceptance-reviewer
+    reviewed_at: '2026-09-03T12:01:31Z'
+    comment: 固定响应集成验收
+- task_id: VS_VISIT_NUMBER
+  assembly_group_id: VS_CORE
+  target_domain: VS
+  form_name: Vital Signs
+  source_refs:
+  - ref_id: vs_mixed__INSTANCE
+    dataset: vs_mixed
+    variable: INSTANCE
+    role: visit
+  depends_on: VS_VISIT
+  required: yes
+  intent: Derive the numeric visit value from the approved visit table.
+  semantic_decision:
+    output_kind: variables
+    target_variables:
+    - VISITNUM
+  approved_plan:
+    steps:
+    - transform_id: derive_visitnum
+      source_ref_ids: vs_mixed__INSTANCE
+      target_variables: VISITNUM
+      parameters:
+        visit_map_id: trace_visits_v1
+      step_id: VS_VISIT_NUMBER_STEP_01
+      parameter_sources:
+        visit_map_id:
+          source: reviewer
+          reference: fixed_test_response
+  review:
+    decision: accept
+    reviewer: acceptance-reviewer
+    reviewed_at: '2026-09-03T12:01:31Z'
+    comment: 固定响应集成验收
+- task_id: VS_DATETIME
+  assembly_group_id: VS_CORE
+  target_domain: VS
+  form_name: Vital Signs
+  source_refs:
+  - ref_id: vs_mixed__VTLD
+    dataset: vs_mixed
+    variable: VTLD
+    role: date
+  - ref_id: vs_mixed__VSTIM
+    dataset: vs_mixed
+    variable: VSTIM
+    role: time
+  depends_on: VS_UNIQUE_SUBJECT_IDENTIFIER
+  required: yes
+  intent: Combine vital signs date and time as ISO 8601 datetime.
+  semantic_decision:
+    output_kind: variables
+    target_variables:
+    - VSDTC
+  approved_plan:
+    steps:
+    - transform_id: to_iso8601_datetime
+      source_ref_ids:
+      - vs_mixed__VTLD
+      - vs_mixed__VSTIM
+      target_variables: VSDTC
+      parameters:
+        formats:
+        - dd-mmm-yyyy
+        - H:M
+        unknown_tokens:
+        - UNK
+        - UN
+      step_id: VS_DATETIME_STEP_01
+      parameter_sources:
+        formats:
+          source: reviewer
+          reference: fixed_test_response
+        unknown_tokens:
+          source: reviewer
+          reference: fixed_test_response
+  review:
+    decision: accept
+    reviewer: acceptance-reviewer
+    reviewed_at: '2026-09-03T12:01:31Z'
+    comment: 固定响应集成验收
+- task_id: VS_POSITION
+  assembly_group_id: VS_CORE
+  target_domain: VS
+  form_name: Vital Signs
+  source_refs:
+  - ref_id: vs_mixed__SUBPOS
+    dataset: vs_mixed
+    variable: SUBPOS
+    role: body_position
+  depends_on: VS_UNIQUE_SUBJECT_IDENTIFIER
+  required: yes
+  intent: Map body position using controlled terminology.
+  semantic_decision:
+    output_kind: variables
+    target_variables:
+    - VSPOS
+  approved_plan:
+    steps:
+    - transform_id: assign_ct
+      source_ref_ids: vs_mixed__SUBPOS
+      target_variables: VSPOS
+      parameters:
+        codelist_id: VSPOS
+      step_id: VS_POSITION_STEP_01
+      parameter_sources:
+        codelist_id:
+          source: reviewer
+          reference: fixed_test_response
+  review:
+    decision: accept
+    reviewer: acceptance-reviewer
+    reviewed_at: '2026-09-03T12:01:31Z'
+    comment: 固定响应集成验收
+- task_id: VS_HEIGHT_RECORD
+  assembly_group_id: VS_HEIGHT
+  target_domain: VS
+  form_name: Vital Signs
+  source_refs:
+  - ref_id: vs_mixed__HEIGHT
+    dataset: vs_mixed
+    variable: HEIGHT
+    role: result
+  - ref_id: vs_mixed__HEIGHTU
+    dataset: vs_mixed
+    variable: HEIGHTU
+    role: original_unit
+  depends_on: VS_DATETIME
+  required: yes
+  intent: Expand height and its original unit into one VS finding record.
+  semantic_decision:
+    output_kind: variables
+    target_variables:
+    - VSTESTCD
+    - VSTEST
+    - VSORRES
+    - VSORRESU
+  approved_plan:
+    steps:
+    - transform_id: transpose_findings
+      source_ref_ids:
+      - vs_mixed__HEIGHT
+      - vs_mixed__HEIGHTU
+      target_variables:
+      - VSTESTCD
+      - VSTEST
+      - VSORRES
+      - VSORRESU
+      parameters:
+        test_code: HEIGHT
+        test_name: Height
+        original_unit: ~
+        unit_source: HEIGHTU
+      step_id: VS_HEIGHT_RECORD_STEP_01
+      parameter_sources:
+        test_code:
+          source: reviewer
+          reference: fixed_test_response
+        test_name:
+          source: reviewer
+          reference: fixed_test_response
+        original_unit:
+          source: reviewer
+          reference: fixed_test_response
+        unit_source:
+          source: reviewer
+          reference: fixed_test_response
+  review:
+    decision: accept
+    reviewer: acceptance-reviewer
+    reviewed_at: '2026-09-03T12:01:31Z'
+    comment: 固定响应集成验收
+- task_id: VS_HEIGHT_STANDARDIZATION
+  assembly_group_id: VS_HEIGHT
+  target_domain: VS
+  form_name: Vital Signs
+  source_refs:
+  - ref_id: vs_mixed__HEIGHT
+    dataset: vs_mixed
+    variable: HEIGHT
+    role: result
+  - ref_id: vs_mixed__HEIGHTU
+    dataset: vs_mixed
+    variable: HEIGHTU
+    role: original_unit
+  depends_on: VS_HEIGHT_RECORD
+  required: yes
+  intent: Standardize height to the registered standard unit.
+  semantic_decision:
+    output_kind: variables
+    target_variables:
+    - VSSTRESC
+    - VSSTRESN
+    - VSSTRESU
+  approved_plan:
+    steps:
+    - transform_id: standardize_unit
+      source_ref_ids:
+      - vs_mixed__HEIGHT
+      - vs_mixed__HEIGHTU
+      target_variables:
+      - VSSTRESC
+      - VSSTRESN
+      - VSSTRESU
+      parameters:
+        conversion_set_id: vs_standard_v1
+        target_unit: cm
+      step_id: VS_HEIGHT_STANDARDIZATION_STEP_01
+      parameter_sources:
+        conversion_set_id:
+          source: reviewer
+          reference: fixed_test_response
+        target_unit:
+          source: reviewer
+          reference: fixed_test_response
+  review:
+    decision: accept
+    reviewer: acceptance-reviewer
+    reviewed_at: '2026-09-03T12:01:31Z'
+    comment: 固定响应集成验收
+- task_id: VS_WEIGHT_RECORD
+  assembly_group_id: VS_WEIGHT
+  target_domain: VS
+  form_name: Vital Signs
+  source_refs:
+  - ref_id: vs_mixed__WEIGHT
+    dataset: vs_mixed
+    variable: WEIGHT
+    role: result
+  - ref_id: vs_mixed__WEIGHTU
+    dataset: vs_mixed
+    variable: WEIGHTU
+    role: original_unit
+  depends_on: VS_DATETIME
+  required: yes
+  intent: Expand weight and its original unit into one VS finding record.
+  semantic_decision:
+    output_kind: variables
+    target_variables:
+    - VSTESTCD
+    - VSTEST
+    - VSORRES
+    - VSORRESU
+  approved_plan:
+    steps:
+    - transform_id: transpose_findings
+      source_ref_ids:
+      - vs_mixed__WEIGHT
+      - vs_mixed__WEIGHTU
+      target_variables:
+      - VSTESTCD
+      - VSTEST
+      - VSORRES
+      - VSORRESU
+      parameters:
+        test_code: WEIGHT
+        test_name: Weight
+        original_unit: ~
+        unit_source: WEIGHTU
+      step_id: VS_WEIGHT_RECORD_STEP_01
+      parameter_sources:
+        test_code:
+          source: reviewer
+          reference: fixed_test_response
+        test_name:
+          source: reviewer
+          reference: fixed_test_response
+        original_unit:
+          source: reviewer
+          reference: fixed_test_response
+        unit_source:
+          source: reviewer
+          reference: fixed_test_response
+  review:
+    decision: accept
+    reviewer: acceptance-reviewer
+    reviewed_at: '2026-09-03T12:01:31Z'
+    comment: 固定响应集成验收
+- task_id: VS_WEIGHT_STANDARDIZATION
+  assembly_group_id: VS_WEIGHT
+  target_domain: VS
+  form_name: Vital Signs
+  source_refs:
+  - ref_id: vs_mixed__WEIGHT
+    dataset: vs_mixed
+    variable: WEIGHT
+    role: result
+  - ref_id: vs_mixed__WEIGHTU
+    dataset: vs_mixed
+    variable: WEIGHTU
+    role: original_unit
+  depends_on: VS_WEIGHT_RECORD
+  required: yes
+  intent: Standardize weight to the registered standard unit.
+  semantic_decision:
+    output_kind: variables
+    target_variables:
+    - VSSTRESC
+    - VSSTRESN
+    - VSSTRESU
+  approved_plan:
+    steps:
+    - transform_id: standardize_unit
+      source_ref_ids:
+      - vs_mixed__WEIGHT
+      - vs_mixed__WEIGHTU
+      target_variables:
+      - VSSTRESC
+      - VSSTRESN
+      - VSSTRESU
+      parameters:
+        conversion_set_id: vs_standard_v1
+        target_unit: kg
+      step_id: VS_WEIGHT_STANDARDIZATION_STEP_01
+      parameter_sources:
+        conversion_set_id:
+          source: reviewer
+          reference: fixed_test_response
+        target_unit:
+          source: reviewer
+          reference: fixed_test_response
+  review:
+    decision: accept
+    reviewer: acceptance-reviewer
+    reviewed_at: '2026-09-03T12:01:31Z'
+    comment: 固定响应集成验收
+- task_id: VS_TEMP_RECORD
+  assembly_group_id: VS_TEMP
+  target_domain: VS
+  form_name: Vital Signs
+  source_refs:
+  - ref_id: vs_mixed__TEMP
+    dataset: vs_mixed
+    variable: TEMP
+    role: result
+  - ref_id: vs_mixed__TEMPU
+    dataset: vs_mixed
+    variable: TEMPU
+    role: original_unit
+  depends_on: VS_DATETIME
+  required: yes
+  intent: Expand temperature and its original unit into one VS finding record.
+  semantic_decision:
+    output_kind: variables
+    target_variables:
+    - VSTESTCD
+    - VSTEST
+    - VSORRES
+    - VSORRESU
+  approved_plan:
+    steps:
+    - transform_id: transpose_findings
+      source_ref_ids:
+      - vs_mixed__TEMP
+      - vs_mixed__TEMPU
+      target_variables:
+      - VSTESTCD
+      - VSTEST
+      - VSORRES
+      - VSORRESU
+      parameters:
+        test_code: TEMP
+        test_name: Temperature
+        original_unit: ~
+        unit_source: TEMPU
+      step_id: VS_TEMP_RECORD_STEP_01
+      parameter_sources:
+        test_code:
+          source: reviewer
+          reference: fixed_test_response
+        test_name:
+          source: reviewer
+          reference: fixed_test_response
+        original_unit:
+          source: reviewer
+          reference: fixed_test_response
+        unit_source:
+          source: reviewer
+          reference: fixed_test_response
+  review:
+    decision: accept
+    reviewer: acceptance-reviewer
+    reviewed_at: '2026-09-03T12:01:31Z'
+    comment: 固定响应集成验收
+- task_id: VS_TEMP_STANDARDIZATION
+  assembly_group_id: VS_TEMP
+  target_domain: VS
+  form_name: Vital Signs
+  source_refs:
+  - ref_id: vs_mixed__TEMP
+    dataset: vs_mixed
+    variable: TEMP
+    role: result
+  - ref_id: vs_mixed__TEMPU
+    dataset: vs_mixed
+    variable: TEMPU
+    role: original_unit
+  depends_on: VS_TEMP_RECORD
+  required: yes
+  intent: Standardize temperature to the registered standard unit.
+  semantic_decision:
+    output_kind: variables
+    target_variables:
+    - VSSTRESC
+    - VSSTRESN
+    - VSSTRESU
+  approved_plan:
+    steps:
+    - transform_id: standardize_unit
+      source_ref_ids:
+      - vs_mixed__TEMP
+      - vs_mixed__TEMPU
+      target_variables:
+      - VSSTRESC
+      - VSSTRESN
+      - VSSTRESU
+      parameters:
+        conversion_set_id: vs_standard_v1
+        target_unit: C
+      step_id: VS_TEMP_STANDARDIZATION_STEP_01
+      parameter_sources:
+        conversion_set_id:
+          source: reviewer
+          reference: fixed_test_response
+        target_unit:
+          source: reviewer
+          reference: fixed_test_response
+  review:
+    decision: accept
+    reviewer: acceptance-reviewer
+    reviewed_at: '2026-09-03T12:01:31Z'
+    comment: 固定响应集成验收
+- task_id: VS_SYSBP_RECORD
+  assembly_group_id: VS_SYSBP
+  target_domain: VS
+  form_name: Vital Signs
+  source_refs:
+  - ref_id: vs_mixed__SYS_BP
+    dataset: vs_mixed
+    variable: SYS_BP
+    role: result
+  - ref_id: vs_mixed__SYS_BPU
+    dataset: vs_mixed
+    variable: SYS_BPU
+    role: original_unit
+  depends_on: VS_DATETIME
+  required: yes
+  intent: Expand systolic blood pressure and its original unit into one VS finding
+    record.
+  semantic_decision:
+    output_kind: variables
+    target_variables:
+    - VSTESTCD
+    - VSTEST
+    - VSORRES
+    - VSORRESU
+  approved_plan:
+    steps:
+    - transform_id: transpose_findings
+      source_ref_ids:
+      - vs_mixed__SYS_BP
+      - vs_mixed__SYS_BPU
+      target_variables:
+      - VSTESTCD
+      - VSTEST
+      - VSORRES
+      - VSORRESU
+      parameters:
+        test_code: SYSBP
+        test_name: Systolic Blood Pressure
+        original_unit: ~
+        unit_source: SYS_BPU
+      step_id: VS_SYSBP_RECORD_STEP_01
+      parameter_sources:
+        test_code:
+          source: reviewer
+          reference: fixed_test_response
+        test_name:
+          source: reviewer
+          reference: fixed_test_response
+        original_unit:
+          source: reviewer
+          reference: fixed_test_response
+        unit_source:
+          source: reviewer
+          reference: fixed_test_response
+  review:
+    decision: accept
+    reviewer: acceptance-reviewer
+    reviewed_at: '2026-09-03T12:01:31Z'
+    comment: 固定响应集成验收
+- task_id: VS_SYSBP_STANDARDIZATION
+  assembly_group_id: VS_SYSBP
+  target_domain: VS
+  form_name: Vital Signs
+  source_refs:
+  - ref_id: vs_mixed__SYS_BP
+    dataset: vs_mixed
+    variable: SYS_BP
+    role: result
+  - ref_id: vs_mixed__SYS_BPU
+    dataset: vs_mixed
+    variable: SYS_BPU
+    role: original_unit
+  depends_on: VS_SYSBP_RECORD
+  required: yes
+  intent: Normalize systolic blood pressure through the registered identity conversion.
+  semantic_decision:
+    output_kind: variables
+    target_variables:
+    - VSSTRESC
+    - VSSTRESN
+    - VSSTRESU
+  approved_plan:
+    steps:
+    - transform_id: standardize_unit
+      source_ref_ids:
+      - vs_mixed__SYS_BP
+      - vs_mixed__SYS_BPU
+      target_variables:
+      - VSSTRESC
+      - VSSTRESN
+      - VSSTRESU
+      parameters:
+        conversion_set_id: vs_standard_v1
+        target_unit: mmHg
+      step_id: VS_SYSBP_STANDARDIZATION_STEP_01
+      parameter_sources:
+        conversion_set_id:
+          source: reviewer
+          reference: fixed_test_response
+        target_unit:
+          source: reviewer
+          reference: fixed_test_response
+  review:
+    decision: accept
+    reviewer: acceptance-reviewer
+    reviewed_at: '2026-09-03T12:01:31Z'
+    comment: 固定响应集成验收
+- task_id: VS_DIABP_RECORD
+  assembly_group_id: VS_DIABP
+  target_domain: VS
+  form_name: Vital Signs
+  source_refs:
+  - ref_id: vs_mixed__DIA_BP
+    dataset: vs_mixed
+    variable: DIA_BP
+    role: result
+  - ref_id: vs_mixed__DIA_BPU
+    dataset: vs_mixed
+    variable: DIA_BPU
+    role: original_unit
+  depends_on: VS_DATETIME
+  required: yes
+  intent: Expand diastolic blood pressure and its original unit into one VS finding
+    record.
+  semantic_decision:
+    output_kind: variables
+    target_variables:
+    - VSTESTCD
+    - VSTEST
+    - VSORRES
+    - VSORRESU
+  approved_plan:
+    steps:
+    - transform_id: transpose_findings
+      source_ref_ids:
+      - vs_mixed__DIA_BP
+      - vs_mixed__DIA_BPU
+      target_variables:
+      - VSTESTCD
+      - VSTEST
+      - VSORRES
+      - VSORRESU
+      parameters:
+        test_code: DIABP
+        test_name: Diastolic Blood Pressure
+        original_unit: ~
+        unit_source: DIA_BPU
+      step_id: VS_DIABP_RECORD_STEP_01
+      parameter_sources:
+        test_code:
+          source: reviewer
+          reference: fixed_test_response
+        test_name:
+          source: reviewer
+          reference: fixed_test_response
+        original_unit:
+          source: reviewer
+          reference: fixed_test_response
+        unit_source:
+          source: reviewer
+          reference: fixed_test_response
+  review:
+    decision: accept
+    reviewer: acceptance-reviewer
+    reviewed_at: '2026-09-03T12:01:31Z'
+    comment: 固定响应集成验收
+- task_id: VS_DIABP_STANDARDIZATION
+  assembly_group_id: VS_DIABP
+  target_domain: VS
+  form_name: Vital Signs
+  source_refs:
+  - ref_id: vs_mixed__DIA_BP
+    dataset: vs_mixed
+    variable: DIA_BP
+    role: result
+  - ref_id: vs_mixed__DIA_BPU
+    dataset: vs_mixed
+    variable: DIA_BPU
+    role: original_unit
+  depends_on: VS_DIABP_RECORD
+  required: yes
+  intent: Normalize diastolic blood pressure through the registered identity conversion.
+  semantic_decision:
+    output_kind: variables
+    target_variables:
+    - VSSTRESC
+    - VSSTRESN
+    - VSSTRESU
+  approved_plan:
+    steps:
+    - transform_id: standardize_unit
+      source_ref_ids:
+      - vs_mixed__DIA_BP
+      - vs_mixed__DIA_BPU
+      target_variables:
+      - VSSTRESC
+      - VSSTRESN
+      - VSSTRESU
+      parameters:
+        conversion_set_id: vs_standard_v1
+        target_unit: mmHg
+      step_id: VS_DIABP_STANDARDIZATION_STEP_01
+      parameter_sources:
+        conversion_set_id:
+          source: reviewer
+          reference: fixed_test_response
+        target_unit:
+          source: reviewer
+          reference: fixed_test_response
+  review:
+    decision: accept
+    reviewer: acceptance-reviewer
+    reviewed_at: '2026-09-03T12:01:31Z'
+    comment: 固定响应集成验收
+- task_id: VS_PULSE_RECORD
+  assembly_group_id: VS_PULSE
+  target_domain: VS
+  form_name: Vital Signs
+  source_refs:
+  - ref_id: vs_mixed__PULSE
+    dataset: vs_mixed
+    variable: PULSE
+    role: result
+  - ref_id: vs_mixed__PULSEU
+    dataset: vs_mixed
+    variable: PULSEU
+    role: original_unit
+  depends_on: VS_DATETIME
+  required: yes
+  intent: Expand pulse rate and its original unit into one VS finding record.
+  semantic_decision:
+    output_kind: variables
+    target_variables:
+    - VSTESTCD
+    - VSTEST
+    - VSORRES
+    - VSORRESU
+  approved_plan:
+    steps:
+    - transform_id: transpose_findings
+      source_ref_ids:
+      - vs_mixed__PULSE
+      - vs_mixed__PULSEU
+      target_variables:
+      - VSTESTCD
+      - VSTEST
+      - VSORRES
+      - VSORRESU
+      parameters:
+        test_code: PULSE
+        test_name: Pulse Rate
+        original_unit: ~
+        unit_source: PULSEU
+      step_id: VS_PULSE_RECORD_STEP_01
+      parameter_sources:
+        test_code:
+          source: reviewer
+          reference: fixed_test_response
+        test_name:
+          source: reviewer
+          reference: fixed_test_response
+        original_unit:
+          source: reviewer
+          reference: fixed_test_response
+        unit_source:
+          source: reviewer
+          reference: fixed_test_response
+  review:
+    decision: accept
+    reviewer: acceptance-reviewer
+    reviewed_at: '2026-09-03T12:01:31Z'
+    comment: 固定响应集成验收
+- task_id: VS_PULSE_STANDARDIZATION
+  assembly_group_id: VS_PULSE
+  target_domain: VS
+  form_name: Vital Signs
+  source_refs:
+  - ref_id: vs_mixed__PULSE
+    dataset: vs_mixed
+    variable: PULSE
+    role: result
+  - ref_id: vs_mixed__PULSEU
+    dataset: vs_mixed
+    variable: PULSEU
+    role: original_unit
+  depends_on: VS_PULSE_RECORD
+  required: yes
+  intent: Normalize pulse rate through the registered identity conversion.
+  semantic_decision:
+    output_kind: variables
+    target_variables:
+    - VSSTRESC
+    - VSSTRESN
+    - VSSTRESU
+  approved_plan:
+    steps:
+    - transform_id: standardize_unit
+      source_ref_ids:
+      - vs_mixed__PULSE
+      - vs_mixed__PULSEU
+      target_variables:
+      - VSSTRESC
+      - VSSTRESN
+      - VSSTRESU
+      parameters:
+        conversion_set_id: vs_standard_v1
+        target_unit: beats/min
+      step_id: VS_PULSE_STANDARDIZATION_STEP_01
+      parameter_sources:
+        conversion_set_id:
+          source: reviewer
+          reference: fixed_test_response
+        target_unit:
+          source: reviewer
+          reference: fixed_test_response
+  review:
+    decision: accept
+    reviewer: acceptance-reviewer
+    reviewed_at: '2026-09-03T12:01:31Z'
+    comment: 固定响应集成验收
+- task_id: VS_SEQUENCE
+  assembly_group_id: VS_POST_DERIVATIONS
+  target_domain: VS
+  form_name: Vital Signs
+  source_refs: []
+  depends_on:
+  - VS_HEIGHT_RECORD
+  - VS_WEIGHT_RECORD
+  - VS_TEMP_RECORD
+  - VS_SYSBP_RECORD
+  - VS_DIABP_RECORD
+  - VS_PULSE_RECORD
+  required: yes
+  intent: Derive a stable within-subject VS sequence.
+  semantic_decision:
+    output_kind: variables
+    target_variables:
+    - VSSEQ
+  approved_plan:
+    steps:
+    - transform_id: derive_sequence
+      source_ref_ids: []
+      target_variables: VSSEQ
+      parameters:
+        record_variables:
+        - STUDYID
+        - USUBJID
+        - VSDTC
+        - VSTESTCD
+        - VSPOS
+        - VISITNUM
+        - .SOURCE_ROW
+        start_at: 1
+      step_id: VS_SEQUENCE_STEP_01
+      parameter_sources:
+        record_variables:
+          source: reviewer
+          reference: fixed_test_response
+        start_at:
+          source: reviewer
+          reference: fixed_test_response
+  review:
+    decision: accept
+    reviewer: acceptance-reviewer
+    reviewed_at: '2026-09-03T12:01:31Z'
+    comment: 固定响应集成验收
+- task_id: VS_STUDY_DAY
+  assembly_group_id: VS_POST_DERIVATIONS
+  target_domain: VS
+  form_name: Vital Signs
+  source_refs: []
+  depends_on:
+  - VS_DATETIME
+  - DM_REFERENCE_START
+  required: yes
+  intent: Derive the vital signs study day.
+  semantic_decision:
+    output_kind: variables
+    target_variables:
+    - VSDY
+  approved_plan:
+    steps:
+    - transform_id: derive_study_day
+      source_ref_ids: []
+      target_variables: VSDY
+      parameters:
+        target_date: VSDTC
+        reference_date: RFSTDTC
+      step_id: VS_STUDY_DAY_STEP_01
+      parameter_sources:
+        target_date:
+          source: reviewer
+          reference: fixed_test_response
+        reference_date:
+          source: reviewer
+          reference: fixed_test_response
+  review:
+    decision: accept
+    reviewer: acceptance-reviewer
+    reviewed_at: '2026-09-03T12:01:31Z'
+    comment: 固定响应集成验收
+- task_id: VS_BASELINE_FLAG
+  assembly_group_id: VS_POST_DERIVATIONS
+  target_domain: VS
+  form_name: Vital Signs
+  source_refs: []
+  depends_on:
+  - VS_DATETIME
+  - VS_VISIT
+  - DM_REFERENCE_START
+  - VS_HEIGHT_RECORD
+  - VS_WEIGHT_RECORD
+  - VS_TEMP_RECORD
+  - VS_SYSBP_RECORD
+  - VS_DIABP_RECORD
+  - VS_PULSE_RECORD
+  required: yes
+  intent: Flag the last valid Screening 1 result before the subject reference start.
+  semantic_decision:
+    output_kind: variables
+    target_variables:
+    - VSBLFL
+  approved_plan:
+    steps:
+    - transform_id: derive_baseline_flag
+      source_ref_ids: []
+      target_variables: VSBLFL
+      parameters:
+        reference_date: RFSTDTC
+        baseline_visits: Screening 1
+        baseline_timepoints: []
+      step_id: VS_BASELINE_FLAG_STEP_01
+      parameter_sources:
+        reference_date:
+          source: reviewer
+          reference: fixed_test_response
+        baseline_visits:
+          source: reviewer
+          reference: fixed_test_response
+        baseline_timepoints:
+          source: reviewer
+          reference: fixed_test_response
+  review:
+    decision: accept
+    reviewer: acceptance-reviewer
+    reviewed_at: '2026-09-03T12:01:31Z'
+    comment: 固定响应集成验收

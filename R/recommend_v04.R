@@ -42,6 +42,7 @@ prepare_tasks_v04 <- function(specification) {
 v04_task_context <- function(task, specification, dictionary = NULL) {
   refs <- task_source_refs_v04(task)
   profiles <- if (is.null(dictionary)) list() else lapply(refs, source_profile_context, specification = specification, dictionary = dictionary)
+  profiles <- lapply(profiles, v04_apply_prompt_privacy)
   list(
     task_id = task_id_v04(task), assembly_group_id = task$assembly_group_id,
     target_domain = task$target_domain,
@@ -50,6 +51,48 @@ v04_task_context <- function(task, specification, dictionary = NULL) {
     required = isTRUE(task$required), depends_on = task$depends_on,
     source_refs = refs, field_profiles = profiles
   )
+}
+
+v04_prompt_privacy_mode <- function() {
+  tolower(Sys.getenv("TRACE_SDTM_PROMPT_PRIVACY", unset = "legacy"))
+}
+
+v04_sensitive_profile <- function(profile) {
+  role <- tolower(as.character(profile$role %||% ""))
+  key <- tolower(as.character(profile$declared_source_key %||% ""))
+  grepl("identifier|subject|site|center|(^|_)key($|_)", role) ||
+    grepl("(^|[._])(study|patnum|subjid|usubjid|siteid)([._]|$)", key)
+}
+
+v04_profile_selected_for_examples <- function(profile) {
+  selected <- trimws(unlist(strsplit(Sys.getenv("TRACE_SDTM_EXAMPLE_SOURCE_KEYS", unset = ""), ",", fixed = TRUE)))
+  selected <- selected[nzchar(selected)]
+  key <- as.character(profile$declared_source_key %||% "")
+  alternate <- gsub("\\.", "__", key)
+  length(selected) && (key %in% selected || alternate %in% selected)
+}
+
+v04_apply_prompt_privacy <- function(profile) {
+  mode <- v04_prompt_privacy_mode()
+  if (!mode %in% c("metadata_only", "selected_examples")) return(profile)
+  allow_examples <- identical(mode, "selected_examples") &&
+    identical(Sys.getenv("TRACE_SDTM_INCLUDE_EXAMPLES", unset = "0"), "1") &&
+    v04_profile_selected_for_examples(profile) && !v04_sensitive_profile(profile)
+  evidence <- profile$evidence
+  if (is.data.frame(evidence)) {
+    if ("example_values" %in% names(evidence)) {
+      if (allow_examples) evidence$example_values <- as.character(evidence$example_values)
+      else evidence$example_values <- NULL
+    }
+  } else if (is.list(evidence)) {
+    evidence <- lapply(evidence, function(item) {
+      if (!allow_examples && is.list(item)) item$example_values <- NULL
+      item
+    })
+  }
+  profile$evidence <- evidence
+  profile$example_values_included <- isTRUE(allow_examples)
+  profile
 }
 
 v04_group_tasks <- function(group) {
@@ -181,6 +224,7 @@ v04_function_task_context <- function(task, specification, dictionary = NULL) {
     declared_source_key = profile$declared_source_key,
     role = profile$role,
     resolution = profile$resolution,
+    example_values_included = isTRUE(profile$example_values_included),
     evidence = lapply(if (is.data.frame(profile$evidence)) {
       lapply(seq_len(nrow(profile$evidence)), function(index) as.list(profile$evidence[index, , drop = FALSE]))
     } else {
@@ -194,6 +238,17 @@ v04_function_task_context <- function(task, specification, dictionary = NULL) {
       partial_tokens = item$partial_tokens
     ))
   ))
+  if (v04_prompt_privacy_mode() %in% c("metadata_only", "selected_examples")) {
+    context$field_profiles <- lapply(context$field_profiles, function(profile) {
+      if (!isTRUE(profile$example_values_included)) {
+        profile$evidence <- lapply(profile$evidence, function(item) {
+          item$example_values <- NULL
+          item
+        })
+      }
+      profile
+    })
+  }
   context
 }
 

@@ -1,7 +1,0 @@
-evaluation_mode,scenario,level,parameter_total,automatically_injected,requested_from_model,model_completion_received,model_once_correct,reviewer_corrected,parameter_conflicts,unavailable,fully_resolved_candidates,candidate_count
-cascade,advanced,高级,89,88,1,1,1,0,0,0,56,57
-cascade,basic,基础,11,11,0,0,0,0,0,0,18,18
-cascade,intermediate,中等,60,60,0,0,0,0,0,0,49,49
-conditional,advanced,高级,89,88,1,1,1,0,0,0,56,57
-conditional,basic,基础,11,11,0,0,0,0,0,0,18,18
-conditional,intermediate,中等,61,60,1,1,1,0,0,0,48,49

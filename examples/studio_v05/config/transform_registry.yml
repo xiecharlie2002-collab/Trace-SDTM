@@ -1,0 +1,400 @@
+registry_version: '1.2.0'
+categories:
+  source_integration: {description: 整合多个原始数据集或多个候选来源；多来源参考日期函数已封装日期时间组合和最早或最晚选择, stage_order: 1, encapsulates: [多来源连接, 参考日期函数内部的日期时间组合与记录选择], do_not_add: [已由多来源参考日期函数完成时不要重复列出字段组合、日期时间转换或条件派生]}
+  direct_assignment: {description: 不改变语义的字段或常量赋值, stage_order: 2, encapsulates: [直接字段赋值, 固定常量], do_not_add: []}
+  controlled_terminology: {description: 按已审核术语表转换或验证取值；术语表输出已包含批准的大小写, stage_order: 2, encapsulates: [术语转换, 术语规定的大小写], do_not_add: [术语表已完成大小写时不要重复列出字符规范化]}
+  date_time_conversion: {description: 将日期、时间或日期时间转换为 ISO 8601；日期和时间分字段时由该类别内部组合, stage_order: 2, encapsulates: [日期格式解释, 日期与时间组合], do_not_add: [仅为组合日期和时间时不要重复列出字段组合]}
+  field_combination: {description: 组合或抽取标识符等普通来源字段, stage_order: 2, encapsulates: [普通字段组合, 分隔字段抽取], do_not_add: [日期时间组合应使用日期时间转换类别]}
+  conditional_derivation: {description: 根据受控条件派生结果, stage_order: 2, encapsulates: [安全条件树, 持续状态派生], do_not_add: []}
+  character_normalization: {description: 在没有受控术语映射时进行受控大小写规范化, stage_order: 2, encapsulates: [独立大小写转换], do_not_add: [受控术语已经规定输出大小写时不要选择]}
+  record_transposition: {description: 将横向检查字段展开为纵向 Findings 记录，并生成检查代码、名称、原始结果和原始单位, stage_order: 3, encapsulates: [检查代码和名称赋值, 原始结果和单位赋值, 横向转纵向], do_not_add: [不要为其内部生成的VSTESTCD、VSTEST、VSORRES、VSORRESU重复列出直接赋值或受控术语]}
+  unit_conversion: {description: 使用版本化受控换算表生成标准结果和单位；项目要求时相同单位也必须执行身份标准化, stage_order: 4, encapsulates: [数值解析, 单位别名规范, 身份换算, 非身份换算, 舍入], do_not_add: [不要用普通直接赋值替代要求追溯的身份单位标准化]}
+  temporal_derivation: {description: 派生序号、研究日、访视编号和基线标志, stage_order: 4, encapsulates: [稳定序号, 研究日, 访视编号, 基线标志], do_not_add: []}
+  not_used: {description: 明确声明来源概念不进入 SDTM, stage_order: 5}
+transforms:
+  - transform_id: assign_no_ct
+    title: 普通字段赋值
+    description: 将一个不受受控术语约束的来源字段赋给一个目标变量。
+    category: direct_assignment
+    execution_stage: field_mapping
+    model_selectable: true
+    implementation_id: assign_no_ct
+    provider: {name: sdtm.oak, function: assign_no_ct}
+    source_contract: {minimum: 1, maximum: 1, minimum_datasets: 1, maximum_datasets: 1, types: [character, numeric, logical]}
+    target_contract: {domains: [DM, AE, VS], patterns: ['^[A-Z][A-Z0-9]*$'], output_mode: single}
+    parameter_schema: {type: object, additionalProperties: false, properties: {}}
+    parameter_resolution: {}
+    preconditions: [source_exists]
+    not_allowed_when: [目标变量有受控术语, 需要改变值的语义或格式]
+    examples: [{source_value: Headache, target_variable: AETERM, result: Headache}]
+  - transform_id: hardcode_no_ct
+    title: 普通常量赋值
+    description: 为不受受控术语约束的目标变量赋固定值。
+    category: direct_assignment
+    execution_stage: field_mapping
+    model_selectable: true
+    implementation_id: hardcode_no_ct
+    provider: {name: sdtm.oak, function: hardcode_no_ct}
+    source_contract: {minimum: 0, maximum: 1, minimum_datasets: 0, maximum_datasets: 1, types: [character, numeric, logical]}
+    target_contract: {domains: [DM, AE, VS], patterns: ['^[A-Z][A-Z0-9]*$'], output_mode: single}
+    parameter_schema: {type: object, additionalProperties: false, required: [value], properties: {value: {type: [string, number, boolean]}}}
+    parameter_resolution: {value: {resolver_id: target_constant, source: policy, allow_model: false, override: false}}
+    preconditions: []
+    not_allowed_when: [目标变量有受控术语, 固定值取决于记录条件]
+    examples: [{target_variable: DOMAIN, parameters: {value: DM}, result: DM}]
+  - transform_id: assign_ct
+    title: 受控术语字段赋值
+    description: 使用已登记术语表把一个来源字段转换到目标受控术语。
+    category: controlled_terminology
+    execution_stage: field_mapping
+    model_selectable: true
+    implementation_id: assign_ct
+    provider: {name: sdtm.oak, function: assign_ct}
+    source_contract: {minimum: 1, maximum: 1, minimum_datasets: 1, maximum_datasets: 1, types: [character]}
+    target_contract: {domains: [DM, AE, VS], patterns: ['^[A-Z][A-Z0-9]*$'], output_mode: single}
+    parameter_schema: {type: object, additionalProperties: false, required: [codelist_id], properties: {codelist_id: {type: string, minLength: 1}}}
+    parameter_resolution: {codelist_id: {resolver_id: target_codelist, source: resource, allow_model: false, override: false}}
+    preconditions: [source_exists, codelist_exists, all_terms_mappable]
+    not_allowed_when: [目标变量没有受控术语, 来源值存在未登记术语]
+    examples: [{source_value: Female, parameters: {codelist_id: SEX}, result: F}]
+  - transform_id: hardcode_ct
+    title: 受控术语常量赋值
+    description: 为受控术语目标变量赋经过术语表验证的固定值。
+    category: controlled_terminology
+    execution_stage: field_mapping
+    model_selectable: true
+    implementation_id: hardcode_ct
+    provider: {name: sdtm.oak, function: hardcode_ct}
+    source_contract: {minimum: 0, maximum: 1, minimum_datasets: 0, maximum_datasets: 1, types: [character, numeric, logical]}
+    target_contract: {domains: [DM, AE, VS], patterns: ['^[A-Z][A-Z0-9]*$'], output_mode: single}
+    parameter_schema: {type: object, additionalProperties: false, required: [value, codelist_id], properties: {value: {type: [string, number]}, codelist_id: {type: string, minLength: 1}}}
+    parameter_resolution:
+      value: {resolver_id: target_constant, source: policy, allow_model: false, override: false}
+      codelist_id: {resolver_id: target_codelist, source: resource, allow_model: false, override: false}
+    preconditions: [codelist_exists, hardcoded_term_allowed]
+    not_allowed_when: [固定值不在目标术语表中, 固定值取决于未登记条件]
+    examples: [{target_variable: AGEU, parameters: {value: YEARS, codelist_id: AGEU}, result: YEARS}]
+  - transform_id: to_iso8601_date
+    title: 完整日期转换
+    description: 将一个能够明确解释的完整日期转换为 ISO 8601 日期。
+    category: date_time_conversion
+    execution_stage: field_mapping
+    model_selectable: true
+    implementation_id: to_iso8601_date
+    provider: {name: sdtm.oak, function: create_iso8601}
+    source_contract: {minimum: 1, maximum: 1, minimum_datasets: 1, maximum_datasets: 1, types: [character, Date]}
+    target_contract: {domains: [DM, AE, VS], patterns: ['.*DTC$'], output_mode: single}
+    parameter_schema: {type: object, additionalProperties: false, required: [formats], properties: {formats: {type: array, minItems: 1, items: {type: string, enum: [m/d/y, d-m-y, dd-mmm-yyyy, y-m-d]}}}}
+    parameter_resolution: {formats: {resolver_id: approved_formats, source: policy, allow_model: false, override: false}}
+    preconditions: [source_exists, complete_dates_only, unambiguous_date_format]
+    not_allowed_when: [原始值包含不完整日期, 日期格式无法确定, 只有时间没有日期]
+    examples: [{source_value: 01/05/2025, parameters: {formats: [m/d/y]}, result: '2025-01-05'}]
+  - transform_id: to_iso8601_datetime
+    title: 完整日期时间转换
+    description: 将同一字段或分开的日期与时间字段转换为完整 ISO 8601 日期时间。
+    category: date_time_conversion
+    execution_stage: field_mapping
+    model_selectable: true
+    implementation_id: to_iso8601_datetime
+    provider: {name: sdtm.oak, function: assign_datetime}
+    source_contract: {minimum: 1, maximum: 2, minimum_datasets: 1, maximum_datasets: 1, types: [character, Date, POSIXct, hms]}
+    target_contract: {domains: [DM, AE, VS], patterns: ['.*DTC$'], output_mode: single}
+    parameter_schema: {type: object, additionalProperties: false, required: [formats], properties: {formats: {type: array, minItems: 1, maxItems: 2, items: {type: string}}, unknown_tokens: {type: array, items: {type: string}}}}
+    parameter_resolution:
+      formats: {resolver_id: approved_formats, source: policy, allow_model: false, override: false}
+      unknown_tokens: {resolver_id: partial_date_tokens, source: policy, allow_model: false, override: false}
+    preconditions: [source_exists, complete_dates_only, source_vectors_same_length]
+    not_allowed_when: [日期部分缺失, 日期或时间格式存在无法解决的歧义, 只有时间没有日期]
+    examples: [{source_value: ['05-JAN-2025', '13:45:30'], parameters: {formats: [dd-mmm-yyyy, 'H:M:S']}, result: '2025-01-05T13:45:30'}]
+  - transform_id: to_iso8601_partial_datetime
+    title: 不完整日期时间转换
+    description: 在不进行填补的前提下保留已知日期时间精度。
+    category: date_time_conversion
+    execution_stage: field_mapping
+    model_selectable: true
+    implementation_id: to_iso8601_partial_datetime
+    provider: {name: sdtm.oak, function: create_iso8601}
+    source_contract: {minimum: 1, maximum: 2, minimum_datasets: 1, maximum_datasets: 1, types: [character, hms]}
+    target_contract: {domains: [DM, AE, VS], patterns: ['.*DTC$'], output_mode: single}
+    parameter_schema: {type: object, additionalProperties: false, required: [formats, unknown_tokens], properties: {formats: {type: array, minItems: 1, maxItems: 2, items: {type: string}}, unknown_tokens: {type: array, minItems: 1, items: {type: string}, x-comparison: set}}}
+    parameter_resolution:
+      formats: {resolver_id: approved_formats, source: policy, allow_model: false, override: false}
+      unknown_tokens: {resolver_id: partial_date_tokens, source: policy, allow_model: false, override: false}
+    preconditions: [source_exists, source_vectors_same_length, contains_date_component]
+    not_allowed_when: [业务规则要求日期填补, 只有时间没有日期, 未知标记未登记]
+    examples: [{source_value: UNK-JAN-2025, parameters: {formats: [dd-mmm-yyyy], unknown_tokens: [UNK]}, result: '2025-01'}]
+  - transform_id: merge_sources
+    title: 受控来源连接
+    description: 按已登记键和基数关系对两个来源数据集进行确定性连接；该函数输出数据集，target_variables 必须为空，名称写入 output_dataset。
+    category: source_integration
+    execution_stage: source_preparation
+    model_selectable: true
+    implementation_id: merge_sources
+    provider: {name: TraceSDTM, function: merge_sources}
+    source_contract: {minimum: 1, maximum: 20, minimum_datasets: 2, maximum_datasets: 2, types: [character, numeric, logical]}
+    target_contract: {domains: [DM, AE, VS], patterns: [], output_mode: dataset}
+    parameter_schema: {type: object, additionalProperties: false, required: [left_dataset, right_dataset, output_dataset, by, relationship, select], properties: {left_dataset: {type: string}, right_dataset: {type: string}, output_dataset: {type: string}, by: {type: object, minProperties: 1, additionalProperties: {type: string}}, relationship: {type: string, enum: [one-to-one, many-to-one]}, join_type: {type: string, enum: [left]}, select: {type: array, minItems: 1, items: {type: string}, x-comparison: set}, conflict_policy: {type: string, enum: [error]}}}
+    parameter_resolution:
+      left_dataset: {resolver_id: source_relationship, source: derived, allow_model: false, override: false}
+      right_dataset: {resolver_id: source_relationship, source: derived, allow_model: false, override: false}
+      output_dataset: {resolver_id: source_relationship, source: policy, allow_model: false, override: false}
+      by: {resolver_id: source_relationship, source: policy, allow_model: false, override: false}
+      relationship: {resolver_id: source_relationship, source: policy, allow_model: false, override: false}
+      join_type: {resolver_id: source_relationship, source: registry, allow_model: false, override: false}
+      select: {resolver_id: source_relationship, source: derived, allow_model: false, override: false}
+      conflict_policy: {resolver_id: source_relationship, source: registry, allow_model: false, override: false}
+    preconditions: [datasets_exist, join_keys_exist, join_cardinality_valid]
+    not_allowed_when: [连接键未知, 连接会复制基础记录, 需要任意 R 连接表达式]
+    examples: [{parameters: {left_dataset: ae_raw, right_dataset: sae_raw, output_dataset: ae_merged, by: {STUDY: STUDY, PATNUM: PATNUM, AEID: AEID}, relationship: one-to-one, join_type: left, select: [AESHOSP], conflict_policy: error}}]
+  - transform_id: coalesce_fields
+    title: 多来源优先取值
+    description: 按明确优先级从多个候选字段取得第一个非缺失值。
+    category: source_integration
+    execution_stage: field_mapping
+    model_selectable: true
+    implementation_id: coalesce_fields
+    provider: {name: TraceSDTM, function: coalesce_fields}
+    source_contract: {minimum: 2, maximum: 10, minimum_datasets: 1, maximum_datasets: 3, types: [character, numeric, logical]}
+    target_contract: {domains: [DM, AE, VS], patterns: ['^[A-Z][A-Z0-9]*$'], output_mode: single}
+    parameter_schema: {type: object, additionalProperties: false, required: [priority], properties: {priority: {type: array, minItems: 2, items: {type: string}}, conflict_policy: {type: string, enum: [first_nonmissing, error_if_disagree]}}}
+    parameter_resolution:
+      priority: {resolver_id: source_priority, source: policy, allow_model: false, override: false}
+      conflict_policy: {resolver_id: conflict_policy, source: policy, allow_model: true, override: false}
+    preconditions: [source_exists, sources_aligned]
+    not_allowed_when: [来源记录没有可靠连接, 优先级未确定]
+    examples: [{source_value: [null, HEADACHE], parameters: {priority: [reported, coded], conflict_policy: first_nonmissing}, result: HEADACHE}]
+  - transform_id: derive_reference_datetime
+    title: 多来源参考日期时间
+    description: 从多个原始数据集选取每名受试者最早或最晚日期时间并派生 DM 参考日期。
+    category: source_integration
+    execution_stage: field_mapping
+    model_selectable: true
+    implementation_id: derive_reference_datetime
+    provider: {name: sdtm.oak, function: oak_cal_ref_dates}
+    source_contract: {minimum: 1, maximum: 20, minimum_datasets: 1, maximum_datasets: 10, types: [character, hms]}
+    target_contract: {domains: [DM], patterns: ['^(RFSTDTC|RFENDTC|RFXSTDTC|RFXENDTC)$'], output_mode: single}
+    parameter_schema: {type: object, additionalProperties: false, required: [selection, subject_keys, sources], properties: {selection: {type: string, enum: [min, max]}, subject_keys: {type: array, minItems: 1, items: {type: string}}, sources: {type: array, minItems: 1, items: {type: object, additionalProperties: false, required: [dataset, date_variable, date_formats], properties: {dataset: {type: string}, date_variable: {type: string}, time_variable: {type: [string, 'null']}, date_formats: {type: array, minItems: 1, items: {type: string}}, time_formats: {type: array, items: {type: string}}}}}}}
+    parameter_resolution:
+      selection: {resolver_id: reference_datetime_policy, source: policy, allow_model: false, override: false}
+      subject_keys: {resolver_id: reference_datetime_policy, source: policy, allow_model: false, override: false}
+      sources: {resolver_id: reference_datetime_policy, source: policy, allow_model: false, override: false}
+    preconditions: [datasets_exist, subject_keys_exist, complete_reference_dates]
+    not_allowed_when: [受试者键不一致, 参考日期选择规则不明确, 来源只有不完整日期]
+    examples: [{parameters: {selection: min, subject_keys: [PATNUM], sources: [{dataset: ex_a_raw, date_variable: EXSTDAT, time_variable: EXSTTIM, date_formats: [m/d/y], time_formats: ['H:M']}]}, result: '2025-01-05T08:00'}]
+  - transform_id: combine_fields
+    title: 字段组合
+    description: 按固定分隔符组合多个来源字段。
+    category: field_combination
+    execution_stage: field_mapping
+    model_selectable: true
+    implementation_id: combine_fields
+    provider: {name: TraceSDTM, function: combine_fields}
+    source_contract: {minimum: 2, maximum: 10, minimum_datasets: 1, maximum_datasets: 1, types: [character, numeric]}
+    target_contract: {domains: [DM, AE, VS], patterns: ['^[A-Z][A-Z0-9]*$'], output_mode: single}
+    parameter_schema: {type: object, additionalProperties: false, required: [separator, missing_policy], properties: {separator: {type: string}, missing_policy: {type: string, enum: [return_missing, skip_missing]}}}
+    parameter_resolution:
+      separator: {resolver_id: field_combination_policy, source: policy, allow_model: false, override: false}
+      missing_policy: {resolver_id: field_combination_policy, source: policy, allow_model: true, override: false}
+    preconditions: [source_exists]
+    not_allowed_when: [字段之间没有明确组合规则, 来源来自未连接数据集]
+    examples: [{source_value: [TRACE001, 701-1001], parameters: {separator: '-', missing_policy: return_missing}, result: TRACE001-701-1001}]
+  - transform_id: derive_usubjid
+    title: 受试者唯一标识派生
+    description: 使用研究编号和受试者编号按批准格式派生 USUBJID。
+    category: field_combination
+    execution_stage: field_mapping
+    model_selectable: true
+    implementation_id: derive_usubjid
+    provider: {name: TraceSDTM, function: derive_usubjid}
+    source_contract: {minimum: 2, maximum: 3, minimum_datasets: 1, maximum_datasets: 1, types: [character, numeric]}
+    target_contract: {domains: [DM, AE, VS], patterns: ['^USUBJID$'], output_mode: single}
+    parameter_schema: {type: object, additionalProperties: false, required: [separator], properties: {separator: {type: string, minLength: 1}}}
+    parameter_resolution: {separator: {resolver_id: identifier_policy, source: policy, allow_model: false, override: false}}
+    preconditions: [source_exists, no_missing_subject_keys]
+    not_allowed_when: [受试者编号构成规则未确定, 任一组成字段缺失]
+    examples: [{source_value: [TRACE001, 701-1001], parameters: {separator: '-'}, result: TRACE001-701-1001}]
+  - transform_id: extract_delimited_part
+    title: 分隔字段抽取
+    description: 按固定分隔符和位置抽取标识符的一部分，不接受正则表达式。
+    category: field_combination
+    execution_stage: field_mapping
+    model_selectable: true
+    implementation_id: extract_delimited_part
+    provider: {name: TraceSDTM, function: extract_delimited_part}
+    source_contract: {minimum: 1, maximum: 1, minimum_datasets: 1, maximum_datasets: 1, types: [character]}
+    target_contract: {domains: [DM, AE, VS], patterns: ['^[A-Z][A-Z0-9]*$'], output_mode: single}
+    parameter_schema: {type: object, additionalProperties: false, required: [separator, position], properties: {separator: {type: string, minLength: 1}, position: {type: integer, minimum: 1}}}
+    parameter_resolution:
+      separator: {resolver_id: site_identifier_policy, source: policy, allow_model: false, override: false}
+      position: {resolver_id: site_identifier_policy, source: policy, allow_model: false, override: false}
+    preconditions: [source_exists, delimiter_present]
+    not_allowed_when: [需要正则表达式, 分隔符或位置不稳定]
+    examples: [{source_value: 701-1001, parameters: {separator: '-', position: 1}, result: '701'}]
+  - transform_id: conditional_assign
+    title: 安全条件赋值
+    description: 使用受控条件树进行赋值，不解析任意代码。
+    category: conditional_derivation
+    execution_stage: field_mapping
+    model_selectable: true
+    implementation_id: conditional_assign
+    provider: {name: TraceSDTM, function: conditional_assign}
+    source_contract: {minimum: 1, maximum: 10, minimum_datasets: 1, maximum_datasets: 1, types: [character, numeric, logical]}
+    target_contract: {domains: [DM, AE, VS], patterns: ['^[A-Z][A-Z0-9]*$'], output_mode: single}
+    parameter_schema: {type: object, additionalProperties: false, required: [condition, value], properties: {condition: {type: object, required: [operator, variable], additionalProperties: false, properties: {operator: {type: string, enum: [equals, not_equals, in, is_missing, not_missing]}, variable: {type: string}, compare_to: {type: [string, number, array, 'null']}}}, value: {type: [string, number, boolean]}, else_value: {type: [string, number, boolean, 'null']}}}
+    parameter_resolution:
+      condition: {resolver_id: conditional_policy, source: policy, allow_model: false, override: false}
+      value: {resolver_id: conditional_policy, source: policy, allow_model: false, override: false}
+      else_value: {resolver_id: conditional_policy, source: policy, allow_model: false, override: false}
+    preconditions: [condition_variables_exist]
+    not_allowed_when: [需要任意 R 表达式, 条件依赖未连接数据集]
+    examples: [{parameters: {condition: {operator: is_missing, variable: AEENDDAT, compare_to: null}, value: ONGOING, else_value: null}, result: ONGOING}]
+  - transform_id: derive_ongoing_flag
+    title: 持续状态派生
+    description: 根据结束日期缺失或明确的持续指示派生 ONGOING。
+    category: conditional_derivation
+    execution_stage: field_mapping
+    model_selectable: true
+    implementation_id: derive_ongoing_flag
+    provider: {name: TraceSDTM, function: derive_ongoing_flag}
+    source_contract: {minimum: 1, maximum: 2, minimum_datasets: 1, maximum_datasets: 1, types: [character, logical]}
+    target_contract: {domains: [AE], patterns: ['^AEENRF$'], output_mode: single}
+    parameter_schema: {type: object, additionalProperties: false, required: [ongoing_value], properties: {ongoing_value: {type: string, enum: [ONGOING]}, affirmative_values: {type: array, items: {type: string}, x-comparison: set}}}
+    parameter_resolution:
+      ongoing_value: {resolver_id: ongoing_policy, source: policy, allow_model: false, override: false}
+      affirmative_values: {resolver_id: ongoing_policy, source: policy, allow_model: false, override: false}
+    preconditions: [source_exists]
+    not_allowed_when: [结束日期缺失并不代表持续且没有持续指示, 业务规则未确认]
+    examples: [{source_value: null, parameters: {ongoing_value: ONGOING, affirmative_values: ['Y', 'Yes']}, result: ONGOING}]
+  - transform_id: normalize_case
+    title: 大小写规范化
+    description: 将字符值统一为大写或小写。
+    category: character_normalization
+    execution_stage: field_mapping
+    model_selectable: true
+    implementation_id: normalize_case
+    provider: {name: TraceSDTM, function: normalize_case}
+    source_contract: {minimum: 1, maximum: 1, minimum_datasets: 1, maximum_datasets: 1, types: [character]}
+    target_contract: {domains: [DM, AE, VS], patterns: ['^[A-Z][A-Z0-9]*$'], output_mode: single}
+    parameter_schema: {type: object, additionalProperties: false, required: [case], properties: {case: {type: string, enum: [upper, lower]}}}
+    parameter_resolution: {case: {resolver_id: case_policy, source: policy, allow_model: true, override: false}}
+    preconditions: [source_exists]
+    not_allowed_when: [大小写改变会改变编码含义, 目标需要受控术语映射]
+    examples: [{source_value: Supine, parameters: {case: upper}, result: SUPINE}]
+  - transform_id: transpose_findings
+    title: Findings 横向转纵向
+    description: 将一个横向检查结果展开为包含检查代码、名称、原始结果和原始单位的记录。
+    category: record_transposition
+    execution_stage: record_expansion
+    model_selectable: true
+    implementation_id: transpose_findings
+    provider: {name: TraceSDTM, function: transpose_findings}
+    source_contract: {minimum: 1, maximum: 2, minimum_datasets: 1, maximum_datasets: 1, types: [character, numeric]}
+    target_contract: {domains: [VS], patterns: ['^(VSTESTCD|VSTEST|VSORRES|VSORRESU)$'], output_mode: records}
+    parameter_schema: {type: object, additionalProperties: false, required: [test_code, test_name], properties: {test_code: {type: string}, test_name: {type: string}, original_unit: {type: [string, 'null']}, unit_source: {type: [string, 'null']}}}
+    parameter_resolution:
+      test_code: {resolver_id: findings_policy, source: policy, allow_model: false, override: false}
+      test_name: {resolver_id: findings_policy, source: policy, allow_model: false, override: false}
+      original_unit: {resolver_id: findings_policy, source: policy, allow_model: false, override: false}
+      unit_source: {resolver_id: findings_policy, source: policy, allow_model: false, override: false}
+    preconditions: [source_exists, findings_test_registered]
+    not_allowed_when: [检查代码或名称未确认, 结果不是 Findings 结构, 单位来源不明确]
+    examples: [{source_value: 122, parameters: {test_code: SYSBP, test_name: Systolic Blood Pressure, original_unit: mmHg, unit_source: null}, result: {VSTESTCD: SYSBP, VSORRES: '122', VSORRESU: mmHg}}]
+  - transform_id: standardize_unit
+    title: 受控单位换算
+    description: 使用版本化换算集合生成标准字符结果、标准数值和标准单位；受项目政策要求时，相同单位也必须执行身份标准化以保留数值解析、单位确认、舍入和版本追溯。
+    category: unit_conversion
+    execution_stage: post_derivation
+    model_selectable: true
+    implementation_id: standardize_unit
+    provider: {name: TraceSDTM, function: standardize_unit}
+    source_contract: {minimum: 1, maximum: 3, minimum_datasets: 1, maximum_datasets: 1, types: [character, numeric]}
+    target_contract: {domains: [VS], patterns: ['^(VSSTRESC|VSSTRESN|VSSTRESU)$'], output_mode: multiple}
+    parameter_schema: {type: object, additionalProperties: false, required: [conversion_set_id, target_unit], properties: {conversion_set_id: {type: string}, target_unit: {type: string}}}
+    parameter_resolution:
+      conversion_set_id: {resolver_id: unit_policy, source: resource, allow_model: false, override: false}
+      target_unit: {resolver_id: unit_policy, source: policy, allow_model: false, override: false}
+    preconditions: [conversion_set_exists, source_unit_registered, numeric_result]
+    not_allowed_when: [模型提供自由公式, 原始单位未知, 结果不能解释为数值]
+    examples: [{source_value: {value: 180, unit: lb}, parameters: {conversion_set_id: vs_standard_v1, target_unit: kg}, result: {VSSTRESN: 81.6, VSSTRESU: kg}}]
+  - transform_id: derive_sequence
+    title: 序号派生
+    description: 按受试者和稳定排序字段派生域内连续序号。
+    category: temporal_derivation
+    execution_stage: post_derivation
+    model_selectable: true
+    implementation_id: derive_sequence
+    provider: {name: sdtm.oak, function: derive_seq}
+    source_contract: {minimum: 0, maximum: 0, minimum_datasets: 0, maximum_datasets: 0, types: []}
+    target_contract: {domains: [AE, VS], patterns: ['.*SEQ$'], output_mode: single}
+    parameter_schema: {type: object, additionalProperties: false, required: [record_variables], properties: {record_variables: {type: array, minItems: 1, items: {type: string}}, start_at: {type: integer, minimum: 1}}}
+    parameter_resolution:
+      record_variables: {resolver_id: sequence_policy, source: policy, allow_model: false, override: false}
+      start_at: {resolver_id: sequence_policy, source: policy, allow_model: false, override: false}
+    preconditions: [record_variables_exist]
+    not_allowed_when: [排序变量不足以稳定区分记录]
+    examples: [{parameters: {record_variables: [STUDYID, USUBJID, AESTDTC, AETERM], start_at: 1}, result: [1, 2]}]
+  - transform_id: derive_study_day
+    title: 研究日派生
+    description: 根据完整目标日期和 DM 参考日期派生研究日，不对不完整日期进行填补。
+    category: temporal_derivation
+    execution_stage: post_derivation
+    model_selectable: true
+    implementation_id: derive_study_day
+    provider: {name: sdtm.oak, function: derive_study_day}
+    source_contract: {minimum: 0, maximum: 0, minimum_datasets: 0, maximum_datasets: 0, types: []}
+    target_contract: {domains: [AE, VS], patterns: ['.*DY$'], output_mode: single}
+    parameter_schema: {type: object, additionalProperties: false, required: [target_date, reference_date], properties: {target_date: {type: string, pattern: 'DTC$'}, reference_date: {type: string, pattern: 'DTC$'}}}
+    parameter_resolution:
+      target_date: {resolver_id: study_day_policy, source: derived, allow_model: false, override: false}
+      reference_date: {resolver_id: study_day_policy, source: policy, allow_model: false, override: false}
+    preconditions: [target_and_reference_exist]
+    not_allowed_when: [目标日期或参考日期不完整, 受试者无法连接到 DM]
+    examples: [{source_value: {target: '2025-01-06', reference: '2025-01-05'}, parameters: {target_date: AESTDTC, reference_date: RFSTDTC}, result: 2}]
+  - transform_id: derive_visitnum
+    title: 访视编号派生
+    description: 使用已登记访视表把访视名称转换为数值型访视编号。
+    category: temporal_derivation
+    execution_stage: field_mapping
+    model_selectable: true
+    implementation_id: derive_visitnum
+    provider: {name: TraceSDTM, function: derive_visitnum}
+    source_contract: {minimum: 1, maximum: 1, minimum_datasets: 1, maximum_datasets: 1, types: [character]}
+    target_contract: {domains: [VS], patterns: ['^VISITNUM$'], output_mode: single}
+    parameter_schema: {type: object, additionalProperties: false, required: [visit_map_id], properties: {visit_map_id: {type: string}}}
+    parameter_resolution: {visit_map_id: {resolver_id: visit_policy, source: resource, allow_model: false, override: false}}
+    preconditions: [visit_map_exists, all_visits_mappable]
+    not_allowed_when: [访视名称没有批准的数值对应关系]
+    examples: [{source_value: Screening 1, parameters: {visit_map_id: trace_visits_v1}, result: -1}]
+  - transform_id: derive_baseline_flag
+    title: 基线标志派生
+    description: 标记每名受试者每项检查在参考日期前最后一次有效观察。
+    category: temporal_derivation
+    execution_stage: post_derivation
+    model_selectable: true
+    implementation_id: derive_baseline_flag
+    provider: {name: sdtm.oak, function: derive_blfl}
+    source_contract: {minimum: 0, maximum: 0, minimum_datasets: 0, maximum_datasets: 0, types: []}
+    target_contract: {domains: [VS], patterns: ['^VS(BLFL|LOBXFL)$'], output_mode: single}
+    parameter_schema: {type: object, additionalProperties: false, required: [reference_date], properties: {reference_date: {type: string, enum: [RFSTDTC, RFXSTDTC]}, baseline_visits: {type: array, items: {type: string}, x-comparison: set}, baseline_timepoints: {type: array, items: {type: string}, x-comparison: set}}}
+    parameter_resolution:
+      reference_date: {resolver_id: baseline_policy, source: policy, allow_model: false, override: false}
+      baseline_visits: {resolver_id: baseline_policy, source: policy, allow_model: false, override: false}
+      baseline_timepoints: {resolver_id: baseline_policy, source: policy, allow_model: false, override: false}
+    preconditions: [dm_reference_exists, findings_dates_complete]
+    not_allowed_when: [参考日期缺失, 检查日期不完整, 结果缺失或未实施]
+    examples: [{parameters: {reference_date: RFSTDTC, baseline_visits: [Screening 1], baseline_timepoints: []}, result: Y}]
+  - transform_id: do_not_map
+    title: 不使用来源概念
+    description: 明确记录某个来源概念不进入当前 SDTM 范围。
+    category: not_used
+    execution_stage: no_output
+    model_selectable: true
+    implementation_id: do_not_map
+    provider: {name: TraceSDTM, function: do_not_map}
+    source_contract: {minimum: 0, maximum: 20, minimum_datasets: 0, maximum_datasets: 10, types: [character, numeric, logical]}
+    target_contract: {domains: [DM, AE, VS], patterns: [], output_mode: none}
+    parameter_schema: {type: object, additionalProperties: false, required: [reason], properties: {reason: {type: string, minLength: 3}}}
+    parameter_resolution: {reason: {resolver_id: task_policy, source: policy, allow_model: false, override: false}}
+    preconditions: []
+    not_allowed_when: [来源概念包含必需 SDTM 信息]
+    examples: [{parameters: {reason: 仅为原始系统显示字段}, result: no_output}]

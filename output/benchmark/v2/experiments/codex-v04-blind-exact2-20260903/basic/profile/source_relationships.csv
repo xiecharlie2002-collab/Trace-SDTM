@@ -1,4 +1,0 @@
-source_dataset,file,derived,form_name,grain,keys
-dm_basic,dm_raw.csv,FALSE,Demographics,one_record_per_subject,STUDY | PATNUM
-ae_basic,ae_raw.csv,FALSE,Adverse Events,one_record_per_event,STUDY | PATNUM | AEID
-vs_basic,vs_raw.csv,FALSE,Vital Signs,one_record_per_finding,STUDY | PATNUM | VSID

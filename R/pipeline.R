@@ -11,6 +11,8 @@ run_pipeline <- function(config = load_project_config()) {
 print_trace_help <- function() {
   cat(paste(
     "TraceSDTM 命令：",
+    "  studio                 启动仅监听 127.0.0.1 的本地浏览器工作台",
+    "  studio-doctor          检查工作台依赖、目录和本机配置",
     "  registry-check         验证注册表、参数模式和实现绑定",
     "  registry-docs          由注册表生成函数目录",
     "  profile",
@@ -29,9 +31,11 @@ print_trace_help <- function() {
     "  validate-p21",
     "  import-p21 --file <xlsx>",
     "  report",
+    "  export-evidence        导出不含原始数据的项目证据包（工作台运行）",
     "  run",
     "  test",
-    "所有数据命令均可追加 --scenario basic|intermediate|advanced；默认 basic。",
+    "内置数据命令可追加 --scenario basic|intermediate|advanced；默认 basic。",
+    "工作台运行可追加 --project <项目编号> --run <运行编号>。",
     sep = "\n"
   ), "\n")
 }
@@ -46,11 +50,13 @@ run_tests <- function() {
   testthat::test_dir(trace_path("tests", "testthat"), reporter = "summary", stop_on_failure = TRUE)
 }
 
-trace_main <- function(args = commandArgs(trailingOnly = TRUE)) {
-  command <- args[[1]] %||% "help"
-  scenario <- scenario_from_args(args)
-  Sys.setenv(TRACE_SDTM_SCENARIO = scenario)
-  config <- load_project_config(scenario)
+trace_execute_command <- function(command, args, config) {
+  is_studio <- isTRUE(config$project$studio)
+  if (is_studio && !identical(command, "export-evidence")) studio_assert_run_writable(config)
+  stage <- function(name, value) studio_recorded_stage(config, name, value)
+  if (is_studio && ("--seed" %in% args || command %in% c("evaluate-v04", "review-gold"))) {
+    trace_abort("普通工作台项目不包含金标准，禁止使用 --seed、review-gold 或准确率评价。")
+  }
   switch(
     command,
     `registry-check` = {
@@ -58,41 +64,53 @@ trace_main <- function(args = commandArgs(trailingOnly = TRUE)) {
       trace_info("转换注册表检查通过：版本 %s，共 %d 个函数。", registry$registry_version, length(registry$transforms))
     },
     `registry-docs` = write_transform_catalog(config),
-    profile = profile_sources(config),
+    profile = stage("profile", profile_sources(config)),
     `recommend-targets` = {
-      profile_sources(config)
-      recommend_targets_v04(
+      if (!file.exists(file.path(trace_path(config$paths$profile_dir), "source_dictionary.csv"))) stage("profile", profile_sources(config))
+      stage("recommend_targets", recommend_targets_v04(
         config, provider = if ("--seed" %in% args) "seed" else "model",
         blind = "--blind" %in% args
-      )
+      ))
     },
     `recommend-functions` = {
       targets <- read_recommendation_stage_v04(config, "target_decisions.json")
-      recommend_functions_v04(
+      stage("recommend_functions", recommend_functions_v04(
         targets, config, provider = if ("--seed" %in% args) "seed" else "model",
         blind = "--blind" %in% args
-      )
+      ))
     },
     `recommend-parameters` = {
       targets <- read_recommendation_stage_v04(config, "target_decisions.json")
       functions <- read_recommendation_stage_v04(config, "function_candidates.json")
-      recommend_parameters_v04(
+      stage("recommend_parameters", recommend_parameters_v04(
         targets, functions, config, provider = if ("--seed" %in% args) "seed" else "model",
         blind = "--blind" %in% args
-      )
+      ))
     },
     `assemble-recommendations` = {
       targets <- read_recommendation_stage_v04(config, "target_decisions.json")
       functions <- read_recommendation_stage_v04(config, "function_candidates.json")
       parameters <- read_recommendation_stage_v04(config, "parameter_completions.json")
-      assembled <- assemble_recommendations_v04(targets, functions, parameters, config)
+      assembled <- stage("assemble", assemble_recommendations_v04(targets, functions, parameters, config))
       create_review_workbook_v04(assembled, config, preapprove = "--seed" %in% args)
+      if (is_studio) studio_initialize_review(config, overwrite = TRUE)
     },
     recommend = {
-      profile_sources(config)
       provider <- if ("--seed" %in% args) "seed" else "model"
-      recommendation <- run_recommendation_v04(config, provider = provider, blind = "--blind" %in% args)
-      create_review_workbook_v04(recommendation$assembled, config, preapprove = identical(provider, "seed"))
+      if (is_studio) {
+        if (!file.exists(file.path(trace_path(config$paths$profile_dir), "source_dictionary.csv"))) stage("profile", profile_sources(config))
+        targets <- stage("recommend_targets", recommend_targets_v04(config, provider = provider, blind = "--blind" %in% args))
+        functions <- stage("recommend_functions", recommend_functions_v04(targets, config, provider = provider, blind = "--blind" %in% args))
+        parameters <- stage("recommend_parameters", recommend_parameters_v04(targets, functions, config, provider = provider, blind = "--blind" %in% args))
+        assembled <- stage("assemble", assemble_recommendations_v04(targets, functions, parameters, config))
+        create_review_workbook_v04(assembled, config, preapprove = FALSE)
+        studio_initialize_review(config, overwrite = TRUE)
+        studio_update_run_stage(config$studio$project_id, config$studio$run_id, "review", "running")
+      } else {
+        profile_sources(config)
+        recommendation <- run_recommendation_v04(config, provider = provider, blind = "--blind" %in% args)
+        create_review_workbook_v04(recommendation$assembled, config, preapprove = identical(provider, "seed"))
+      }
     },
     `evaluate-v04` = {
       targets <- read_recommendation_stage_v04(config, "target_decisions.json")
@@ -108,21 +126,61 @@ trace_main <- function(args = commandArgs(trailingOnly = TRUE)) {
       )
     },
     `review-gold` = review_against_gold_v04(config),
-    approve = approve_mapping_v04(config),
-    build = build_sdtm(config),
-    `validate-local` = validate_local(config),
+    approve = stage("approve", approve_mapping_v04(config)),
+    build = stage("build", build_sdtm(config)),
+    `validate-local` = stage("validate_local", validate_local(config)),
     `doctor-p21` = doctor_p21(config),
-    `validate-p21` = validate_p21(config),
+    `validate-p21` = stage("validate_p21", validate_p21(config)),
     `import-p21` = {
       position <- match("--file", args)
       if (is.na(position) || position == length(args)) trace_abort("import-p21 需要 --file <报告路径>。")
-      import_p21_report(args[[position + 1L]], config)
+      stage("validate_p21", import_p21_report(args[[position + 1L]], config))
     },
-    report = generate_report(config),
-    run = run_pipeline(config),
+    report = stage("report", generate_report(config)),
+    `export-evidence` = {
+      if (!is_studio) trace_abort("export-evidence 只适用于工作台项目运行。")
+      path <- studio_export_evidence(config)
+      trace_info("已生成项目证据包：%s", path)
+    },
+    run = {
+      load_approved_mapping(config)
+      stage("build", build_sdtm(config))
+      stage("validate_local", validate_local(config))
+      stage("validate_p21", validate_p21(config))
+      stage("report", generate_report(config))
+      trace_info("TraceSDTM 完整流程执行完成。")
+    },
     test = run_tests(),
     help = print_trace_help(),
     trace_abort(sprintf("未知命令：%s", command))
   )
+  invisible(TRUE)
+}
+
+trace_main <- function(args = commandArgs(trailingOnly = TRUE)) {
+  command <- args[[1]] %||% "help"
+  if (identical(command, "help")) {
+    print_trace_help()
+    return(invisible(TRUE))
+  }
+  if (identical(command, "studio-doctor")) {
+    print(studio_doctor(), row.names = FALSE)
+    return(invisible(TRUE))
+  }
+  if (identical(command, "studio")) {
+    requested <- argument_value(args, "--port", default = NULL)
+    port <- studio_find_port(if (is.null(requested)) NULL else as.integer(requested))
+    launch_trace_studio(port = port, launch_browser = !"--no-browser" %in% args)
+    return(invisible(TRUE))
+  }
+  scenario <- scenario_from_args(args)
+  Sys.setenv(TRACE_SDTM_SCENARIO = scenario)
+  config <- studio_resolve_cli_config(args, scenario)
+  execute <- function() trace_execute_command(command, args, config)
+  if (isTRUE(config$project$studio)) {
+    studio_with_project_lock(config$studio$project_id, execute())
+  } else {
+    execute()
+  }
   invisible(TRUE)
 }

@@ -1,2 +1,7 @@
 # Blind-evaluation evidence is byte-frozen; Git must not rewrite or merge it.
 output/benchmark/v2/experiments/codex-v04-blind-exact2-20260903/** binary
+
+# The checked-in Studio evidence is hash-addressed. Generated artifacts remain
+# byte-exact; the explanatory README stays readable as normal text.
+examples/studio_v05/** binary
+examples/studio_v05/README.md -binary text eol=lf diff merge

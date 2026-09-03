@@ -1,39 +1,28 @@
-# TraceSDTM 0.4 五分钟演示
+# TraceSDTM Studio 0.5 五分钟演示
 
-## 0:00—0:40：项目定位
-
-“TraceSDTM 不是把原始数据交给模型后直接收代码。模型依次识别目标、选择函数、补全少量未知参数；已知参数由程序注入；注册表限制函数、参数、来源和目标；正式构建只读取批准的 YAML。”
-
-## 0:40—1:25：注册表和三阶段推荐
+## 0:00—0:35：启动与项目隔离
 
 ```powershell
-Rscript scripts/trace_sdtm.R registry-check --scenario advanced
-Rscript scripts/trace_sdtm.R recommend --seed --scenario advanced
-Rscript scripts/trace_sdtm.R evaluate-v04 --scenario advanced
+.\scripts\start_trace_sdtm_studio.ps1
 ```
 
-打开 `output/benchmark/v2/advanced/review/mapping_review.xlsx`：
+展示地址为 `127.0.0.1`，然后在“项目”页切换两个本地项目。说明上传、配置和每个 `run_id` 相互隔离，网页只能归档，不能删除历史。
 
-- Task Review 以原子临床动作为审核单位；
-- Candidate Plans 和 Plan Steps 展示完整候选方案；
-- Transform Catalog 由注册表自动生成；
-- 当前使用专家参考种子，不将它宣传为模型准确率。
+## 0:35—1:20：上传、字段绑定与政策
 
-## 1:25—2:00：锁定规格
+在“数据源”页上传一个列名经过重命名的CSV，展示确定性绑定建议并人工确认。切换到“项目政策”，展示日期格式、标识符、序号、访视、术语和单位均来自受控选项。
 
-```powershell
-Rscript scripts/trace_sdtm.R approve --scenario advanced
-```
+## 1:20—2:05：请求隐私与三阶段推荐
 
-打开 `output/benchmark/v2/advanced/specs/approved_mapping.yml`。说明 approve 和 build 都会重新进行注册表检查，构建期间不调用模型；规格保存审核者、时间、注册表版本和校验值。
+在“映射推荐”页点击请求预览：默认没有示例值，页面显示SHA-256校验值。说明目标识别、函数选择和参数补全被分开，已知参数由政策、注册表与资源确定性注入，模型不能生成R代码。
 
-## 2:00—3:10：高级构建与追溯
+## 2:05—2:55：结构化审核与规格锁定
 
-```powershell
-Rscript scripts/trace_sdtm.R build --scenario advanced
-```
+在“人工审核”页接受一项并结构化修改一项，展示函数、来源编号、目标变量和参数表单。导出Excel后说明重新导入也经过同一校验。批准时展示审核者、时间、注册表版本和校验值。
 
-依次展示：
+## 2:55—3:45：确定性构建与追溯
+
+点击“生成DM、AE、VS”，依次展示：
 
 - 两个暴露文件取得最早给药日期时间；
 - AE 与 SAE 受控一对一连接；
@@ -42,27 +31,18 @@ Rscript scripts/trace_sdtm.R build --scenario advanced
 - VS 横向转纵向并派生 VSBLFL；
 - `field_lineage.csv` 记录每一步、连接规则、sdtm.oak 版本、审核者和记录数。
 
-## 3:10—4:10：双层验证
-
-```powershell
-Rscript scripts/trace_sdtm.R validate-local --scenario advanced
-Rscript scripts/trace_sdtm.R validate-p21 --scenario advanced
-```
+## 3:45—4:30：双层验证
 
 - 本地检查 0 个问题；
 - Pinnacle 21 的 DM、AE、VS 域内问题为 0；
 - 缺少 Define-XML 和 TS 的 Reject 原样保留并归为最小范围。
 
-## 4:10—5:00：报告和结论
+## 4:30—5:00：报告、证据包和结论
 
-```powershell
-Rscript scripts/trace_sdtm.R report --scenario advanced
-```
-
-打开 `output/benchmark/v2/advanced/report/trace_sdtm_report.html`。
+打开离线报告并下载证据包，说明包内有批准规格、CSV、XPT、追溯、验证、报告、配置快照和审计事件，但没有原始上传文件、字段示例值或密钥。
 
 “项目体现的不是提示词技巧，而是可治理的自动化设计：模型推荐、专家判断、注册表约束、确定性执行、独立验证和全程追溯。高级场景专门证明它能处理真实项目中较难的连接、日期精度和单位问题。”
 
 ## 简历表述示例
 
-基于 R、sdtm.oak 与 Pinnacle 21 Community 构建人工监督的 SDTM 自动化流水线，覆盖 DM、AE、VS；将124个映射动作拆为目标识别、函数选择和有限参数补全，利用注册表与项目政策确定性注入已知参数，实现 Excel 审核、0.4 YAML 规格锁定、XPT 生成及字段级追溯；以三级盲评分别报告语义、结构和完整计划正确性。
+基于 Shiny、R、sdtm.oak 与 Pinnacle 21 Community 构建单用户本地SDTM映射工作台，覆盖DM、AE、VS；实现模板化CSV上传、网页字段绑定、受控政策配置、三阶段模型推荐、结构化人工审核、规格驱动构建、XPT验证、字段级追溯和证据包导出，并以运行快照、项目锁和会话内密钥控制保证可复现性与隐私边界。

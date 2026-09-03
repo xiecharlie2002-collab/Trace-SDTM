@@ -1,6 +1,48 @@
 # TraceSDTM
 
-TraceSDTM 是一个人工监督、注册表约束、规格驱动、可追溯的 SDTM 自动化作品集项目。0.4 版继续只覆盖 DM、AE、VS，但把模型推荐拆成目标识别、函数选择和有限参数补全，并把已知参数交给程序确定性注入。
+TraceSDTM 是一个人工监督、注册表约束、规格驱动、可追溯的 SDTM 自动化作品集项目。0.5 版新增单用户、本地运行的浏览器工作台，同时保留0.4版的三阶段推荐和命令行接口。首版继续只覆盖 DM、AE、VS。
+
+## 启动本地工作台
+
+首次使用先恢复依赖：
+
+```powershell
+Rscript -e "install.packages('renv', repos='https://cloud.r-project.org')"
+Rscript -e "renv::restore()"
+```
+
+随后运行：
+
+```powershell
+.\scripts\start_trace_sdtm_studio.ps1
+```
+
+也可以直接使用R命令：
+
+```powershell
+Rscript scripts/trace_sdtm.R studio
+```
+
+启动器只在 `127.0.0.1` 上监听，并从3838至3848选择可用端口。显式指定端口时，如果端口已被占用就立即报错：
+
+```powershell
+.\scripts\start_trace_sdtm_studio.ps1 -Port 3839
+```
+
+工作台项目默认保存在被 Git 忽略的 `workspace/projects`。可用 `TRACE_SDTM_STUDIO_HOME` 指定其他本地根目录。完整操作见 [工作台用户手册](docs/studio_user_guide.md)，可离线查看的高级模板验收结果见 [0.5脱敏示例](examples/studio_v05/README.md)。
+
+## 工作台能力
+
+- 创建、打开、切换和归档多个本地项目，不提供网页删除功能；
+- 使用基础、中等、高级模板上传UTF-8 CSV，并在网页确认字段绑定；
+- 通过受控表单配置日期、标识符、术语、访视、序号、基线和单位政策；
+- 分阶段或一键执行目标识别、函数选择、参数解析和计划组装；
+- 在网页结构化审核，也可导出或导入Excel审核工作簿；
+- 从批准规格确定性生成DM、AE、VS的CSV与XPT；
+- 运行本地检查、自动调用Pinnacle 21，或导入Community生成的Excel报告；
+- 查询字段级追溯，打开离线报告并下载不含原始输入的证据包。
+
+模型密钥只保存在当前 Shiny 会话内存。默认模型请求不含原始示例值；只有使用者明确授权后才加入所选去标识化字段的示例，并且标识符、键和中心字段始终排除。完整请求可在发送前预览并计算校验值。
 
 ## 流程
 
@@ -47,7 +89,7 @@ R 与 sdtm.oak 确定性生成 CSV、XPT 和追溯
 
 项目不生成完整提交包，因此不能把范围问题描述为“全部合规通过”。
 
-## 快速运行
+## 0.4命令行与评价模式
 
 ```powershell
 Rscript scripts/trace_sdtm.R registry-check --scenario advanced
@@ -167,12 +209,12 @@ Rscript -e "renv::restore()"
 
 `output/` 默认忽略新生成文件，避免先导实验、日志和重复输出被批量提交。当前 Git 标签已经保存正式基线；以后若要保存新的正式报告或冻结实验，应逐项复核后使用 `git add -f <明确路径>`，不要执行 `git add .`。
 
-当前 `main` 只保留 v0.4 的正式盲评证据、对应离线报告和最新高级场景构建验证结果。较早版本的结果不再出现在 `main`，需要复核时可通过 v0.1—v0.4 的 Git 标签查看。
+当前 `main` 只保留最新的0.5脱敏工作台验收示例。旧版正式结果通过 v0.1—v0.4 的 Git 标签复核。
 
 ## 边界
 
-本项目不包含 Define-XML、aCRF、完整试验设计域、ADaM、TLF、电子签名、多用户权限、法规申报级系统验证或 CDISC CORE。所有输出仍需合格的临床数据标准专家审核。
+本项目不包含 Define-XML、aCRF、完整试验设计域、ADaM、TLF、电子签名、多用户权限、法规申报级系统验证或 CDISC CORE。工作台固定为本机单用户工具，不是经过计算机化系统验证的生产平台。所有输出仍需合格的临床数据标准专家审核。
 
 仓库中的数据均为公开示例数据的改编版本或模拟数据，不对应真实受试者。数据使用边界见 [数据来源说明](DATA_SOURCES.md)，软件许可见 [MIT许可证](LICENSE)。
 
-五分钟演示见 `docs/demo.md`，v0.4 评价设计见 `docs/v04_three_stage_benchmark.md`。0.1 阶段的真实 DeepSeek 盲评记录保留在 `docs/deepseek_v4_flash_blind_experiment.md`。
+五分钟演示见 [docs/demo.md](docs/demo.md)，工作台手册见 [docs/studio_user_guide.md](docs/studio_user_guide.md)，v0.4评价设计见 [docs/v04_three_stage_benchmark.md](docs/v04_three_stage_benchmark.md)。

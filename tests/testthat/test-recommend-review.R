@@ -148,13 +148,13 @@ test_that("实验产物按场景隔离且密钥不会进入提示词", {
   expect_error(apply_experiment_paths(config, "../outside"), "只能包含")
   old <- Sys.getenv("TRACE_SDTM_API_KEY", unset = NA_character_)
   on.exit(if (is.na(old)) Sys.unsetenv("TRACE_SDTM_API_KEY") else Sys.setenv(TRACE_SDTM_API_KEY = old), add = TRUE)
-  Sys.setenv(TRACE_SDTM_API_KEY = "test-secret-value")
+  Sys.setenv(TRACE_SDTM_API_KEY = "secret42")
   profile_sources(config)
   dictionary <- readr::read_csv(trace_path(config$paths$profile_dir, "source_dictionary.csv"), show_col_types = FALSE)
   group <- recommendation_groups(load_mapping_template(config), dictionary, config)[[1]]
   prompt <- classification_prompt_v02(group, load_metadata(config), load_transform_registry(config), config)
-  expect_false(grepl("test-secret-value", prompt, fixed = TRUE))
-  expect_false(grepl("test-secret-value", sanitize_for_log("Bearer test-secret-value"), fixed = TRUE))
+  expect_false(grepl("secret42", prompt, fixed = TRUE))
+  expect_false(grepl("secret42", sanitize_for_log("Bearer secret42"), fixed = TRUE))
 })
 
 test_that("没有批准规格时构建入口被阻止", {

@@ -67,7 +67,7 @@ v04_source_context_rows <- function(specification, config) {
       tibble::tibble(
         task_id = task$task_id, ref_id = ref$ref_id, source_dataset = ref$dataset,
         source_variable = ref$variable, role = ref$role,
-        example_values = if (nrow(hit)) as.character(hit$example_values[[1]] %||% "") else "",
+        example_values = if (isTRUE(config$project$studio)) "" else if (nrow(hit)) as.character(hit$example_values[[1]] %||% "") else "",
         missing_rate = if (nrow(hit)) as.numeric(hit$missing_rate[[1]] %||% NA_real_) else NA_real_
       )
     })
@@ -189,12 +189,12 @@ review_against_gold_v04 <- function(config = load_project_config()) {
   invisible(review)
 }
 
-approve_mapping_v04 <- function(config = load_project_config()) {
-  path <- trace_path(config$paths$review_dir, "mapping_review.xlsx")
-  if (!file.exists(path)) trace_abort("缺少 mapping_review.xlsx。请先执行 recommend。")
-  review <- openxlsx::read.xlsx(path, sheet = "Task Review", check.names = FALSE)
-  candidates <- openxlsx::read.xlsx(path, sheet = "Candidate Plans", check.names = FALSE)
-  final_steps <- openxlsx::read.xlsx(path, sheet = "Final Steps", check.names = FALSE)
+approved_specification_from_review_tables_v04 <- function(review, candidates, final_steps,
+                                                           config = load_project_config(),
+                                                           reviewer,
+                                                           review_artifact_sha256 = NA_character_) {
+  reviewer <- trimws(as.character(reviewer %||% ""))
+  if (!nzchar(reviewer)) trace_abort("审核者标识不能为空。")
   review$decision <- tolower(trimws(as.character(review$decision)))
   if (any(!review$decision %in% c("accept", "modify", "reject", "needs_information"))) trace_abort("每个原子任务都必须选择有效审核决定。")
   if (any(review$decision == "needs_information")) trace_abort("仍有 needs_information，不能锁定规格。")
@@ -202,7 +202,6 @@ approve_mapping_v04 <- function(config = load_project_config()) {
   specification <- load_mapping_template(config)
   tasks <- stats::setNames(specification$tasks, vapply(specification$tasks, task_id_v04, character(1)))
   registry <- load_transform_registry(config)
-  reviewer <- Sys.getenv("TRACE_SDTM_REVIEWER", unset = "portfolio_demo_reviewer")
   approved <- list()
   for (index in seq_len(nrow(review))) {
     id <- as.character(review$task_id[[index]])
@@ -235,11 +234,26 @@ approve_mapping_v04 <- function(config = load_project_config()) {
   specification$tasks <- unname(approved[intersect(task_order, names(approved))])
   specification$specification$status <- "approved"
   specification$specification$approval <- list(
-    reviewer = reviewer, approved_at = utc_now(), review_workbook_sha256 = file_sha256(path),
+    reviewer = reviewer, approved_at = utc_now(), review_artifact_sha256 = review_artifact_sha256,
+    review_workbook_sha256 = review_artifact_sha256,
     registry_version = registry$registry_version,
     registry_sha256 = file_sha256(trace_path(config$paths$transform_registry))
   )
   validate_specification_v04(specification, config, require_approved = TRUE)
+  specification
+}
+
+approve_mapping_v04 <- function(config = load_project_config()) {
+  path <- trace_path(config$paths$review_dir, "mapping_review.xlsx")
+  if (!file.exists(path)) trace_abort("缺少 mapping_review.xlsx。请先执行 recommend。")
+  review <- openxlsx::read.xlsx(path, sheet = "Task Review", check.names = FALSE)
+  candidates <- openxlsx::read.xlsx(path, sheet = "Candidate Plans", check.names = FALSE)
+  final_steps <- openxlsx::read.xlsx(path, sheet = "Final Steps", check.names = FALSE)
+  reviewer <- Sys.getenv("TRACE_SDTM_REVIEWER", unset = if (isTRUE(config$project$studio)) "" else "portfolio_demo_reviewer")
+  if (!nzchar(trimws(reviewer))) trace_abort("请通过 TRACE_SDTM_REVIEWER 提供审核者标识。")
+  specification <- approved_specification_from_review_tables_v04(
+    review, candidates, final_steps, config, reviewer, file_sha256(path)
+  )
   output <- trace_path(config$paths$approved_specification)
   ensure_parent(output)
   yaml::write_yaml(specification, output)

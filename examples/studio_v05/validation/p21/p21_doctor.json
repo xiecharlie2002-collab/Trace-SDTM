@@ -1,0 +1,55 @@
+{
+  "checked_at": "2026-09-03T12:01:43Z",
+  "all_passed": true,
+  "community_version": "4.2.0.5013",
+  "checks": [
+    {
+      "check": "community_executable",
+      "passed": true,
+      "observed": "D:\\Pinnacle\\Pinnacle 21 Community.exe",
+      "expected": "file exists"
+    },
+    {
+      "check": "community_version",
+      "passed": true,
+      "observed": "4.2.0.5013",
+      "expected": "4.2.0.5013"
+    },
+    {
+      "check": "java",
+      "passed": true,
+      "observed": "D:\\Pinnacle\\resources\\app.asar.unpacked\\components\\java64\\bin\\java.exe",
+      "expected": "file exists"
+    },
+    {
+      "check": "client_jar",
+      "passed": true,
+      "observed": "D:\\Pinnacle\\resources\\app.asar.unpacked\\components\\lib\\p21-client-1.0.9.jar",
+      "expected": "1.0.9"
+    },
+    {
+      "check": "engine_config",
+      "passed": true,
+      "observed": "D:\\Pinnacle\\resources\\app.asar.unpacked\\components\\lib\\configs/2508.1/SDTM-IG 3.4 (FDA).xml",
+      "expected": "FDA 2508.1 / SDTMIG 3.4"
+    },
+    {
+      "check": "controlled_terminology",
+      "passed": true,
+      "observed": "D:\\Pinnacle\\resources\\app.asar.unpacked\\components\\lib\\configs/data/CDISC/SDTM/2026-03-27/SDTM Terminology.odm.xml",
+      "expected": "2026-03-27"
+    },
+    {
+      "check": "xpt_directory",
+      "passed": true,
+      "observed": "D:/clinical_programming_10weeks/02_project/workspace/projects/studio-v05-release/runs/run_20260903_200120_15232_858/sdtm/xpt",
+      "expected": "DM, AE and VS XPT files"
+    },
+    {
+      "check": "output_directory_writable",
+      "passed": true,
+      "observed": "D:/clinical_programming_10weeks/02_project/workspace/projects/studio-v05-release/runs/run_20260903_200120_15232_858/validation/p21",
+      "expected": "writable"
+    }
+  ]
+}

@@ -10,8 +10,17 @@ trace_root <- function() {
   normalizePath(root, winslash = "/", mustWork = TRUE)
 }
 
+is_absolute_path <- function(path) {
+  if (is.null(path) || !length(path) || is.na(path[[1L]])) return(FALSE)
+  grepl("^([A-Za-z]:[\\\\/]|/|\\\\\\\\)", as.character(path[[1L]]))
+}
+
 trace_path <- function(...) {
-  file.path(trace_root(), ...)
+  parts <- list(...)
+  if (!length(parts)) return(trace_root())
+  first <- as.character(parts[[1L]])
+  if (is_absolute_path(first)) return(do.call(file.path, parts))
+  do.call(file.path, c(list(trace_root()), parts))
 }
 
 trace_abort <- function(message, status = 1L) {
@@ -59,6 +68,17 @@ write_json <- function(value, path, pretty = TRUE) {
   invisible(path)
 }
 
+write_yaml <- function(value, path) {
+  ensure_parent(path)
+  yaml::write_yaml(value, path)
+  invisible(path)
+}
+
+read_json_file <- function(path, default = NULL) {
+  if (!file.exists(path)) return(default)
+  jsonlite::read_json(path, simplifyVector = FALSE)
+}
+
 write_csv <- function(value, path) {
   ensure_parent(path)
   readr::write_csv(value, path, na = "")
@@ -103,8 +123,14 @@ from_json_text <- function(x) {
 }
 
 sanitize_for_log <- function(x) {
-  key <- Sys.getenv("TRACE_SDTM_API_KEY", unset = "")
-  if (nzchar(key)) gsub(key, "[REDACTED]", x, fixed = TRUE) else x
+  values <- unique(c(
+    Sys.getenv("TRACE_SDTM_API_KEY", unset = ""),
+    Sys.getenv("TRACE_SDTM_SESSION_SECRET", unset = "")
+  ))
+  values <- values[nzchar(values)]
+  result <- as.character(x)
+  for (value in values) result <- gsub(value, "[REDACTED]", result, fixed = TRUE)
+  result
 }
 
 with_working_directory <- function(path, code) {

@@ -30,6 +30,7 @@ generate_report <- function(config = load_project_config()) {
   ensure_output_directories(config)
   evaluation <- evaluate_recommendations(config)$summary
   dictionary <- read_optional_csv(trace_path(config$paths$profile_dir, "source_dictionary.csv"))
+  if (is_studio && nrow(dictionary)) dictionary <- dplyr::select(dictionary, -dplyr::any_of("example_values"))
   manifest <- read_optional_csv(trace_path(config$paths$manifest_dir, "dataset_manifest.csv"))
   lineage <- read_optional_csv(trace_path(config$paths$lineage_dir, "field_lineage.csv"))
   local_issues <- read_optional_csv(trace_path(config$paths$local_validation_dir, "local_issues.csv"))
@@ -143,8 +144,26 @@ comparison_manifest_v02 <- function() {
 
 generate_report <- function(config = load_project_config()) {
   ensure_output_directories(config)
-  is_v04 <- identical(as.character(config$project$version), "0.4.0")
-  if (is_v04) {
+  is_studio <- isTRUE(config$project$studio)
+  is_v04 <- is_studio || as.character(config$project$version) %in% c("0.4.0", "0.5.0")
+  if (is_studio) {
+    stage_paths <- file.path(trace_path(config$paths$recommendation_dir), c(
+      "target_decisions.json", "function_candidates.json",
+      "parameter_completions.json", "assembled_recommendations.json"
+    ))
+    stages <- lapply(stage_paths, function(path) if (file.exists(path)) jsonlite::read_json(path, simplifyVector = FALSE) else list())
+    assembled_plans <- stages[[4]]$plans %||% list()
+    task_count <- length(load_mapping_template(config)$tasks %||% list())
+    valid_target_count <- length(stages[[1]]$valid %||% list())
+    planned_tasks <- unique(vapply(assembled_plans, function(plan) as.character(plan$task_id), character(1)))
+    evaluation_result <- list(detail = if (length(assembled_plans)) v04_plan_rows(assembled_plans) else tibble::tibble())
+    evaluation <- list(
+      tasks = task_count,
+      valid_target_decisions = valid_target_count,
+      tasks_with_candidate_plan = length(planned_tasks),
+      recommendation_failures = sum(vapply(stages, function(stage) length(stage$failures %||% list()), integer(1)))
+    )
+  } else if (is_v04) {
     stage_paths <- file.path(trace_path(config$paths$recommendation_dir), c(
       "target_decisions.json", "function_candidates.json",
       "parameter_completions.json", "assembled_recommendations.json"
@@ -171,7 +190,7 @@ generate_report <- function(config = load_project_config()) {
   classifications <- if (is_v04) tibble::tibble() else read_optional_csv(trace_path(config$paths$recommendation_dir, "classification_evaluation.csv"))
   mapping_detail <- if (is_v04) evaluation_result$detail else read_optional_csv(trace_path(config$paths$recommendation_dir, "mapping_evaluation.csv"))
   manifest <- read_optional_csv(trace_path(config$paths$manifest_dir, "dataset_manifest.csv"))
-  comparison <- comparison_manifest_v02()
+  comparison <- if (is_studio) tibble::tibble() else comparison_manifest_v02()
   lineage <- read_optional_csv(trace_path(config$paths$lineage_dir, "field_lineage.csv"))
   partial_dates <- read_optional_csv(trace_path(config$paths$lineage_dir, "partial_date_notes.csv"))
   final_steps <- read_optional_csv(trace_path(config$paths$review_dir, "final_steps_audit.csv"))
@@ -219,19 +238,20 @@ generate_report <- function(config = load_project_config()) {
   document <- htmltools::tags$html(
     htmltools::tags$head(
       htmltools::tags$meta(charset = "utf-8"),
-      htmltools::tags$title("TraceSDTM 0.4 项目报告"),
+      htmltools::tags$title(if (is_studio) "TraceSDTM Studio 0.5 项目报告" else "TraceSDTM 0.4 项目报告"),
       htmltools::tags$style(htmltools::HTML(css))
     ),
     htmltools::tags$body(htmltools::tags$main(
-      htmltools::tags$h1("TraceSDTM 0.4"),
+      htmltools::tags$h1(if (is_studio) "TraceSDTM Studio 0.5" else "TraceSDTM 0.4"),
       htmltools::tags$p(class = "subtitle", sprintf("%s 场景：人工监督、注册表约束、规格驱动、可追溯的 SDTM 自动化生成", config$project$scenario)),
       htmltools::tags$div(class = "grid",
         metric_card("原始字段", nrow(dictionary)),
-        metric_card("原子任务", evaluation$evaluated_concepts %||% 0L),
-        metric_card("结构有效任务", evaluation$concepts_with_candidate %||% 0L,
-                    if (identical(evaluation$concepts_with_candidate, evaluation$evaluated_concepts)) "good" else "warning"),
-        metric_card("拒绝的推荐组", evaluation$rejected_groups %||% 0L,
-                    if ((evaluation$rejected_groups %||% 0L) == 0L) "good" else "warning"),
+        metric_card("原子任务", evaluation$evaluated_concepts %||% evaluation$tasks %||% 0L),
+        metric_card("获得候选的任务", evaluation$concepts_with_candidate %||% evaluation$tasks_with_candidate_plan %||% 0L,
+                    if (identical(evaluation$concepts_with_candidate %||% evaluation$tasks_with_candidate_plan,
+                                  evaluation$evaluated_concepts %||% evaluation$tasks)) "good" else "warning"),
+        metric_card("推荐失败记录", evaluation$rejected_groups %||% evaluation$recommendation_failures %||% 0L,
+                    if ((evaluation$rejected_groups %||% evaluation$recommendation_failures %||% 0L) == 0L) "good" else "warning"),
         metric_card("登记函数", length(registry$transforms)),
         metric_card("本地错误", local_errors, if (local_errors == 0L) "good" else "warning"),
         metric_card("Pinnacle 21 域内问题", generated_defects, if (generated_defects == 0L) "good" else "warning"),
@@ -262,7 +282,7 @@ generate_report <- function(config = load_project_config()) {
           p21_run$engine_name %||% "not_run", p21_run$controlled_terminology_version %||% "not_run", utc_now()
         ), stringsAsFactors = FALSE
       )),
-      htmltools::tags$h2("三阶段推荐评价"),
+      htmltools::tags$h2(if (is_studio) "三阶段推荐运行摘要" else "三阶段推荐评价"),
       html_table(summary_table),
       htmltools::tags$h3("严格校验拒绝"), html_table(group_failures, 20L),
       htmltools::tags$h3("类别判断"), html_table(classifications, 60L),
@@ -298,6 +318,6 @@ generate_report <- function(config = load_project_config()) {
   output <- trace_path(config$paths$report_dir, "trace_sdtm_report.html")
   ensure_parent(output)
   htmltools::save_html(document, output, background = "white")
-  trace_info("已生成 0.4 离线报告：%s", output)
+  trace_info("已生成 %s 离线报告：%s", if (is_studio) "Studio 0.5" else "0.4", output)
   invisible(output)
 }

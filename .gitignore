@@ -12,6 +12,7 @@ renv/staging/
 config/p21.local.yml
 logs/
 output/
+workspace/
 ~$*.xlsx
 ~$*.xls
 *.tmp

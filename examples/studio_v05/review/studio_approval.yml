@@ -1,0 +1,8 @@
+schema_version: '0.5'
+status: approved
+reviewer: acceptance-reviewer
+approved_at: '2026-09-03T12:01:33Z'
+compatible_mapping_schema: '0.4'
+approved_specification: specs/approved_mapping.yml
+approved_specification_sha256: f4beb54ac17ccb4825e7c35a7be5c938610eaf6179d1660fe6cf04f0aa7a0044
+review_workbook_sha256: 51af93218ceef02c8099240a401e92b55537b37e72d2ea9338c8829f1bbf3e91

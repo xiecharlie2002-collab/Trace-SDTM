@@ -15,11 +15,13 @@ if (!renv_active && dir.exists(project_library)) .libPaths(c(project_library, .l
 source_order <- c(
   "utils.R",
   "config.R",
+  "studio_projects.R",
   "registry.R",
   "profile.R",
   "recommend.R",
   "review.R",
   "review_v04.R",
+  "studio_review.R",
   "transforms.R",
   "build.R",
   "validate_local.R",
@@ -27,6 +29,9 @@ source_order <- c(
   "evaluate.R",
   "evaluate_v04.R",
   "report.R",
+  "studio_exports.R",
+  "studio_jobs.R",
+  "studio_app.R",
   "pipeline.R"
 )
 for (file in source_order) source(file.path(project_root, "R", file), encoding = "UTF-8")
