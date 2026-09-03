@@ -158,3 +158,25 @@ test_that("0.4 评价分别输出原子、前三项和组装组结果", {
   expect_false(result$assembly$complete_plan_correct[[1]])
   expect_true(result$assembly$top3[[1]])
 })
+
+test_that("参数统计区分自动注入和模型一次补全", {
+  registry <- test_registry_v04()
+  gold <- list(plans = list(T1 = list(list(
+    transform_id = "date_transform", parameters = list(formats = "m/d/y")
+  ))))
+  parameters <- list(
+    valid = list(`T1#1` = list(parameters = list(formats = list("m/d/y")))),
+    failures = list(),
+    resolutions = list(valid = list(`T1#1` = list(
+      task_id = "T1", candidate_rank = 1L, transform_id = "date_transform",
+      injected_parameters = list(), unresolved_parameters = list("formats"),
+      unavailable_parameters = list(), fully_resolved = FALSE
+    )))
+  )
+  result <- parameter_accounting_v04(parameters, gold, registry)
+  expect_identical(result$parameter_total, 1L)
+  expect_identical(result$requested_from_model, 1L)
+  expect_identical(result$model_completion_received, 1L)
+  expect_true(result$model_once_correct)
+  expect_identical(result$parameter_conflicts, 0L)
+})

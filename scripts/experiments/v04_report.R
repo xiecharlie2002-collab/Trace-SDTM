@@ -134,6 +134,10 @@ parameter_summary <- parameters |>
     parameter_total = sum(.data$parameter_total),
     automatically_injected = sum(.data$automatically_injected),
     requested_from_model = sum(.data$requested_from_model),
+    model_completion_received = sum(.data$model_completion_received),
+    model_once_correct = sum(.data$model_once_correct, na.rm = TRUE),
+    reviewer_corrected = sum(.data$reviewer_corrected),
+    parameter_conflicts = sum(.data$parameter_conflicts),
     unavailable = sum(.data$unavailable),
     fully_resolved_candidates = sum(.data$fully_resolved),
     candidate_count = dplyr::n(), .groups = "drop"

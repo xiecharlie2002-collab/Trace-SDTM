@@ -141,16 +141,39 @@ assembly_rollup_v04 <- function(detail) {
     )
 }
 
-parameter_accounting_v04 <- function(parameters) {
+parameter_accounting_v04 <- function(parameters, gold = NULL, registry = NULL) {
   resolutions <- parameters$resolutions$valid %||% list()
-  purrr::map_dfr(resolutions, function(x) tibble::tibble(
-    task_id = x$task_id, candidate_rank = as.integer(x$candidate_rank),
-    parameter_total = length(x$injected_parameters) + length(x$unresolved_parameters) + length(x$unavailable_parameters),
-    automatically_injected = length(x$injected_parameters),
-    requested_from_model = length(x$unresolved_parameters),
-    unavailable = length(x$unavailable_parameters),
-    fully_resolved = isTRUE(x$fully_resolved)
-  ))
+  completions <- parameters$valid %||% list()
+  failures <- parameters$failures %||% list()
+  purrr::imap_dfr(resolutions, function(x, key) {
+    completion <- completions[[key]]
+    requested <- length(x$unresolved_parameters)
+    model_correct <- NA
+    if (requested > 0L && !is.null(completion) && !is.null(gold) && !is.null(registry)) {
+      expected <- gold$plans[[x$task_id]][[1]]
+      entry <- registry_entry(x$transform_id, registry)
+      model_correct <- compare_by_schema(
+        completion$parameters, expected$parameters,
+        entry$parameter_schema, validate = TRUE
+      )
+    }
+    task_failures <- Filter(function(item) identical(as.character(item$task_id %||% ""), as.character(x$task_id)), failures)
+    conflict_count <- sum(vapply(task_failures, function(item) {
+      grepl("覆盖|冲突|override", as.character(item$error %||% ""), ignore.case = TRUE)
+    }, logical(1)))
+    tibble::tibble(
+      task_id = x$task_id, candidate_rank = as.integer(x$candidate_rank),
+      parameter_total = length(x$injected_parameters) + requested + length(x$unavailable_parameters),
+      automatically_injected = length(x$injected_parameters),
+      requested_from_model = requested,
+      model_completion_received = as.integer(requested > 0L && !is.null(completion)),
+      model_once_correct = if (is.na(model_correct)) NA else as.logical(model_correct),
+      reviewer_corrected = 0L,
+      parameter_conflicts = conflict_count,
+      unavailable = length(x$unavailable_parameters),
+      fully_resolved = isTRUE(x$fully_resolved)
+    )
+  })
 }
 
 evaluate_three_stage_v04 <- function(config, targets, functions, parameters, assembled,
@@ -166,7 +189,7 @@ evaluate_three_stage_v04 <- function(config, targets, functions, parameters, ass
   metrics <- v04_metric_rows(detail)
   by_domain <- v04_metric_rows(detail, "target_domain")
   assembly <- assembly_rollup_v04(detail)
-  parameter_counts <- parameter_accounting_v04(parameters)
+  parameter_counts <- parameter_accounting_v04(parameters, gold, registry)
   ensure_dir(output_dir)
   write_csv(detail, file.path(output_dir, "v04_atomic_evaluation.csv"))
   write_csv(metrics, file.path(output_dir, "v04_metrics.csv"))
@@ -183,6 +206,9 @@ evaluate_three_stage_v04 <- function(config, targets, functions, parameters, ass
     parameters_total = sum(parameter_counts$parameter_total),
     parameters_injected = sum(parameter_counts$automatically_injected),
     parameters_requested_from_model = sum(parameter_counts$requested_from_model),
+    parameters_completed_by_model = sum(parameter_counts$model_completion_received),
+    model_parameter_completions_correct = sum(parameter_counts$model_once_correct, na.rm = TRUE),
+    parameter_conflicts = sum(parameter_counts$parameter_conflicts),
     generated_at = utc_now()
   )
   write_json(summary, file.path(output_dir, "v04_evaluation_summary.json"))
