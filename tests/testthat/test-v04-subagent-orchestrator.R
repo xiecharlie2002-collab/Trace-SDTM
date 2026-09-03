@@ -69,6 +69,43 @@ test_that("first response import preserves raw bytes and records deterministic p
   expect_identical(evidence$validation_status, "passed")
 })
 
+test_that("致命结构错误被冻结并进入分母而不要求重试", {
+  directory <- withr::local_tempdir()
+  group <- list(
+    group_id = "dm_atomic_v04", target_domain = "DM",
+    tasks = list(list(task_id = "A", source_refs = list()))
+  )
+  stage_dir <- file.path(directory, "groups", group$group_id, "targets")
+  dir.create(stage_dir, recursive = TRUE)
+  v04_freeze_text("request", file.path(stage_dir, "request.txt"))
+  incoming <- file.path(directory, "incoming.txt")
+  v04_freeze_text("not json", incoming)
+  config <- list(
+    project = list(scenario = "basic"),
+    paths = list(
+      recommendation_dir = directory,
+      specification_template = "specs/benchmark/v2/basic_tasks.yml",
+      mapping_policies = "specs/benchmark/v2/basic_policies.yml",
+      metadata = "specs/sdtm_metadata.yml",
+      transform_registry = "config/transform_registry.yml",
+      controlled_terminology = "specs/v0.2/controlled_terminology.yml",
+      unit_conversions = "specs/v0.2/unit_conversions.yml",
+      gold_specification = "specs/benchmark/v2/basic_gold.yml",
+      profile_dir = "output/benchmark/v2/basic/profile"
+    )
+  )
+  result <- v04_import_first_response(
+    config, group, "targets", incoming, "agent-A", function(value) value
+  )
+  expect_true(result$fatal_structure_error)
+  expect_length(result$valid, 0L)
+  expect_length(result$failures, 1L)
+  expect_true(file.exists(file.path(stage_dir, "normalized.json")))
+  evidence <- jsonlite::read_json(file.path(stage_dir, "response_evidence.json"), simplifyVector = FALSE)
+  expect_identical(evidence$validation_status, "failed")
+  expect_false(evidence$retry_performed)
+})
+
 test_that("conditional request is gated by frozen cascading function response", {
   directory <- withr::local_tempdir()
   config <- list(paths = list(recommendation_dir = directory))

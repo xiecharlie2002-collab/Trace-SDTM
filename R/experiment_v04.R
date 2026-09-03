@@ -250,19 +250,40 @@ v04_import_first_response <- function(config, group, stage, response_file,
     error = identity
   )
   if (inherits(parsed_json, "error")) {
+    normalized <- list(
+      valid = list(),
+      failures = lapply(v04_group_tasks(group), function(task) list(
+        task_id = task_id_v04(task), stage = stage,
+        error = sanitize_for_log(conditionMessage(parsed_json)), record_index = NA_integer_
+      )),
+      stage = stage, fatal_structure_error = TRUE
+    )
+    write_json(normalized, file.path(stage_dir, "normalized.json"))
     v04_write_response_evidence(
-      stage_dir, config, group, stage, response, error = parsed_json,
+      stage_dir, config, group, stage, response,
+      normalized = normalized, error = parsed_json,
       subagent_task = subagent_task
     )
-    trace_abort(sprintf("%s 首次响应不是有效 JSON：%s", stage, conditionMessage(parsed_json)))
+    return(invisible(normalized))
   }
   normalized <- tryCatch(parser(parsed_json), error = identity)
   if (inherits(normalized, "error")) {
+    parse_error <- normalized
+    normalized <- list(
+      valid = list(),
+      failures = lapply(v04_group_tasks(group), function(task) list(
+        task_id = task_id_v04(task), stage = stage,
+        error = sanitize_for_log(conditionMessage(parse_error)), record_index = NA_integer_
+      )),
+      stage = stage, fatal_structure_error = TRUE
+    )
+    write_json(normalized, file.path(stage_dir, "normalized.json"))
     v04_write_response_evidence(
-      stage_dir, config, group, stage, response, error = normalized,
+      stage_dir, config, group, stage, response,
+      normalized = normalized, error = parse_error,
       subagent_task = subagent_task
     )
-    trace_abort(sprintf("%s 首次响应未通过严格校验：%s", stage, conditionMessage(normalized)))
+    return(invisible(normalized))
   }
   repeated <- parser(parsed_json)
   first_hash <- digest::digest(registry_json(normalized), algo = "sha256", serialize = FALSE)
@@ -326,6 +347,22 @@ v04_prepare_function_request <- function(scenario, domain, experiment_id,
     result
   } else {
     v04_read_stage_result(target_dir)
+  }
+  if (!isTRUE(conditional) && !length(targets$valid %||% list())) {
+    stage <- "functions_cascade"
+    stage_dir <- v04_stage_evidence_dir(config, group, stage)
+    result <- list(
+      valid = list(), failures = targets$failures %||% list(), stage = stage,
+      skipped = TRUE, reason = "目标阶段没有通过严格校验的任务。"
+    )
+    write_json(result, file.path(stage_dir, "normalized.json"))
+    write_json(list(
+      schema_version = "0.4", scenario = config$project$scenario,
+      domain = group$target_domain, stage = stage, request_required = FALSE,
+      reason = result$reason, prepared_at = utc_now(),
+      checksums = v04_benchmark_checksums(config)
+    ), file.path(stage_dir, "request_manifest.json"))
+    return(invisible(NULL))
   }
   prompt <- function_prompt_v04(
     group, targets, registry, specification, load_mapping_policies(config), dictionary
