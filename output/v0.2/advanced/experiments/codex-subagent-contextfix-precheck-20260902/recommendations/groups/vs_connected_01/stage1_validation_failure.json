@@ -1,8 +1,0 @@
-{
-  "validation_status": "failed",
-  "failure_reason": "VS_CORE 的分类状态无效。",
-  "request_sha256": "537224060E360D84229576147A4DAF97D5155A7615A1289EC1E975545A83F4D4",
-  "response_sha256": "905EAA7C125C83942B97BE9553518EDA08BBFC7D10DF9E12308A8BF02A7275C0",
-  "subagent_task": "/root/map_vs_contextfix",
-  "retry_performed": false
-}

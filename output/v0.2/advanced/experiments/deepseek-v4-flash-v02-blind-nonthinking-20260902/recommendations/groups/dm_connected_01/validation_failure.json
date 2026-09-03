@@ -1,7 +1,0 @@
-{
-  "group_id": "dm_connected_01",
-  "stage": "classification",
-  "error": "DM_CORE 返回未知或空类别链。",
-  "concept_ids": ["DM_CORE", "DM_REFERENCE_START", "DM_CONSENT", "DM_DEMOGRAPHICS", "DM_TREATMENT"],
-  "recorded_at": "2026-09-02T11:04:02Z"
-}

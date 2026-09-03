@@ -1,8 +1,0 @@
-{
-  "validation_status": "failed",
-  "failure_reason": "AE_SOURCE_INTEGRATION 的分类状态无效。",
-  "request_sha256": "63DA22921F8964FEA49356EA3201ACAA2E9200E49097B143796FF01BD0D93547",
-  "response_sha256": "EA955AF63AC824BE601453C1CD8C29D71C22036BFE3C0E1A4533CBD9DDFDB357",
-  "subagent_task": "/root/map_ae_contextfix",
-  "retry_performed": false
-}

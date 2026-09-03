@@ -1,4 +1,0 @@
-target_domain,category_correct,function_correct,target_complete,complete_plan_correct,minor,moderate,major,total
-AE,0,0,0,0,0,0,7,7
-DM,5,5,5,4,1,0,0,5
-VS,0,0,0,0,0,0,8,8

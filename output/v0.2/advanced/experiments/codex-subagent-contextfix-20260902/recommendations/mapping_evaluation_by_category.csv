@@ -1,9 +1,0 @@
-gold_categories,function_correct,complete_plan_correct,total
-controlled_terminology,1,1,2
-date_time_conversion,0,0,2
-direct_assignment,2,2,4
-field_combination,0,0,2
-record_transposition,3,3,6
-source_integration,0,0,1
-temporal_derivation,0,0,2
-unit_conversion,3,3,6

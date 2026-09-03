@@ -1,9 +1,0 @@
-{
-  "group_id": "dm_connected_01",
-  "concept_ids": ["DM_CORE", "DM_REFERENCE_START", "DM_CONSENT", "DM_DEMOGRAPHICS", "DM_TREATMENT"],
-  "stage1_prompt_sha256": "d557bad8cd7017bf09b50b156a86847b735c9adaa8b8591bfe9e85e2c7d01257",
-  "stage1_response_sha256": "9a5e1e549b291ba4bbe05780e8f57334085b571b28d64288e46757c56094a9c4",
-  "stage2_prompt_sha256": "af988122f71b17823f51c1ddaed6b0443e064853b21b1d6269e5dc13b1ebd6c3",
-  "stage2_response_sha256": "6e442b8c0f27cbad4d01d7a4f9f350a6c770bac2baf8f8cb8740f48fb75ea540",
-  "visible_transform_ids": ["assign_no_ct", "hardcode_no_ct", "assign_ct", "hardcode_ct", "to_iso8601_date", "to_iso8601_datetime", "to_iso8601_partial_datetime", "merge_sources", "coalesce_fields", "derive_reference_datetime", "combine_fields", "derive_usubjid", "extract_delimited_part", "conditional_assign", "derive_ongoing_flag"]
-}

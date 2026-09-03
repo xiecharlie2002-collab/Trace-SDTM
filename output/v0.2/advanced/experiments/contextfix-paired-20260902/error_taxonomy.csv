@@ -1,7 +1,0 @@
-provider,error_type,scope,affected_concepts,description,evidence
-codex_subagent,structure_error,AE,8,把派生数据集 ae_merged 写入 target_variables，整组第二阶段被严格拒绝。,recommendations/groups/ae_connected_01/stage2_validation_failure.json
-codex_subagent,context_gap,DM,3,SITEID 来源、USUBJID 格式和部分日期格式没有明确到足以确定执行。,DM_CORE、DM_REFERENCE_START、DM_CONSENT 原始回答
-codex_subagent,context_contract_mismatch,AE,2,画像把时间字段标为 hms，但不完整日期函数卡只接受 character；推荐者因此停止 AE_START 和 AE_END。,AE_START、AE_END 原始回答
-codex_subagent,professional_judgment_error,VS,3,同单位检查未选择 standardize_unit，导致 SYSBP、DIABP、PULSE 的类别链和函数链偏离金标准。,VS 第二阶段原始回答
-codex_subagent,context_misread,VS,1,VS_CORE 额外选择 source_integration；来源目录只声明一个 vs_mixed 数据集，DM 是依赖而非待合并来源。,VS 第一阶段原始回答
-codex_subagent,uncertainty_handling,multiple,5,对缺少批准规则的核心、日期和后续派生概念选择 needs_information；这是保守处理，但降低候选覆盖率。,DM 与 VS 的 needs_information 候选

@@ -1,4 +1,0 @@
-concept_id,target_domain,gold_categories,function_chain_correct,target_set_complete,complete_plan_correct
-DM_INFORMED_CONSENT,DM,date_time_conversion,TRUE,TRUE,FALSE
-AE_START_DATE,AE,date_time_conversion,TRUE,TRUE,FALSE
-VS_MEASUREMENT_DATE,VS,date_time_conversion,TRUE,TRUE,FALSE

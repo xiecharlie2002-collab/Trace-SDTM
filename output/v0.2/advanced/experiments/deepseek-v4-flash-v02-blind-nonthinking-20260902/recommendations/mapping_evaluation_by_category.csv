@@ -1,9 +1,0 @@
-gold_categories,function_correct,complete_plan_correct,total
-character_normalization,0,0,1
-conditional_derivation,0,0,1
-controlled_terminology,2,2,2
-date_time_conversion,0,0,2
-direct_assignment,0,0,2
-field_combination,0,0,1
-source_integration,1,0,1
-temporal_derivation,1,0,3

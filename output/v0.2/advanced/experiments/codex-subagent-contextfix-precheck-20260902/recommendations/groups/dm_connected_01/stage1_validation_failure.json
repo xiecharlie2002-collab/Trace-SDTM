@@ -1,8 +1,0 @@
-{
-  "validation_status": "failed",
-  "failure_reason": "DM_DEMOGRAPHICS 的分类状态无效。",
-  "request_sha256": "80642870DDD07D5274CFDAB7865B85D751E4572553E9384C68C2CFD40DCD9749",
-  "response_sha256": "655C83FD12744930F9922E9F12725951D49C54859BD710211687C8017AB3A081",
-  "subagent_task": "/root/map_dm_contextfix",
-  "retry_performed": false
-}

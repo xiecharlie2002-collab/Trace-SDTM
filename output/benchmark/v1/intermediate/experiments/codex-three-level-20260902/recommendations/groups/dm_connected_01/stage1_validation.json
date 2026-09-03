@@ -1,9 +1,0 @@
-{
-  "validation_status": "passed",
-  "request_sha256": "8c1d4a60519f4dd7c9d1c38c71479914e1c48fc143797f30a9b06b973d561223",
-  "response_sha256": "17009000593b9a84fcf4dcaeb1a79db1adf048d7eaa3cd9331a208e599eadb84",
-  "normalized_sha256": "4a282deaa21035321b3a2262c8bcec40bec846cc1bef445f8ce1a5a3af936b12",
-  "subagent_task": "/root/bench_intermediate_dm_20260902",
-  "validated_at": "2026-09-02T15:51:58Z",
-  "retry_performed": false
-}
