@@ -96,8 +96,8 @@ load_approved_mapping <- function(config = load_project_config()) {
     trace_abort("尚未生成已审核映射规格。请先执行 recommend --seed（或真实 recommend），完成人工审核后执行 approve。")
   }
   specification <- yaml::read_yaml(path)
-  if (!identical(as.character(specification$schema_version), "0.2")) {
-    trace_abort("只支持 schema_version 0.2 的批准规格。旧版成果请通过 Git 标签查看。")
+  if (!identical(as.character(specification$schema_version), "0.4")) {
+    trace_abort("TraceSDTM v0.4 只支持 schema_version 0.4 的批准规格。旧版成果请通过 v0.1-mvp、v0.2-registry 或 v0.3-three-level-eval Git 标签查看。")
   }
   if (!identical(specification$specification$status, "approved")) {
     trace_abort("映射规格状态不是 approved，已阻止构建。")

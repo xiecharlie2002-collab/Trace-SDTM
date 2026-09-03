@@ -19,11 +19,13 @@ source_order <- c(
   "profile.R",
   "recommend.R",
   "review.R",
+  "review_v04.R",
   "transforms.R",
   "build.R",
   "validate_local.R",
   "p21.R",
   "evaluate.R",
+  "evaluate_v04.R",
   "report.R",
   "pipeline.R"
 )

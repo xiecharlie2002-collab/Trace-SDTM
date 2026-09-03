@@ -1,6 +1,6 @@
 # TraceSDTM 转换函数目录
 
-注册表版本：`1.0.0`
+注册表版本：`1.2.0`
 
 本文件由 `registry-docs` 根据转换注册表生成，请勿手工维护。
 
@@ -13,7 +13,7 @@
 | `to_iso8601_date` | date_time_conversion | field_mapping | TRUE | `sdtm.oak::create_iso8601` | 将一个能够明确解释的完整日期转换为 ISO 8601 日期。 | formats | 原始值包含不完整日期；日期格式无法确定；只有时间没有日期 |
 | `to_iso8601_datetime` | date_time_conversion | field_mapping | TRUE | `sdtm.oak::assign_datetime` | 将同一字段或分开的日期与时间字段转换为完整 ISO 8601 日期时间。 | formats | 日期部分缺失；日期或时间格式存在无法解决的歧义；只有时间没有日期 |
 | `to_iso8601_partial_datetime` | date_time_conversion | field_mapping | TRUE | `sdtm.oak::create_iso8601` | 在不进行填补的前提下保留已知日期时间精度。 | formats \| unknown_tokens | 业务规则要求日期填补；只有时间没有日期；未知标记未登记 |
-| `merge_sources` | source_integration | source_preparation | TRUE | `TraceSDTM::merge_sources` | 按已登记键和基数关系对两个来源数据集进行确定性连接。 | left_dataset \| right_dataset \| output_dataset \| by \| relationship \| select | 连接键未知；连接会复制基础记录；需要任意 R 连接表达式 |
+| `merge_sources` | source_integration | source_preparation | TRUE | `TraceSDTM::merge_sources` | 按已登记键和基数关系对两个来源数据集进行确定性连接；该函数输出数据集，target_variables 必须为空，名称写入 output_dataset。 | left_dataset \| right_dataset \| output_dataset \| by \| relationship \| select | 连接键未知；连接会复制基础记录；需要任意 R 连接表达式 |
 | `coalesce_fields` | source_integration | field_mapping | TRUE | `TraceSDTM::coalesce_fields` | 按明确优先级从多个候选字段取得第一个非缺失值。 | priority | 来源记录没有可靠连接；优先级未确定 |
 | `derive_reference_datetime` | source_integration | field_mapping | TRUE | `sdtm.oak::oak_cal_ref_dates` | 从多个原始数据集选取每名受试者最早或最晚日期时间并派生 DM 参考日期。 | selection \| subject_keys \| sources | 受试者键不一致；参考日期选择规则不明确；来源只有不完整日期 |
 | `combine_fields` | field_combination | field_mapping | TRUE | `TraceSDTM::combine_fields` | 按固定分隔符组合多个来源字段。 | separator \| missing_policy | 字段之间没有明确组合规则；来源来自未连接数据集 |
@@ -23,7 +23,7 @@
 | `derive_ongoing_flag` | conditional_derivation | field_mapping | TRUE | `TraceSDTM::derive_ongoing_flag` | 根据结束日期缺失或明确的持续指示派生 ONGOING。 | ongoing_value | 结束日期缺失并不代表持续且没有持续指示；业务规则未确认 |
 | `normalize_case` | character_normalization | field_mapping | TRUE | `TraceSDTM::normalize_case` | 将字符值统一为大写或小写。 | case | 大小写改变会改变编码含义；目标需要受控术语映射 |
 | `transpose_findings` | record_transposition | record_expansion | TRUE | `TraceSDTM::transpose_findings` | 将一个横向检查结果展开为包含检查代码、名称、原始结果和原始单位的记录。 | test_code \| test_name | 检查代码或名称未确认；结果不是 Findings 结构；单位来源不明确 |
-| `standardize_unit` | unit_conversion | post_derivation | TRUE | `TraceSDTM::standardize_unit` | 使用版本化换算集合生成标准字符结果、标准数值和标准单位。 | conversion_set_id \| target_unit | 模型提供自由公式；原始单位未知；结果不能解释为数值 |
+| `standardize_unit` | unit_conversion | post_derivation | TRUE | `TraceSDTM::standardize_unit` | 使用版本化换算集合生成标准字符结果、标准数值和标准单位；受项目政策要求时，相同单位也必须执行身份标准化以保留数值解析、单位确认、舍入和版本追溯。 | conversion_set_id \| target_unit | 模型提供自由公式；原始单位未知；结果不能解释为数值 |
 | `derive_sequence` | temporal_derivation | post_derivation | TRUE | `sdtm.oak::derive_seq` | 按受试者和稳定排序字段派生域内连续序号。 | record_variables | 排序变量不足以稳定区分记录 |
 | `derive_study_day` | temporal_derivation | post_derivation | TRUE | `sdtm.oak::derive_study_day` | 根据完整目标日期和 DM 参考日期派生研究日，不对不完整日期进行填补。 | target_date \| reference_date | 目标日期或参考日期不完整；受试者无法连接到 DM |
 | `derive_visitnum` | temporal_derivation | field_mapping | TRUE | `TraceSDTM::derive_visitnum` | 使用已登记访视表把访视名称转换为数值型访视编号。 | visit_map_id | 访视名称没有批准的数值对应关系 |

@@ -1,0 +1,29 @@
+schema_version: '0.4'
+policy_version: 2.0.0
+scenario: basic
+identifiers:
+  usubjid:
+    components: [STUDY, PATNUM]
+    separator: '-'
+    missing_component_policy: reject
+date_time_formats:
+  preserve_partial_dates: false
+  prohibit_date_imputation: true
+  approved_sources:
+    - {source: {dataset: dm_basic, variable: ICDATE}, semantic_type: complete_date, formats: [y-m-d]}
+    - {source: {dataset: ae_basic, variable: AESTDAT}, semantic_type: complete_date, formats: [y-m-d]}
+    - {source: {dataset: vs_basic, variable: VSDAT}, semantic_type: complete_date, formats: [y-m-d]}
+upstream_outputs: {}
+sequence_rules: {}
+baseline_rules: {}
+unit_standardization:
+  required: false
+  identity_conversion_required: false
+dataset_output_contract:
+  applies_when_output_mode: dataset
+  target_variables: []
+  dataset_name_parameter: output_dataset
+parameter_bindings:
+  DM_DOMAIN_CONSTANT: {value: DM}
+  AE_DOMAIN_CONSTANT: {value: AE}
+  VS_DOMAIN_CONSTANT: {value: VS}

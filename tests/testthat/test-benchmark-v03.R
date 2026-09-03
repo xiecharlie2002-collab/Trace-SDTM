@@ -2,7 +2,7 @@ test_that("三级场景具有锁定的概念数和难度", {
   expected <- c(basic = 18L, intermediate = 20L, advanced = 21L)
   expected_difficulty <- c(basic = "simple", intermediate = "moderate")
   for (scenario in names(expected)) {
-    config <- load_project_config(scenario)
+    config <- load_v03_config_for_tests(scenario)
     specification <- load_mapping_template(config)
     gold <- load_gold_specification(config)
     ids <- vapply(specification$concepts, `[[`, character(1), "concept_id")
@@ -26,7 +26,7 @@ test_that("日期画像区分明确、冲突和真正歧义并识别秒", {
 })
 
 test_that("高级画像、政策和函数卡的时间契约一致", {
-  config <- load_project_config("advanced")
+  config <- load_v03_config_for_tests("advanced")
   dictionary <- profile_sources(config)
   consent <- dplyr::filter(dictionary, source_dataset == "dm_subject", source_variable == "IC_DT")
   time <- dplyr::filter(dictionary, source_dataset == "ae_main", source_variable == "AESTTIM")
@@ -39,13 +39,13 @@ test_that("高级画像、政策和函数卡的时间契约一致", {
   policy_text <- as.character(registry_json(load_mapping_policies(config)))
   expect_match(policy_text, "H:M:S", fixed = TRUE)
   expect_match(policy_text, "applies_to_identity_conversions", fixed = TRUE)
-  intermediate <- profile_sources(load_project_config("intermediate"))
+  intermediate <- profile_sources(load_v03_config_for_tests("intermediate"))
   intermediate_time <- dplyr::filter(intermediate, source_dataset == "ae_intermediate", source_variable == "AESTTIM")
   expect_identical(intermediate_time$format_candidates[[1]], "H:M:S")
 })
 
 test_that("提示词包含政策和最小类别规则但不包含金标准链", {
-  config <- load_project_config("advanced")
+  config <- load_v03_config_for_tests("advanced")
   dictionary <- profile_sources(config)
   group <- recommendation_groups(load_mapping_template(config), dictionary, config)$vs_connected_01
   prompt <- classification_prompt_v02(group, load_metadata(config), load_transform_registry(config), config)
@@ -57,7 +57,7 @@ test_that("提示词包含政策和最小类别规则但不包含金标准链", 
 })
 
 test_that("数据集输出拒绝非空目标变量", {
-  config <- load_project_config("advanced")
+  config <- load_v03_config_for_tests("advanced")
   specification <- load_mapping_template(config)
   concept <- concept_lookup(specification)$AE_SOURCE_INTEGRATION
   step <- gold_plan_steps(load_gold_specification(config)$plans$AE_SOURCE_INTEGRATION)[[1]]
@@ -81,7 +81,7 @@ test_that("修改程度按预定规则分为四级", {
 })
 
 test_that("逐概念诊断不会改变整组严格校验", {
-  config <- load_project_config("advanced")
+  config <- load_v03_config_for_tests("advanced")
   specification <- load_mapping_template(config)
   metadata <- load_metadata(config)
   registry <- load_transform_registry(config)

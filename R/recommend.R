@@ -320,6 +320,12 @@ call_mapping_model <- function(config = load_project_config()) {
   recommendations
 }
 
+# v0.4 is implemented in separate modules so the tagged v0.2/v0.3 interfaces
+# remain reproducible.  The files are sourced here because this repository uses
+# script-style modules rather than an installed-package namespace.
+source(trace_path("R", "parameter_resolvers.R"), encoding = "UTF-8")
+source(trace_path("R", "recommend_v04.R"), encoding = "UTF-8")
+
 save_recommendations <- function(recommendations, config, source, model = NA_character_, response_text = "", response_hashes = character(), batch_sizes = integer(), prompt_design = NA_character_) {
   ensure_output_directories(config)
   csv_path <- trace_path(config$paths$recommendation_dir, "mapping_recommendations.csv")

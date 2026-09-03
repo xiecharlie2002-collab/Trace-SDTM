@@ -1,0 +1,57 @@
+schema_version: '0.4'
+specification:
+  name: TraceSDTM v0.4 basic atomic tasks
+  version: 2.0.0
+  status: frozen
+  standard: SDTMIG 3.4
+  scenario: basic
+  benchmark_level: basic
+  expected_task_count: 18
+source_catalog:
+  dm_basic: {file: dm_raw.csv, form_name: Demographics, grain: one_record_per_subject, keys: [STUDY, PATNUM]}
+  ae_basic: {file: ae_raw.csv, form_name: Adverse Events, grain: one_record_per_event, keys: [STUDY, PATNUM, AEID]}
+  vs_basic: {file: vs_raw.csv, form_name: Vital Signs, grain: one_record_per_finding, keys: [STUDY, PATNUM, VSID]}
+domain_sources: {DM: dm_basic, AE: ae_basic, VS: vs_basic}
+tasks:
+  - {task_id: DM_STUDY_IDENTIFIER, assembly_group_id: DM_STUDY_IDENTIFIER, target_domain: DM, source_refs: [{ref_id: dm_basic__STUDY, dataset: dm_basic, variable: STUDY, role: study_identifier}], depends_on: [], required: true, intent: Copy the study identifier to the DM study identifier.}
+  - {task_id: DM_DOMAIN_CONSTANT, assembly_group_id: DM_DOMAIN_CONSTANT, target_domain: DM, source_refs: [], depends_on: [], required: true, intent: Set the constant DM domain code.}
+  - task_id: DM_UNIQUE_SUBJECT_IDENTIFIER
+    assembly_group_id: DM_UNIQUE_SUBJECT_IDENTIFIER
+    target_domain: DM
+    source_refs:
+      - {ref_id: dm_basic__STUDY, dataset: dm_basic, variable: STUDY, role: study_identifier}
+      - {ref_id: dm_basic__PATNUM, dataset: dm_basic, variable: PATNUM, role: subject_identifier}
+    depends_on: []
+    required: true
+    intent: Derive the unique subject identifier from study and subject identifiers.
+  - {task_id: DM_INFORMED_CONSENT, assembly_group_id: DM_INFORMED_CONSENT, target_domain: DM, source_refs: [{ref_id: dm_basic__ICDATE, dataset: dm_basic, variable: ICDATE, role: informed_consent_date}], depends_on: [], required: true, intent: Convert informed consent date to ISO 8601.}
+  - {task_id: DM_SEX_TERM, assembly_group_id: DM_SEX_TERM, target_domain: DM, source_refs: [{ref_id: dm_basic__SEX, dataset: dm_basic, variable: SEX, role: sex}], depends_on: [], required: true, intent: Map sex using controlled terminology.}
+  - {task_id: DM_COUNTRY, assembly_group_id: DM_COUNTRY, target_domain: DM, source_refs: [{ref_id: dm_basic__COUNTRY, dataset: dm_basic, variable: COUNTRY, role: country}], depends_on: [], required: true, intent: Copy the country value.}
+  - {task_id: AE_STUDY_IDENTIFIER, assembly_group_id: AE_STUDY_IDENTIFIER, target_domain: AE, source_refs: [{ref_id: ae_basic__STUDY, dataset: ae_basic, variable: STUDY, role: study_identifier}], depends_on: [], required: true, intent: Copy the study identifier to AE.}
+  - {task_id: AE_DOMAIN_CONSTANT, assembly_group_id: AE_DOMAIN_CONSTANT, target_domain: AE, source_refs: [], depends_on: [], required: true, intent: Set the constant AE domain code.}
+  - task_id: AE_UNIQUE_SUBJECT_IDENTIFIER
+    assembly_group_id: AE_UNIQUE_SUBJECT_IDENTIFIER
+    target_domain: AE
+    source_refs:
+      - {ref_id: ae_basic__STUDY, dataset: ae_basic, variable: STUDY, role: study_identifier}
+      - {ref_id: ae_basic__PATNUM, dataset: ae_basic, variable: PATNUM, role: subject_identifier}
+    depends_on: []
+    required: true
+    intent: Derive the unique subject identifier for AE.
+  - {task_id: AE_REPORTED_TERM, assembly_group_id: AE_REPORTED_TERM, target_domain: AE, source_refs: [{ref_id: ae_basic__AETERM, dataset: ae_basic, variable: AETERM, role: reported_term}], depends_on: [], required: true, intent: Copy the reported adverse event term.}
+  - {task_id: AE_SEVERITY, assembly_group_id: AE_SEVERITY, target_domain: AE, source_refs: [{ref_id: ae_basic__AESEV, dataset: ae_basic, variable: AESEV, role: severity}], depends_on: [], required: true, intent: Map adverse event severity using controlled terminology.}
+  - {task_id: AE_START_DATE, assembly_group_id: AE_START_DATE, target_domain: AE, source_refs: [{ref_id: ae_basic__AESTDAT, dataset: ae_basic, variable: AESTDAT, role: start_date}], depends_on: [], required: true, intent: Convert adverse event start date to ISO 8601.}
+  - {task_id: VS_STUDY_IDENTIFIER, assembly_group_id: VS_STUDY_IDENTIFIER, target_domain: VS, source_refs: [{ref_id: vs_basic__STUDY, dataset: vs_basic, variable: STUDY, role: study_identifier}], depends_on: [], required: true, intent: Copy the study identifier to VS.}
+  - {task_id: VS_DOMAIN_CONSTANT, assembly_group_id: VS_DOMAIN_CONSTANT, target_domain: VS, source_refs: [], depends_on: [], required: true, intent: Set the constant VS domain code.}
+  - task_id: VS_UNIQUE_SUBJECT_IDENTIFIER
+    assembly_group_id: VS_UNIQUE_SUBJECT_IDENTIFIER
+    target_domain: VS
+    source_refs:
+      - {ref_id: vs_basic__STUDY, dataset: vs_basic, variable: STUDY, role: study_identifier}
+      - {ref_id: vs_basic__PATNUM, dataset: vs_basic, variable: PATNUM, role: subject_identifier}
+    depends_on: []
+    required: true
+    intent: Derive the unique subject identifier for VS.
+  - {task_id: VS_TEST_CODE, assembly_group_id: VS_TEST_CODE, target_domain: VS, source_refs: [{ref_id: vs_basic__VSTESTCD, dataset: vs_basic, variable: VSTESTCD, role: test_code}], depends_on: [], required: true, intent: Copy the vital signs test code.}
+  - {task_id: VS_ORIGINAL_RESULT, assembly_group_id: VS_ORIGINAL_RESULT, target_domain: VS, source_refs: [{ref_id: vs_basic__VSORRES, dataset: vs_basic, variable: VSORRES, role: original_result}], depends_on: [], required: true, intent: Copy the original vital signs result.}
+  - {task_id: VS_MEASUREMENT_DATE, assembly_group_id: VS_MEASUREMENT_DATE, target_domain: VS, source_refs: [{ref_id: vs_basic__VSDAT, dataset: vs_basic, variable: VSDAT, role: measurement_date}], depends_on: [], required: true, intent: Convert the vital signs date to ISO 8601.}

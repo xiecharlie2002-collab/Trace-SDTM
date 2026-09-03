@@ -1,21 +1,23 @@
 # TraceSDTM
 
-TraceSDTM 是一个人工监督、注册表约束、规格驱动、可追溯的 SDTM 自动化作品集项目。0.2 版继续只覆盖 DM、AE、VS，但增加了多来源整合、不完整日期时间、受控单位换算、VS 横向转纵向和基线标志。
+TraceSDTM 是一个人工监督、注册表约束、规格驱动、可追溯的 SDTM 自动化作品集项目。0.4 版继续只覆盖 DM、AE、VS，但把模型推荐拆成目标识别、函数选择和有限参数补全，并把已知参数交给程序确定性注入。
 
 ## 流程
 
 ```text
 来源数据登记与画像
     ↓
-按域、表单、临床概念和依赖关系分组
+拆成带依赖关系的原子临床动作
     ↓
-模型第一阶段：判断转换类别
+模型第一阶段：识别目标变量
     ↓
-模型第二阶段：在类别内选择登记函数和参数
+模型第二阶段：选择登记函数和来源编号
     ↓
-按完整映射方案进行人工审核
+政策、注册表和资源目录自动注入已知参数
     ↓
-注册表复核并锁定 0.2 YAML 规格
+模型第三阶段：只补全仍未知且有有限选项的参数
+    ↓
+确定性组装、人工审核并锁定 0.4 YAML 规格
     ↓
 R 与 sdtm.oak 确定性生成 CSV、XPT 和追溯
     ↓
@@ -26,9 +28,9 @@ R 与 sdtm.oak 确定性生成 CSV、XPT 和追溯
 
 模型不能生成或执行 R 代码、单位公式、正则表达式、连接键或自由条件。正式构建只读取批准后的 YAML，不再次调用模型。
 
-## 两个演示场景
+## 三级基准场景
 
-`basic` 用于快速展示既有 DM、AE、VS 流程；`advanced` 独立展示 0.2 新能力，不覆盖基础场景和 0.1 历史成果。
+`basic` 包含18个常见原子任务，`intermediate` 包含49个同一数据集内的关系型任务，`advanced` 包含57个跨来源、不完整日期、单位换算和多阶段依赖任务。合计124项，并可聚合回原来的18、20和21个审核概念。
 
 高级场景当前实际结果：
 
@@ -48,6 +50,7 @@ R 与 sdtm.oak 确定性生成 CSV、XPT 和追溯
 ```powershell
 Rscript scripts/trace_sdtm.R registry-check --scenario advanced
 Rscript scripts/trace_sdtm.R recommend --seed --scenario advanced
+Rscript scripts/trace_sdtm.R evaluate-v04 --scenario advanced
 Rscript scripts/trace_sdtm.R approve --scenario advanced
 Rscript scripts/trace_sdtm.R run --scenario advanced
 ```
@@ -67,6 +70,16 @@ Rscript scripts/trace_sdtm.R report --scenario advanced
 Rscript scripts/trace_sdtm.R test --scenario advanced
 ```
 
+三级子代理盲评使用一次性编排脚本，原始响应按字节冻结，正式口径不进行结构修复或选择性重试：
+
+```powershell
+Rscript scripts/experiments/v04_subagent_benchmark.R prepare-targets --scenario basic --domain DM --experiment-id <实验编号>
+Rscript scripts/experiments/v04_subagent_benchmark.R import-targets --scenario basic --domain DM --experiment-id <实验编号> --response-file <响应文件> --task-id <子代理任务编号>
+Rscript scripts/experiments/v04_report.R --experiment-id <实验编号>
+```
+
+完整协议还包括函数阶段、给定正确目标的条件函数阶段、参数阶段和场景汇总。每个层级与域使用一个全新子代理，同一子代理完成该域的各阶段；子代理盲法属于过程约束，不是操作系统级隔离。
+
 ## 使用真实大模型
 
 配置 OpenAI 兼容接口后运行：
@@ -79,7 +92,7 @@ $env:TRACE_SDTM_EXPERIMENT_ID = 'model-20260902'
 Rscript scripts/trace_sdtm.R recommend --scenario advanced
 ```
 
-实验产物写入 `output/v0.2/advanced/experiments/<实验编号>/`，不会覆盖基线。打开该目录中的 `review/mapping_review.xlsx` 完成人工审核后运行：
+常规模型实验产物写入 `output/benchmark/v2/<场景>/experiments/<实验编号>/`，不会覆盖基线。`recommend-targets`、`recommend-functions`、`recommend-parameters` 和 `assemble-recommendations` 也可分别运行，便于恢复和定位错误。打开实验目录中的 `review/mapping_review.xlsx` 完成人工审核后运行：
 
 ```powershell
 $env:TRACE_SDTM_REVIEWER = '<审核者标识>'
@@ -98,7 +111,7 @@ Rscript scripts/trace_sdtm.R approve --scenario advanced
 
 ## 注册表和 sdtm.oak
 
-`config/transform_registry.yml` 是 23 个转换函数的唯一元数据源，同时服务于提示词、模型结果验证、审核工作簿、YAML 检查、函数调度、自动测试和文档生成。
+`config/transform_registry.yml` 1.2.0 是转换函数及参数解析策略的唯一元数据源，同时服务于提示词、模型结果验证、审核工作簿、YAML 检查、函数调度、自动测试和文档生成。
 
 项目选择性使用 sdtm.oak 0.2.0 的普通赋值、受控术语、日期时间、参考日期、序号、研究日和基线算法。单位换算由项目版本化受控表完成。参数使用 JSON Schema Draft-07 验证，函数只能从 R 中的受控绑定表解析。
 
@@ -133,12 +146,12 @@ Rscript -e "renv::restore()"
 ## 重要产物
 
 - `config/transform_registry.yml`：唯一转换元数据源。
-- `output/scenarios/advanced/review/mapping_review.xlsx`：按临床概念审核的工作簿。
-- `output/scenarios/advanced/specs/approved_mapping.yml`：唯一允许进入构建的 0.2 规格。
-- `output/scenarios/advanced/sdtm/xpt`：Pinnacle 21 实际验证的 XPT。
-- `output/scenarios/advanced/lineage/field_lineage.csv`：字段级追溯。
-- `output/scenarios/advanced/validation/p21/p21_report.xlsx`：原始验证报告。
-- `output/scenarios/advanced/report/trace_sdtm_report.html`：可离线打开的项目报告。
+- `specs/benchmark/v2/*_tasks.yml`：124项原子任务及稳定来源编号。
+- `specs/benchmark/v2/*_gold.yml`：只用于盲评后的独立评价。
+- `output/benchmark/v2/<场景>/review/mapping_review.xlsx`：按原子任务审核的工作簿。
+- `output/benchmark/v2/<场景>/specs/approved_mapping.yml`：唯一允许进入构建的0.4规格。
+- `output/benchmark/v2/<场景>/sdtm/xpt`：供 Pinnacle 21 验证的 XPT。
+- `output/benchmark/v2/<场景>/lineage/field_lineage.csv`：字段级追溯。
 
 ## 边界
 

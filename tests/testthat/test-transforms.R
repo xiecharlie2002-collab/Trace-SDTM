@@ -1,5 +1,5 @@
 test_that("转换注册表唯一、完整且所有实现均可解析", {
-  config <- load_project_config("advanced")
+  config <- load_v03_config_for_tests("advanced")
   registry <- load_transform_registry(config)
   ids <- vapply(registry$transforms, `[[`, character(1), "transform_id")
   expect_length(ids, 23L)
@@ -10,7 +10,7 @@ test_that("转换注册表唯一、完整且所有实现均可解析", {
 })
 
 test_that("参数模式禁止未知参数和自由公式", {
-  config <- load_project_config("advanced")
+  config <- load_v03_config_for_tests("advanced")
   specification <- load_mapping_template(config)
   metadata <- load_metadata(config)
   registry <- load_transform_registry(config)
@@ -21,7 +21,7 @@ test_that("参数模式禁止未知参数和自由公式", {
 })
 
 test_that("完整、不完整和日期时间转换不进行日期填补", {
-  config <- load_project_config("advanced")
+  config <- load_v03_config_for_tests("advanced")
   specification <- load_mapping_template(config)
   sources <- load_registered_sources_v02(specification, config)
   sources$ae_merged <- dplyr::left_join(sources$ae_main, sources$sae_detail, by = c("STUDY", "PATNUM", "AEID"))
@@ -34,7 +34,7 @@ test_that("完整、不完整和日期时间转换不进行日期填补", {
 })
 
 test_that("受控单位换算得到指定示例且未知单位被拒绝", {
-  config <- load_project_config("advanced")
+  config <- load_v03_config_for_tests("advanced")
   state <- list(current_records = tibble::tibble(VSTESTCD = c("HEIGHT", "WEIGHT", "TEMP"), VSORRES = c("70", "180", "98.6"), VSORRESU = c("in", "LB", "F")))
   concept <- list(concept_id = "UNIT_TEST")
   steps <- list(
@@ -54,7 +54,7 @@ test_that("受控单位换算得到指定示例且未知单位被拒绝", {
 })
 
 test_that("受控连接在重复键或缺失键时停止", {
-  config <- load_project_config("advanced")
+  config <- load_v03_config_for_tests("advanced")
   specification <- load_mapping_template(config)
   concept <- concept_lookup(specification)$AE_SOURCE_INTEGRATION
   step <- gold_plan_steps(load_gold_specification(config)$plans$AE_SOURCE_INTEGRATION)[[1]]

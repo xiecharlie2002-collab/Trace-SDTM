@@ -1,5 +1,5 @@
 test_that("临床概念按域和依赖关系分组且不会产生重复任务", {
-  config <- load_project_config("advanced")
+  config <- load_v03_config_for_tests("advanced")
   profile_sources(config)
   dictionary <- readr::read_csv(trace_path(config$paths$profile_dir, "source_dictionary.csv"), show_col_types = FALSE)
   specification <- load_mapping_template(config)
@@ -16,7 +16,7 @@ test_that("临床概念按域和依赖关系分组且不会产生重复任务", 
 })
 
 test_that("第二阶段只看到第一阶段类别内函数的完整函数卡", {
-  config <- load_project_config("advanced")
+  config <- load_v03_config_for_tests("advanced")
   registry <- load_transform_registry(config)
   cards <- function_cards_for_model(registry, "unit_conversion")
   expect_setequal(vapply(cards, `[[`, character(1), "transform_id"), "standardize_unit")
@@ -26,7 +26,7 @@ test_that("第二阶段只看到第一阶段类别内函数的完整函数卡", 
 })
 
 test_that("高级场景为直接来源和派生来源提供字段画像证据", {
-  config <- load_project_config("advanced")
+  config <- load_v03_config_for_tests("advanced")
   profile_sources(config)
   dictionary <- readr::read_csv(trace_path(config$paths$profile_dir, "source_dictionary.csv"), show_col_types = FALSE)
   specification <- load_mapping_template(config)
@@ -58,7 +58,7 @@ test_that("高级场景为直接来源和派生来源提供字段画像证据", 
 })
 
 test_that("提示词使用字符串类别并只提供裁剪后的受控资源", {
-  config <- load_project_config("advanced")
+  config <- load_v03_config_for_tests("advanced")
   profile_sources(config)
   dictionary <- readr::read_csv(trace_path(config$paths$profile_dir, "source_dictionary.csv"), show_col_types = FALSE)
   specification <- load_mapping_template(config)
@@ -94,7 +94,7 @@ test_that("提示词使用字符串类别并只提供裁剪后的受控资源", 
 })
 
 test_that("参考种子生成七张审核工作表并覆盖高级来源字段", {
-  config <- load_project_config("advanced")
+  config <- load_v03_config_for_tests("advanced")
   recommendations <- seed_recommendations(config)
   expect_equal(nrow(recommendations), length(load_mapping_template(config)$concepts))
   expect_true(all(recommendations$provenance == "reference_seed"))
@@ -105,7 +105,7 @@ test_that("参考种子生成七张审核工作表并覆盖高级来源字段", 
 })
 
 test_that("超范围分值、未知函数和信息不足方案被拒绝", {
-  config <- load_project_config("advanced")
+  config <- load_v03_config_for_tests("advanced")
   specification <- load_mapping_template(config)
   metadata <- load_metadata(config)
   registry <- load_transform_registry(config)
@@ -142,7 +142,7 @@ test_that("审核比较忽略字符向量与 JSON 列表的表示差异", {
 })
 
 test_that("实验产物按场景隔离且密钥不会进入提示词", {
-  config <- load_project_config("advanced")
+  config <- load_v03_config_for_tests("advanced")
   routed <- apply_experiment_paths(config, "deepseek-test")
   expect_match(routed$paths$recommendation_dir, "output/benchmark/v1/advanced/experiments/deepseek-test", fixed = TRUE)
   expect_error(apply_experiment_paths(config, "../outside"), "只能包含")
@@ -158,7 +158,7 @@ test_that("实验产物按场景隔离且密钥不会进入提示词", {
 })
 
 test_that("没有批准规格时构建入口被阻止", {
-  config <- load_project_config("advanced")
+  config <- load_v03_config_for_tests("advanced")
   config$paths$approved_specification <- "specs/not_created_for_test.yml"
   expect_error(load_approved_mapping(config), "尚未生成")
 })

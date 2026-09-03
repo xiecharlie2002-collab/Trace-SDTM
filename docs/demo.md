@@ -1,19 +1,20 @@
-# TraceSDTM 0.2 五分钟演示
+# TraceSDTM 0.4 五分钟演示
 
 ## 0:00—0:40：项目定位
 
-“TraceSDTM 不是把原始数据交给模型后直接收代码。模型分两阶段提出类别和函数链；注册表限制函数、参数、来源和目标；人工审核完整方案；正式构建只读取批准的 YAML。”
+“TraceSDTM 不是把原始数据交给模型后直接收代码。模型依次识别目标、选择函数、补全少量未知参数；已知参数由程序注入；注册表限制函数、参数、来源和目标；正式构建只读取批准的 YAML。”
 
-## 0:40—1:25：注册表和两阶段推荐
+## 0:40—1:25：注册表和三阶段推荐
 
 ```powershell
 Rscript scripts/trace_sdtm.R registry-check --scenario advanced
 Rscript scripts/trace_sdtm.R recommend --seed --scenario advanced
+Rscript scripts/trace_sdtm.R evaluate-v04 --scenario advanced
 ```
 
-打开 `output/scenarios/advanced/review/mapping_review.xlsx`：
+打开 `output/benchmark/v2/advanced/review/mapping_review.xlsx`：
 
-- Concept Review 以临床概念为审核单位；
+- Task Review 以原子临床动作为审核单位；
 - Candidate Plans 和 Plan Steps 展示完整候选方案；
 - Transform Catalog 由注册表自动生成；
 - 当前使用专家参考种子，不将它宣传为模型准确率。
@@ -24,7 +25,7 @@ Rscript scripts/trace_sdtm.R recommend --seed --scenario advanced
 Rscript scripts/trace_sdtm.R approve --scenario advanced
 ```
 
-打开 `output/scenarios/advanced/specs/approved_mapping.yml`。说明 approve 和 build 都会重新进行注册表检查，构建期间不调用模型；规格保存审核者、时间、注册表版本和校验值。
+打开 `output/benchmark/v2/advanced/specs/approved_mapping.yml`。说明 approve 和 build 都会重新进行注册表检查，构建期间不调用模型；规格保存审核者、时间、注册表版本和校验值。
 
 ## 2:00—3:10：高级构建与追溯
 
@@ -58,10 +59,10 @@ Rscript scripts/trace_sdtm.R validate-p21 --scenario advanced
 Rscript scripts/trace_sdtm.R report --scenario advanced
 ```
 
-打开 `output/scenarios/advanced/report/trace_sdtm_report.html`。
+打开 `output/benchmark/v2/advanced/report/trace_sdtm_report.html`。
 
 “项目体现的不是提示词技巧，而是可治理的自动化设计：模型推荐、专家判断、注册表约束、确定性执行、独立验证和全程追溯。高级场景专门证明它能处理真实项目中较难的连接、日期精度和单位问题。”
 
 ## 简历表述示例
 
-基于 R、sdtm.oak 与 Pinnacle 21 Community 构建人工监督的 SDTM 自动化流水线，覆盖 DM、AE、VS，实现临床概念分组、两阶段映射推荐、转换注册表约束、Excel 审核、YAML 规格锁定、确定性 XPT 生成及字段级追溯；设计跨来源连接、不完整日期、受控单位换算和 VS 基线标志场景，并将验证问题区分为生成缺陷与最小范围限制。
+基于 R、sdtm.oak 与 Pinnacle 21 Community 构建人工监督的 SDTM 自动化流水线，覆盖 DM、AE、VS；将124个映射动作拆为目标识别、函数选择和有限参数补全，利用注册表与项目政策确定性注入已知参数，实现 Excel 审核、0.4 YAML 规格锁定、XPT 生成及字段级追溯；以三级盲评分别报告语义、结构和完整计划正确性。

@@ -261,6 +261,8 @@ lineage_step_v02 <- function(concept, step, entry, records_created, specificatio
   aggregation_rule <- if (identical(step$transform_id, "derive_reference_datetime")) as.character(registry_json(parameters[c("selection", "subject_keys", "sources")])) else ""
   unit_config <- load_unit_conversions(config)
   tibble::tibble(
+    task_id = as.character(step$.task_id %||% concept$concept_id),
+    assembly_group_id = as.character(concept$assembly_group_id %||% concept$concept_id),
     concept_id = concept$concept_id,
     target_domain = concept$target_domain,
     target_variables = paste(step_target_variables(step), collapse = " | "),
@@ -358,8 +360,9 @@ partial_date_notes_v02 <- function(datasets) {
 
 build_sdtm <- function(config = load_project_config()) {
   ensure_output_directories(config)
-  specification <- load_approved_mapping(config)
-  validate_specification_v02(specification, config, require_approved = TRUE)
+  approved_specification <- load_approved_mapping(config)
+  validate_specification_v04(approved_specification, config, require_approved = TRUE)
+  specification <- compile_specification_v04(approved_specification, config)
   check_concept_dependencies_v02(specification)
   metadata <- load_metadata(config)
   registry <- load_transform_registry(config)
@@ -391,6 +394,6 @@ build_sdtm <- function(config = load_project_config()) {
     unit_conversion_version = load_unit_conversions(config)$version,
     datasets = as.data.frame(manifest_data)
   ), trace_path(config$paths$manifest_dir, "build_manifest.json"))
-  trace_info("已按 0.2 批准规格生成 SDTM：%s。", paste(sprintf("%s=%s 行", manifest_data$domain, manifest_data$records), collapse = "，"))
+  trace_info("已按 0.4 原子任务批准规格生成 SDTM：%s。", paste(sprintf("%s=%s 行", manifest_data$domain, manifest_data$records), collapse = "，"))
   invisible(datasets)
 }

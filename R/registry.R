@@ -10,6 +10,8 @@ registry_json <- function(value) {
   jsonlite::toJSON(value, auto_unbox = TRUE, null = "null", na = "null", pretty = FALSE)
 }
 
+.trace_registry_cache <- new.env(parent = emptyenv())
+
 json_schema_type <- function(schema) {
   type <- unlist(schema$type %||% character(), use.names = FALSE)
   if (length(type) == 1L) type else character()
@@ -54,13 +56,13 @@ prepare_json_schema <- function(schema) {
 json_schema_errors <- function(value, schema) {
   prepared_schema <- prepare_json_schema(schema)
   prepared_value <- prepare_value_for_schema(value, schema)
-  result <- jsonvalidate::json_validate(
-    registry_json(prepared_value),
-    registry_json(prepared_schema),
-    engine = "ajv",
-    verbose = TRUE,
-    greedy = TRUE
-  )
+  schema_json <- registry_json(prepared_schema)
+  cache_key <- paste0("schema_", digest::digest(schema_json, algo = "sha256"))
+  if (!exists(cache_key, envir = .trace_registry_cache, inherits = FALSE)) {
+    assign(cache_key, jsonvalidate::json_validator(schema_json, engine = "ajv"), envir = .trace_registry_cache)
+  }
+  validator <- get(cache_key, envir = .trace_registry_cache, inherits = FALSE)
+  result <- validator(registry_json(prepared_value), verbose = TRUE, greedy = TRUE)
   if (isTRUE(result)) return(character())
   errors <- attr(result, "errors")
   if (is.null(errors) || !nrow(errors)) return("未提供详细错误。")
@@ -104,6 +106,27 @@ validate_transform_registry <- function(registry, config = load_project_config()
       trace_abort(sprintf("%s 的参数模式无效：%s", entry$transform_id, conditionMessage(probe)))
     }
     if (!length(entry$examples)) trace_abort(sprintf("%s 缺少示例。", entry$transform_id))
+    parameter_names <- names(entry$parameter_schema$properties %||% list())
+    resolution_names <- names(entry$parameter_resolution %||% list())
+    if (!setequal(parameter_names, resolution_names)) {
+      trace_abort(sprintf(
+        "%s 的参数解析元数据与参数模式不一致；缺少=%s，多余=%s。",
+        entry$transform_id,
+        paste(setdiff(parameter_names, resolution_names), collapse = ", "),
+        paste(setdiff(resolution_names, parameter_names), collapse = ", ")
+      ))
+    }
+    if (length(resolution_names)) {
+      invalid_override <- vapply(entry$parameter_resolution, function(x) !identical(x$override, FALSE), logical(1))
+      if (any(invalid_override)) trace_abort(sprintf("%s 不允许模型覆盖自动注入参数。", entry$transform_id))
+      if (exists("parameter_resolver_bindings_v04", mode = "function")) {
+        resolver_ids <- vapply(entry$parameter_resolution, function(x) as.character(x$resolver_id %||% ""), character(1))
+        unknown_resolvers <- setdiff(resolver_ids, names(parameter_resolver_bindings_v04()))
+        if (length(unknown_resolvers)) trace_abort(sprintf(
+          "%s 使用未绑定的参数解析器：%s。", entry$transform_id, paste(unknown_resolvers, collapse = ", ")
+        ))
+      }
+    }
     if (isTRUE(entry$model_selectable)) {
       example_parameters <- entry$examples[[1]]$parameters %||% setNames(list(), character())
       positive_errors <- json_schema_errors(example_parameters, entry$parameter_schema)
@@ -129,7 +152,15 @@ precondition_source_exists <- function(context) {
     if (!isTRUE(catalog$derived)) {
       path <- trace_path(context$config$paths$raw_dir, catalog$file)
       if (!file.exists(path)) trace_abort(sprintf("来源文件不存在：%s", path))
-      header <- names(readr::read_csv(path, n_max = 0L, show_col_types = FALSE, name_repair = "minimal"))
+      cache_key <- paste0("header_", digest::digest(normalizePath(path, winslash = "/", mustWork = TRUE), algo = "sha256"))
+      if (!exists(cache_key, envir = .trace_registry_cache, inherits = FALSE)) {
+        assign(
+          cache_key,
+          names(readr::read_csv(path, n_max = 0L, show_col_types = FALSE, name_repair = "minimal")),
+          envir = .trace_registry_cache
+        )
+      }
+      header <- get(cache_key, envir = .trace_registry_cache, inherits = FALSE)
       if (!ref$variable %in% header) trace_abort(sprintf("来源字段不存在：%s.%s", ref$dataset, ref$variable))
     }
   }
@@ -223,12 +254,22 @@ concept_source_refs <- function(concept) concept$source_refs %||% list()
 
 step_source_refs <- function(concept, step) {
   refs <- concept_source_refs(concept)
+  if (!is.null(step$source_ref_ids)) {
+    ids <- unlist(step$source_ref_ids, use.names = FALSE)
+    if (!length(ids)) return(list())
+    available <- vapply(refs, function(ref) as.character(ref$ref_id %||% ""), character(1))
+    missing <- setdiff(ids, available)
+    concept_id <- as.character(concept$task_id %||% concept$concept_id %||% "未知任务")
+    if (length(missing)) trace_abort(sprintf("%s/%s 引用了任务外来源编号：%s", concept_id, step$transform_id, paste(missing, collapse = ", ")))
+    return(refs[match(ids, available)])
+  }
   if (is.null(step$source_keys)) return(refs)
   keys <- unlist(step$source_keys, use.names = FALSE)
   if (!length(keys)) return(list())
   available <- vapply(refs, source_ref_key, character(1))
   missing <- setdiff(keys, available)
-  if (length(missing)) trace_abort(sprintf("%s/%s 引用了概念外来源：%s", concept$concept_id, step$transform_id, paste(missing, collapse = ", ")))
+  concept_id <- as.character(concept$task_id %||% concept$concept_id %||% "未知任务")
+  if (length(missing)) trace_abort(sprintf("%s/%s 引用了概念外来源：%s", concept_id, step$transform_id, paste(missing, collapse = ", ")))
   refs[match(keys, available)]
 }
 
@@ -315,6 +356,171 @@ validate_specification_v02 <- function(specification, config = load_project_conf
     }
   }
   invisible(TRUE)
+}
+
+# -----------------------------------------------------------------------------
+# 0.4：原子任务规格。外部规格只保存 task/source_ref_id；构建前编译为现有
+# 确定性执行器能够消费的临床概念组。编译结果只存在于内存中，并不是旧规格兼容层。
+
+task_id_v04 <- function(task) as.character(task$task_id %||% "")
+
+specification_tasks_v04 <- function(specification) specification$tasks %||% list()
+
+task_steps_v04 <- function(task) {
+  task$approved_plan$steps %||% task$steps %||% list()
+}
+
+task_ref_index_v04 <- function(task) {
+  refs <- concept_source_refs(task)
+  ids <- vapply(refs, function(ref) as.character(ref$ref_id %||% ""), character(1))
+  stats::setNames(refs, ids)
+}
+
+resolve_step_sources_v04 <- function(step, task) {
+  ids <- unlist(step$source_ref_ids %||% character(), use.names = FALSE)
+  refs <- task_ref_index_v04(task)
+  missing <- setdiff(ids, names(refs))
+  if (length(missing)) {
+    trace_abort(sprintf("%s/%s 引用了任务外来源编号：%s。", task_id_v04(task), step$transform_id, paste(missing, collapse = ", ")))
+  }
+  step$source_ref_ids <- as.list(ids)
+  step$source_keys <- as.list(vapply(refs[ids], source_ref_key, character(1)))
+  step$.task_id <- task_id_v04(task)
+  step
+}
+
+topological_task_order_v04 <- function(tasks) {
+  ids <- vapply(tasks, task_id_v04, character(1))
+  dependencies <- lapply(tasks, function(task) unlist(task$depends_on %||% character(), use.names = FALSE))
+  names(dependencies) <- ids
+  unknown <- unique(setdiff(unlist(dependencies, use.names = FALSE), ids))
+  if (length(unknown)) trace_abort(sprintf("任务依赖引用未知编号：%s。", paste(unknown, collapse = ", ")))
+  remaining <- ids
+  ordered <- character()
+  while (length(remaining)) {
+    ready <- remaining[vapply(remaining, function(id) all(dependencies[[id]] %in% ordered), logical(1))]
+    if (!length(ready)) trace_abort(sprintf("任务依赖图存在环：%s。", paste(remaining, collapse = ", ")))
+    ordered <- c(ordered, ready)
+    remaining <- setdiff(remaining, ready)
+  }
+  ordered
+}
+
+validate_task_v04 <- function(task, specification, metadata, registry, config, require_approved = FALSE) {
+  id <- task_id_v04(task)
+  if (!nzchar(id)) trace_abort("v0.4 任务缺少 task_id。")
+  if (!nzchar(as.character(task$assembly_group_id %||% ""))) trace_abort(sprintf("%s 缺少 assembly_group_id。", id))
+  if (!task$target_domain %in% names(metadata$domains)) trace_abort(sprintf("%s 使用未知域。", id))
+  if (!is.logical(task$required) || length(task$required) != 1L) trace_abort(sprintf("%s 的 required 必须为单个逻辑值。", id))
+
+  refs <- concept_source_refs(task)
+  ref_ids <- vapply(refs, function(ref) as.character(ref$ref_id %||% ""), character(1))
+  if (any(!nzchar(ref_ids))) trace_abort(sprintf("%s 的每个来源引用都必须有 ref_id。", id))
+  if (anyDuplicated(ref_ids)) trace_abort(sprintf("%s 存在重复 ref_id。", id))
+  for (ref in refs) {
+    if (is.null(specification$source_catalog[[ref$dataset]])) trace_abort(sprintf("%s 引用了未知数据集 %s。", id, ref$dataset))
+    if (!nzchar(as.character(ref$variable %||% ""))) trace_abort(sprintf("%s 存在缺少变量名的来源引用。", id))
+  }
+
+  steps <- task_steps_v04(task)
+  if (require_approved && isTRUE(task$required) && !length(steps)) trace_abort(sprintf("必需任务 %s 没有批准计划。", id))
+  if (length(steps)) {
+    concept <- task
+    concept$concept_id <- id
+    concept$steps <- lapply(steps, resolve_step_sources_v04, task = task)
+    validate_concept_plan(concept, specification, metadata, registry, config)
+    decision <- task$semantic_decision %||% list()
+    if (length(decision)) {
+      expected_targets <- unlist(decision$target_variables %||% character(), use.names = FALSE)
+      actual_targets <- unique(unlist(lapply(concept$steps, step_target_variables), use.names = FALSE))
+      if (!setequal(expected_targets, actual_targets)) {
+        trace_abort(sprintf("%s 的语义目标集合与批准步骤不一致。", id))
+      }
+      output_kind <- as.character(decision$output_kind %||% "variables")
+      if (output_kind %in% c("dataset", "none") && length(expected_targets)) {
+        trace_abort(sprintf("%s 的 %s 输出必须使用空目标变量集合。", id, output_kind))
+      }
+    }
+  }
+  invisible(TRUE)
+}
+
+validate_specification_v04 <- function(specification, config = load_project_config(), require_approved = FALSE) {
+  if (!identical(as.character(specification$schema_version), "0.4")) trace_abort("规格 schema_version 必须为 0.4。")
+  if (require_approved && !identical(specification$specification$status, "approved")) trace_abort("规格尚未批准。")
+  tasks <- specification_tasks_v04(specification)
+  if (!length(tasks)) trace_abort("v0.4 规格没有原子任务。")
+  ids <- vapply(tasks, task_id_v04, character(1))
+  if (anyDuplicated(ids)) trace_abort(sprintf("规格存在重复任务编号：%s。", paste(unique(ids[duplicated(ids)]), collapse = ", ")))
+  topological_task_order_v04(tasks)
+
+  # 同一个 ref_id 在不同任务出现时必须始终指向同一来源字段。
+  ref_rows <- purrr::map_dfr(tasks, function(task) purrr::map_dfr(concept_source_refs(task), function(ref) tibble::tibble(
+    ref_id = as.character(ref$ref_id), source_key = source_ref_key(ref)
+  )))
+  if (nrow(ref_rows)) {
+    inconsistent <- ref_rows |>
+      dplyr::distinct() |>
+      dplyr::count(ref_id) |>
+      dplyr::filter(.data$n > 1L)
+    if (nrow(inconsistent)) trace_abort(sprintf("以下 ref_id 指向多个来源字段：%s。", paste(inconsistent$ref_id, collapse = ", ")))
+  }
+  metadata <- load_metadata(config)
+  registry <- load_transform_registry(config)
+  invisible(lapply(tasks, validate_task_v04, specification = specification, metadata = metadata,
+                   registry = registry, config = config, require_approved = require_approved))
+}
+
+compile_specification_v04 <- function(specification, config = load_project_config()) {
+  validate_specification_v04(specification, config, require_approved = TRUE)
+  tasks <- specification_tasks_v04(specification)
+  order <- topological_task_order_v04(tasks)
+  task_map <- stats::setNames(tasks, vapply(tasks, task_id_v04, character(1)))
+  tasks <- unname(task_map[order])
+  task_to_group <- stats::setNames(vapply(tasks, function(task) as.character(task$assembly_group_id), character(1)), order)
+  group_order <- unique(unname(task_to_group[order]))
+
+  concepts <- lapply(group_order, function(group_id) {
+    members <- Filter(function(task) identical(as.character(task$assembly_group_id), group_id), tasks)
+    first <- members[[1]]
+    refs <- unlist(lapply(members, concept_source_refs), recursive = FALSE)
+    if (length(refs)) refs <- refs[!duplicated(vapply(refs, source_ref_key, character(1)))]
+    dependencies <- unique(unlist(lapply(members, function(task) {
+      ids <- unlist(task$depends_on %||% character(), use.names = FALSE)
+      unname(task_to_group[ids])
+    }), use.names = FALSE))
+    dependencies <- setdiff(dependencies, group_id)
+    steps <- unlist(lapply(members, function(task) {
+      lapply(task_steps_v04(task), resolve_step_sources_v04, task = task)
+    }), recursive = FALSE)
+    list(
+      concept_id = group_id,
+      assembly_group_id = group_id,
+      task_ids = vapply(members, task_id_v04, character(1)),
+      target_domain = first$target_domain,
+      form_name = first$form_name %||% "",
+      source_refs = refs,
+      depends_on = dependencies,
+      expected_cardinality = first$expected_cardinality %||% "one_record_to_one_record",
+      required = any(vapply(members, function(task) isTRUE(task$required), logical(1))),
+      review = first$review %||% list(),
+      steps = steps
+    )
+  })
+
+  compiled <- specification
+  compiled$schema_version <- "0.2"
+  compiled$concepts <- concepts
+  compiled$tasks <- NULL
+  compiled$specification$compiled_from_schema <- "0.4"
+  validate_specification_v02(compiled, config, require_approved = TRUE)
+  compiled
+}
+
+validate_specification <- function(specification, config = load_project_config(), require_approved = FALSE) {
+  version <- as.character(specification$schema_version %||% "")
+  if (identical(version, "0.4")) return(validate_specification_v04(specification, config, require_approved))
+  trace_abort("TraceSDTM v0.4 只接受 schema_version 0.4；旧规格请通过历史 Git 标签运行。")
 }
 
 registry_catalog_table <- function(registry = load_transform_registry()) {

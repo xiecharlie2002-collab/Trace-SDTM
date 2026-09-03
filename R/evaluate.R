@@ -4,6 +4,170 @@ normalize_optional_text <- function(x) {
   value
 }
 
+# -----------------------------------------------------------------------------
+# Schema-driven canonical comparison shared by the 0.2 evaluator and the 0.4
+# atomic evaluator.  The canonical representation is deliberately an internal
+# R value rather than JSON text: this preserves the distinction between an
+# absent object member and an explicitly supplied JSON null.
+
+canonical_null <- function() structure(list(), class = "trace_sdtm_canonical_null")
+
+schema_type_names <- function(schema) {
+  unique(as.character(unlist(schema$type %||% character(), recursive = TRUE, use.names = FALSE)))
+}
+
+canonical_sort_key <- function(value) {
+  paste(as.character(serialize(value, connection = NULL, ascii = TRUE)), collapse = "")
+}
+
+canonicalize_by_schema <- function(value, schema = list()) {
+  types <- schema_type_names(schema)
+  if (is.null(value)) return(canonical_null())
+
+  is_object <- "object" %in% types || (!length(types) && is.list(value) && !is.null(names(value)))
+  is_array <- "array" %in% types && !is_object
+
+  if (is_object) {
+    if (!is.list(value)) value <- as.list(value)
+    if (is.null(names(value))) names(value) <- rep("", length(value))
+    properties <- schema$properties %||% list()
+    additional <- schema$additionalProperties %||% list()
+    ordered_names <- sort(names(value), method = "radix")
+    result <- value[ordered_names]
+    for (name in ordered_names) {
+      property_schema <- properties[[name]]
+      if (is.null(property_schema)) {
+        property_schema <- if (is.list(additional)) additional else list()
+      }
+      result[[name]] <- canonicalize_by_schema(value[[name]], property_schema)
+    }
+    if (!length(result)) return(setNames(list(), character()))
+    return(result)
+  }
+
+  if (is_array) {
+    values <- if (is.list(value) && is.null(names(value))) value else as.list(unname(value))
+    canonical <- lapply(values, canonicalize_by_schema, schema = schema$items %||% list())
+    if (identical(schema[["x-comparison"]] %||% "ordered", "set")) {
+      keys <- vapply(canonical, canonical_sort_key, character(1))
+      keep <- !duplicated(keys)
+      canonical <- canonical[keep]
+      keys <- keys[keep]
+      canonical <- canonical[order(keys, method = "radix")]
+    }
+    return(unname(canonical))
+  }
+
+  # For union schemas the concrete R scalar determines the selected branch.
+  # Pure array schemas were handled above, so a scalar allowed alongside an
+  # array remains a scalar rather than being silently promoted.
+  if ("integer" %in% types && !("number" %in% types)) return(as.integer(value[[1L]]))
+  if ("number" %in% types) return(as.numeric(value[[1L]]))
+  if ("boolean" %in% types) return(as.logical(value[[1L]]))
+  if ("string" %in% types) return(as.character(value[[1L]]))
+
+  if (is.list(value)) {
+    if (!is.null(names(value))) {
+      ordered_names <- sort(names(value), method = "radix")
+      result <- value[ordered_names]
+      for (name in ordered_names) result[[name]] <- canonicalize_by_schema(value[[name]], list())
+      return(result)
+    }
+    return(unname(lapply(value, canonicalize_by_schema, schema = list())))
+  }
+  unname(value)
+}
+
+schema_comparison_details <- function(left, right, schema = list(), validate = TRUE) {
+  left_errors <- if (isTRUE(validate) && exists("json_schema_errors", mode = "function")) {
+    json_schema_errors(left, schema)
+  } else character()
+  right_errors <- if (isTRUE(validate) && exists("json_schema_errors", mode = "function")) {
+    json_schema_errors(right, schema)
+  } else character()
+  left_valid <- !length(left_errors)
+  right_valid <- !length(right_errors)
+  equal <- left_valid && right_valid && identical(
+    canonicalize_by_schema(left, schema),
+    canonicalize_by_schema(right, schema)
+  )
+  list(
+    equal = isTRUE(equal), left_valid = left_valid, right_valid = right_valid,
+    left_errors = left_errors, right_errors = right_errors
+  )
+}
+
+compare_by_schema <- function(left, right, schema = list(), validate = TRUE) {
+  schema_comparison_details(left, right, schema, validate)$equal
+}
+
+step_parameter_comparisons_v04 <- function(proposed, expected, registry) {
+  if (length(proposed) != length(expected)) return(rep(FALSE, max(length(proposed), length(expected))))
+  index <- registry_index(registry)
+  vapply(seq_along(expected), function(step_index) {
+    proposed_step <- proposed[[step_index]]
+    expected_step <- expected[[step_index]]
+    transform_id <- as.character(expected_step$transform_id %||% "")
+    if (!identical(as.character(proposed_step$transform_id %||% ""), transform_id)) return(FALSE)
+    entry <- index[[transform_id]]
+    if (is.null(entry)) return(FALSE)
+    compare_by_schema(
+      proposed_step$parameters %||% list(),
+      expected_step$parameters %||% list(),
+      entry$parameter_schema %||% list(type = "object"),
+      validate = TRUE
+    )
+  }, logical(1))
+}
+
+parameters_equal_by_registry_v04 <- function(proposed, expected, registry) {
+  comparisons <- step_parameter_comparisons_v04(proposed, expected, registry)
+  length(comparisons) == length(expected) && all(comparisons)
+}
+
+canonical_step_v04 <- function(step, registry = NULL) {
+  transform_id <- as.character(step$transform_id %||% "")
+  parameter_schema <- list(type = "object")
+  if (!is.null(registry) && nzchar(transform_id)) {
+    entry <- registry_index(registry)[[transform_id]]
+    if (!is.null(entry)) parameter_schema <- entry$parameter_schema %||% parameter_schema
+  }
+  source_ids <- step$source_ref_ids %||% step$source_keys %||% character()
+  list(
+    transform_id = transform_id,
+    source_ref_ids = unname(as.character(unlist(source_ids, use.names = FALSE))),
+    target_variables = unname(as.character(unlist(step$target_variables %||% character(), use.names = FALSE))),
+    parameters = canonicalize_by_schema(step$parameters %||% list(), parameter_schema)
+  )
+}
+
+canonical_plan_v04 <- function(steps, registry = NULL) {
+  lapply(steps %||% list(), canonical_step_v04, registry = registry)
+}
+
+compare_plan_components_v04 <- function(proposed, expected, registry) {
+  proposed_canonical <- canonical_plan_v04(proposed, registry)
+  expected_canonical <- canonical_plan_v04(expected, registry)
+  proposed_functions <- vapply(proposed_canonical, `[[`, character(1), "transform_id")
+  expected_functions <- vapply(expected_canonical, `[[`, character(1), "transform_id")
+  function_correct <- identical(proposed_functions, expected_functions)
+  source_correct <- function_correct && identical(
+    lapply(proposed_canonical, `[[`, "source_ref_ids"),
+    lapply(expected_canonical, `[[`, "source_ref_ids")
+  )
+  step_target_correct <- function_correct && identical(
+    lapply(proposed_canonical, `[[`, "target_variables"),
+    lapply(expected_canonical, `[[`, "target_variables")
+  )
+  parameter_correct <- function_correct && parameters_equal_by_registry_v04(proposed, expected, registry)
+  list(
+    function_correct = function_correct,
+    source_correct = source_correct,
+    step_target_correct = step_target_correct,
+    parameter_correct = parameter_correct
+  )
+}
+
 evaluate_recommendations <- function(config = load_project_config()) {
   recommendation_path <- trace_path(config$paths$recommendation_dir, "mapping_recommendations.csv")
   gold_path <- trace_path(config$paths$gold_mapping)
@@ -217,9 +381,8 @@ candidate_evaluation_rows_v02 <- function(candidates, specification, gold, regis
     target_correct <- length(missing_targets) == 0L && length(extra_targets) == 0L
     function_correct <- identical(proposed_signature$functions, gold_signature$functions)
     source_correct <- identical(proposed_signature$sources, gold_signature$sources)
-    parameter_correct <- function_correct && identical(
-      registry_json(lapply(proposed_signature$parameters, sort_json_object)),
-      registry_json(lapply(gold_signature$parameters, sort_json_object))
+    parameter_correct <- function_correct && parameters_equal_by_registry_v04(
+      proposed, expected, registry
     )
     tibble::tibble(
       concept_id = concept_id,
@@ -414,4 +577,223 @@ evaluate_recommendations <- function(config = load_project_config()) {
     by_complexity = by_complexity, by_category = by_category, advanced_features = advanced_features,
     summary = summary
   ))
+}
+
+# -----------------------------------------------------------------------------
+# 0.4 reusable atomic/assembly evaluation.  Inputs may be tibbles, lists of
+# records, or named lists keyed by task_id.  The evaluator intentionally knows
+# nothing about repository paths or the on-disk experiment layout.
+
+v04_record_list <- function(value) {
+  if (is.data.frame(value)) {
+    return(lapply(seq_len(nrow(value)), function(row) {
+      stats::setNames(lapply(names(value), function(name) value[[name]][[row]]), names(value))
+    }))
+  }
+  if (!is.list(value)) trace_abort("v0.4 评价输入必须是 data.frame、tibble 或 list。")
+  record_fields <- c(
+    "task_id", "concept_id", "target_domain", "output_kind", "semantic_decision",
+    "steps", "plan", "plan_json", "candidate_plan", "approved_plan"
+  )
+  if (any(names(value) %in% record_fields)) return(list(value))
+  records <- unname(value)
+  record_ids <- names(value)
+  if (!all(vapply(records, is.list, logical(1)))) trace_abort("v0.4 评价列表必须由记录组成。")
+  if (!is.null(record_ids)) {
+    records <- Map(function(record, id) {
+      if (is.null(record$task_id) && is.null(record$concept_id)) record$task_id <- id
+      record
+    }, records, record_ids)
+  }
+  records
+}
+
+v04_first_field <- function(record, fields, default = NULL) {
+  for (field in fields) if (!is.null(record[[field]])) return(record[[field]])
+  default
+}
+
+normalize_string_array_v04 <- function(value) {
+  if (is.null(value)) return(character())
+  unname(as.character(unlist(value, recursive = TRUE, use.names = FALSE)))
+}
+
+normalize_record_v04 <- function(record, expected = FALSE) {
+  parse_valid <- TRUE
+  decode <- function(value) {
+    if (!is.character(value) || length(value) != 1L || is.na(value)) return(value)
+    text <- trimws(value)
+    if (!grepl("^[\\[{]", text)) return(value)
+    tryCatch(from_json_text(text), error = function(error) {
+      parse_valid <<- FALSE
+      NULL
+    })
+  }
+  semantic <- decode(record$semantic_decision %||% list()) %||% list()
+  plan <- decode(v04_first_field(record, c("approved_plan", "candidate_plan", "plan", "plan_json"), list())) %||% list()
+  steps <- decode(record$steps)
+  if (is.null(steps)) steps <- plan$steps %||% if (is.list(plan) && is.null(names(plan))) plan else list()
+  steps <- decode(steps) %||% list()
+  target_variables <- decode(v04_first_field(
+    semantic, "target_variables",
+    v04_first_field(record, "target_variables", plan$target_variables %||% character())
+  ))
+  explicit_structural <- v04_first_field(record, c("structural_correct", "strictly_validated"), NULL)
+  list(
+    task_id = as.character(v04_first_field(record, c("task_id", "concept_id"), "")),
+    assembly_group_id = as.character(v04_first_field(record, c("assembly_group_id", "group_id"), "")),
+    target_domain = as.character(v04_first_field(semantic, "target_domain", v04_first_field(record, "target_domain", ""))),
+    output_kind = as.character(v04_first_field(semantic, "output_kind", v04_first_field(record, "output_kind", "variables"))),
+    target_variables = normalize_string_array_v04(target_variables),
+    steps = steps,
+    candidate_rank = as.integer(v04_first_field(record, c("candidate_rank", "rank"), 1L)),
+    status = as.character(v04_first_field(record, "status", if (expected) "gold" else "proposed")),
+    explicit_structural = explicit_structural,
+    parse_valid = parse_valid
+  )
+}
+
+record_structure_valid_v04 <- function(record, registry) {
+  if (!isTRUE(record$parse_valid)) return(FALSE)
+  if (!is.null(record$explicit_structural) && !isTRUE(record$explicit_structural)) return(FALSE)
+  if (!nzchar(record$task_id) || !nzchar(record$target_domain)) return(FALSE)
+  if (!record$output_kind %in% c("variables", "dataset", "none")) return(FALSE)
+  if (is.na(record$candidate_rank) || record$candidate_rank < 1L) return(FALSE)
+  if (record$output_kind %in% c("dataset", "none") && length(record$target_variables)) return(FALSE)
+  if (!is.list(record$steps)) return(FALSE)
+  if (identical(record$status, "needs_information")) return(!length(record$steps))
+  index <- registry_index(registry)
+  for (step in record$steps) {
+    if (!is.list(step)) return(FALSE)
+    transform_id <- as.character(step$transform_id %||% "")
+    if (!nzchar(transform_id) || is.null(index[[transform_id]])) return(FALSE)
+    if (!is.null(step$source_ref_ids) && !is.null(step$source_keys)) return(FALSE)
+    parameters <- step$parameters %||% list()
+    if (length(json_schema_errors(parameters, index[[transform_id]]$parameter_schema))) return(FALSE)
+  }
+  TRUE
+}
+
+target_set_equal_v04 <- function(left, right) {
+  schema <- list(
+    type = "array", items = list(type = "string"),
+    `x-comparison` = "set"
+  )
+  compare_by_schema(left, right, schema, validate = TRUE)
+}
+
+empty_evaluation_detail_v04 <- function() {
+  tibble::tibble(
+    task_id = character(), assembly_group_id = character(), target_domain = character(),
+    candidate_rank = integer(), semantic_correct = logical(), structural_correct = logical(),
+    function_correct = logical(), source_correct = logical(), step_target_correct = logical(),
+    parameter_correct = logical(), complete_plan_correct = logical(), top3 = logical(),
+    missing_targets = character(), extra_targets = character(), status = character()
+  )
+}
+
+evaluation_rows_v04 <- function(candidates, expected, registry) {
+  candidate_records <- lapply(v04_record_list(candidates), normalize_record_v04)
+  expected_records <- lapply(v04_record_list(expected), normalize_record_v04, expected = TRUE)
+  expected_ids <- vapply(expected_records, `[[`, character(1), "task_id")
+  if (any(!nzchar(expected_ids)) || anyDuplicated(expected_ids)) {
+    trace_abort("v0.4 金标准 task_id 必须非空且唯一。")
+  }
+  expected_index <- stats::setNames(expected_records, expected_ids)
+  if (!length(candidate_records)) return(empty_evaluation_detail_v04())
+
+  purrr::map_dfr(candidate_records, function(candidate) {
+    gold <- expected_index[[candidate$task_id]]
+    if (is.null(gold)) {
+      return(tibble::tibble(
+        task_id = candidate$task_id, assembly_group_id = candidate$assembly_group_id,
+        target_domain = candidate$target_domain, candidate_rank = candidate$candidate_rank,
+        semantic_correct = FALSE, structural_correct = FALSE, function_correct = FALSE,
+        source_correct = FALSE, step_target_correct = FALSE, parameter_correct = FALSE,
+        complete_plan_correct = FALSE, top3 = FALSE, missing_targets = "",
+        extra_targets = paste(candidate$target_variables, collapse = " | "), status = candidate$status
+      ))
+    }
+    structural_correct <- record_structure_valid_v04(candidate, registry)
+    missing_targets <- setdiff(gold$target_variables, candidate$target_variables)
+    extra_targets <- setdiff(candidate$target_variables, gold$target_variables)
+    semantic_correct <- identical(candidate$output_kind, gold$output_kind) &&
+      identical(candidate$target_domain, gold$target_domain) &&
+      target_set_equal_v04(candidate$target_variables, gold$target_variables)
+    components <- compare_plan_components_v04(candidate$steps, gold$steps, registry)
+    complete <- all(c(
+      structural_correct, semantic_correct, components$function_correct,
+      components$source_correct, components$step_target_correct, components$parameter_correct
+    ))
+    tibble::tibble(
+      task_id = candidate$task_id,
+      assembly_group_id = if (nzchar(gold$assembly_group_id)) gold$assembly_group_id else candidate$assembly_group_id,
+      target_domain = gold$target_domain,
+      candidate_rank = candidate$candidate_rank,
+      semantic_correct = semantic_correct,
+      structural_correct = structural_correct,
+      function_correct = components$function_correct,
+      source_correct = components$source_correct,
+      step_target_correct = components$step_target_correct,
+      parameter_correct = components$parameter_correct,
+      complete_plan_correct = complete,
+      top3 = candidate$candidate_rank <= 3L && complete,
+      missing_targets = paste(missing_targets, collapse = " | "),
+      extra_targets = paste(extra_targets, collapse = " | "),
+      status = candidate$status
+    )
+  })
+}
+
+evaluate_atomic_plans_v04 <- function(candidates, expected, registry) {
+  expected_records <- lapply(v04_record_list(expected), normalize_record_v04, expected = TRUE)
+  expected_ids <- vapply(expected_records, `[[`, character(1), "task_id")
+  expected_index <- stats::setNames(expected_records, expected_ids)
+  detail <- evaluation_rows_v04(candidates, expected, registry)
+
+  atomic <- purrr::map_dfr(expected_ids, function(task_id) {
+    gold <- expected_index[[task_id]]
+    rows <- dplyr::filter(detail, .data$task_id == .env$task_id)
+    ranked <- dplyr::arrange(rows, .data$candidate_rank)
+    top1 <- dplyr::filter(ranked, .data$candidate_rank == 1L)
+    if (!nrow(top1) && nrow(ranked)) top1 <- ranked[1L, , drop = FALSE]
+    top3_hit <- nrow(rows) > 0L && any(rows$top3)
+    if (!nrow(top1)) {
+      return(tibble::tibble(
+        task_id = task_id, assembly_group_id = gold$assembly_group_id,
+        target_domain = gold$target_domain, semantic_correct = FALSE,
+        structural_correct = FALSE, function_correct = FALSE, source_correct = FALSE,
+        step_target_correct = FALSE, parameter_correct = FALSE,
+        complete_plan_correct = FALSE, top3 = FALSE, candidate_available = FALSE
+      ))
+    }
+    dplyr::transmute(
+      top1[1L, , drop = FALSE], task_id, assembly_group_id, target_domain,
+      semantic_correct, structural_correct, function_correct, source_correct,
+      step_target_correct, parameter_correct, complete_plan_correct,
+      top3 = top3_hit, candidate_available = TRUE
+    )
+  })
+
+  assembly <- atomic |>
+    dplyr::mutate(
+      assembly_group_id = dplyr::if_else(
+        is.na(.data$assembly_group_id) | !nzchar(.data$assembly_group_id),
+        .data$task_id, .data$assembly_group_id
+      )
+    ) |>
+    dplyr::group_by(.data$assembly_group_id) |>
+    dplyr::summarise(
+      task_count = dplyr::n(),
+      semantic_correct = all(.data$semantic_correct),
+      structural_correct = all(.data$structural_correct),
+      function_correct = all(.data$function_correct),
+      source_correct = all(.data$source_correct),
+      parameter_correct = all(.data$parameter_correct),
+      complete_plan_correct = all(.data$complete_plan_correct),
+      top3 = all(.data$top3),
+      .groups = "drop"
+    )
+
+  list(detail = detail, atomic = atomic, assembly = assembly)
 }

@@ -23,7 +23,7 @@
       "minItems": 1,
       "items": {
         "type": "object",
-        "required": ["transform_id", "title", "description", "category", "execution_stage", "model_selectable", "implementation_id", "provider", "source_contract", "target_contract", "parameter_schema", "preconditions", "not_allowed_when", "examples"],
+        "required": ["transform_id", "title", "description", "category", "execution_stage", "model_selectable", "implementation_id", "provider", "source_contract", "target_contract", "parameter_schema", "parameter_resolution", "preconditions", "not_allowed_when", "examples"],
         "additionalProperties": false,
         "properties": {
           "transform_id": {"type": "string", "pattern": "^[a-z][a-z0-9_]*$"},
@@ -37,6 +37,20 @@
           "source_contract": {"type": "object", "required": ["minimum", "maximum", "minimum_datasets", "maximum_datasets"], "properties": {"minimum": {"type": "integer", "minimum": 0}, "maximum": {"type": "integer", "minimum": 0}, "minimum_datasets": {"type": "integer", "minimum": 0}, "maximum_datasets": {"type": "integer", "minimum": 0}, "types": {"type": "array", "items": {"type": "string"}}}},
           "target_contract": {"type": "object", "required": ["domains", "patterns", "output_mode"], "properties": {"domains": {"type": "array", "items": {"type": "string"}}, "patterns": {"type": "array", "items": {"type": "string"}}, "output_mode": {"enum": ["single", "multiple", "dataset", "records", "none"]}}},
           "parameter_schema": {"type": "object"},
+          "parameter_resolution": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "object",
+              "required": ["resolver_id", "source", "allow_model", "override"],
+              "additionalProperties": false,
+              "properties": {
+                "resolver_id": {"type": "string", "minLength": 1},
+                "source": {"enum": ["policy", "registry", "resource", "derived", "model"]},
+                "allow_model": {"type": "boolean"},
+                "override": {"const": false}
+              }
+            }
+          },
           "preconditions": {"type": "array", "items": {"type": "string"}},
           "not_allowed_when": {"type": "array", "items": {"type": "string"}},
           "examples": {"type": "array", "minItems": 1, "items": {"type": "object"}}

@@ -98,7 +98,7 @@ profile_one_dataset <- function(domain, domain_spec, config) {
 profile_sources <- function(config = load_project_config()) {
   ensure_output_directories(config)
   specification <- load_mapping_template(config)
-  concepts <- specification$concepts %||% list()
+  concepts <- specification$tasks %||% specification$concepts %||% list()
   dictionary <- purrr::imap_dfr(specification$source_catalog, function(source, dataset) {
     if (isTRUE(source$derived)) return(tibble::tibble())
     path <- trace_path(config$paths$raw_dir, source$file)

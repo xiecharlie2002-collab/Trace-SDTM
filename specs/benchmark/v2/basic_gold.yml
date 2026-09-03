@@ -1,0 +1,21 @@
+schema_version: '0.4'
+benchmark: {name: TraceSDTM v0.4 basic atomic gold, version: 2.0.0, status: frozen, task_count: 18}
+plans:
+  DM_STUDY_IDENTIFIER: [{transform_id: assign_no_ct, source_ref_ids: [dm_basic__STUDY], target_variables: [STUDYID], parameters: {}}]
+  DM_DOMAIN_CONSTANT: [{transform_id: hardcode_no_ct, source_ref_ids: [], target_variables: [DOMAIN], parameters: {value: DM}}]
+  DM_UNIQUE_SUBJECT_IDENTIFIER: [{transform_id: derive_usubjid, source_ref_ids: [dm_basic__STUDY, dm_basic__PATNUM], target_variables: [USUBJID], parameters: {separator: '-'}}]
+  DM_INFORMED_CONSENT: [{transform_id: to_iso8601_date, source_ref_ids: [dm_basic__ICDATE], target_variables: [RFICDTC], parameters: {formats: [y-m-d]}}]
+  DM_SEX_TERM: [{transform_id: assign_ct, source_ref_ids: [dm_basic__SEX], target_variables: [SEX], parameters: {codelist_id: SEX}}]
+  DM_COUNTRY: [{transform_id: assign_no_ct, source_ref_ids: [dm_basic__COUNTRY], target_variables: [COUNTRY], parameters: {}}]
+  AE_STUDY_IDENTIFIER: [{transform_id: assign_no_ct, source_ref_ids: [ae_basic__STUDY], target_variables: [STUDYID], parameters: {}}]
+  AE_DOMAIN_CONSTANT: [{transform_id: hardcode_no_ct, source_ref_ids: [], target_variables: [DOMAIN], parameters: {value: AE}}]
+  AE_UNIQUE_SUBJECT_IDENTIFIER: [{transform_id: derive_usubjid, source_ref_ids: [ae_basic__STUDY, ae_basic__PATNUM], target_variables: [USUBJID], parameters: {separator: '-'}}]
+  AE_REPORTED_TERM: [{transform_id: assign_no_ct, source_ref_ids: [ae_basic__AETERM], target_variables: [AETERM], parameters: {}}]
+  AE_SEVERITY: [{transform_id: assign_ct, source_ref_ids: [ae_basic__AESEV], target_variables: [AESEV], parameters: {codelist_id: AESEV}}]
+  AE_START_DATE: [{transform_id: to_iso8601_date, source_ref_ids: [ae_basic__AESTDAT], target_variables: [AESTDTC], parameters: {formats: [y-m-d]}}]
+  VS_STUDY_IDENTIFIER: [{transform_id: assign_no_ct, source_ref_ids: [vs_basic__STUDY], target_variables: [STUDYID], parameters: {}}]
+  VS_DOMAIN_CONSTANT: [{transform_id: hardcode_no_ct, source_ref_ids: [], target_variables: [DOMAIN], parameters: {value: VS}}]
+  VS_UNIQUE_SUBJECT_IDENTIFIER: [{transform_id: derive_usubjid, source_ref_ids: [vs_basic__STUDY, vs_basic__PATNUM], target_variables: [USUBJID], parameters: {separator: '-'}}]
+  VS_TEST_CODE: [{transform_id: assign_no_ct, source_ref_ids: [vs_basic__VSTESTCD], target_variables: [VSTESTCD], parameters: {}}]
+  VS_ORIGINAL_RESULT: [{transform_id: assign_no_ct, source_ref_ids: [vs_basic__VSORRES], target_variables: [VSORRES], parameters: {}}]
+  VS_MEASUREMENT_DATE: [{transform_id: to_iso8601_date, source_ref_ids: [vs_basic__VSDAT], target_variables: [VSDTC], parameters: {formats: [y-m-d]}}]
