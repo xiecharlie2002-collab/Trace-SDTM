@@ -1,9 +1,9 @@
-# TraceSDTM Studio 0.5 project service ---------------------------------------
+# TraceSDTM Studio 0.6 project service ---------------------------------------
 
 studio_settings <- function() {
   path <- trace_path("config", "studio.yml")
   defaults <- list(
-    schema_version = "0.5",
+    schema_version = "0.6",
     host = "127.0.0.1",
     port_range = as.list(3838:3848),
     max_upload_mb = 100,
@@ -67,7 +67,9 @@ studio_relative_path <- function(path, root) {
 studio_read_project <- function(project_id) {
   path <- studio_project_path(project_id)
   value <- yaml::read_yaml(file.path(path, "project.yml"))
-  if (!identical(as.character(value$schema_version), "0.5")) trace_abort("工作台项目版本不是0.5。")
+  if (!identical(as.character(value$schema_version), "0.6")) {
+    trace_abort("该项目使用旧版工作台结构，不能在 TraceSDTM 0.6 中运行。请新建通用项目并重新上传原始数据。")
+  }
   value
 }
 
@@ -85,7 +87,7 @@ studio_append_audit <- function(project_id, event, details = list(), run_id = NU
     trace_abort("审计事件包含禁止持久化的字段。")
   }
   record <- list(
-    schema_version = "0.5", event_id = paste0("evt_", digest::digest(paste(Sys.time(), runif(1)), algo = "sha256", serialize = FALSE)),
+    schema_version = "0.6", event_id = paste0("evt_", digest::digest(paste(Sys.time(), runif(1)), algo = "sha256", serialize = FALSE)),
     occurred_at = utc_now(), project_id = project_id, run_id = run_id,
     actor = as.character(actor %||% "local_user"), event = as.character(event), details = details
   )
@@ -109,27 +111,69 @@ studio_with_project_lock <- function(project_id, code) {
   force(code)
 }
 
-studio_frozen_file_map <- function(template) {
-  config <- load_project_config(template)
-  c(
-    tasks = config$paths$specification_template,
-    metadata = config$paths$metadata,
-    transform_registry = config$paths$transform_registry,
-    transform_registry_schema = config$paths$transform_registry_schema,
-    controlled_terminology = config$paths$controlled_terminology,
-    unit_conversions = config$paths$unit_conversions,
-    mapping_policies = config$paths$mapping_policies
+studio_supported_standards <- function() {
+  metadata <- yaml::read_yaml(trace_path("specs", "sdtm_metadata.yml"))
+  list(list(
+    standard = as.character(metadata$standard %||% "SDTMIG"),
+    version = as.character(metadata$version %||% "3.4"),
+    metadata = trace_path("specs", "sdtm_metadata.yml")
+  ))
+}
+
+studio_default_policy_v06 <- function(study_id) {
+  list(
+    schema_version = "0.4", policy_version = "3.0.0", scenario = "generic",
+    identifiers = list(usubjid = list(
+      components = list(), separator = "-", missing_component_policy = "reject"
+    )),
+    date_time_formats = list(
+      preserve_partial_dates = TRUE, prohibit_date_imputation = TRUE,
+      partial_date_tokens = list("UNK", "UN"), approved_sources = list()
+    ),
+    upstream_outputs = list(), sequence_rules = list(), baseline_rules = list(),
+    unit_standardization = list(required = FALSE, identity_conversion_required = FALSE),
+    dataset_output_contract = list(
+      applies_when_output_mode = "dataset", target_variables = list(),
+      dataset_name_parameter = "output_dataset"
+    ),
+    parameter_bindings = list(), project_defaults = list(study_id = study_id)
   )
 }
 
-studio_create_project <- function(project_id, name, template = "basic", study_id = "TRACE001") {
+studio_source_catalog_file <- function(project_id) {
+  file.path(studio_project_path(project_id), "config", "source_catalog.yml")
+}
+
+studio_read_source_catalog <- function(project_id) {
+  path <- studio_source_catalog_file(project_id)
+  if (!file.exists(path)) return(list())
+  value <- yaml::read_yaml(path)
+  value$source_catalog %||% list()
+}
+
+studio_write_source_catalog <- function(project_id, value) {
+  write_yaml(list(schema_version = "0.6", source_catalog = value), studio_source_catalog_file(project_id))
+}
+
+studio_create_project <- function(project_id, name, study_id = "TRACE001", description,
+                                  standard = "SDTMIG", standard_version = "3.4",
+                                  target_domains = character()) {
   project_id <- studio_validate_project_id(project_id)
   name <- trimws(as.character(name %||% ""))
   study_id <- trimws(as.character(study_id %||% ""))
+  description <- trimws(as.character(description %||% ""))
+  standard <- trimws(as.character(standard %||% "SDTMIG"))
+  standard_version <- trimws(as.character(standard_version %||% "3.4"))
+  target_domains <- unique(as.character(unname(unlist(target_domains %||% character(), use.names = FALSE))))
   if (!nzchar(name)) trace_abort("项目名称不能为空。")
   if (!nzchar(study_id) || nchar(study_id) > 40L) trace_abort("研究编号必须为1至40个字符。")
-  templates <- names(yaml::read_yaml(trace_path("config", "project.yml"))$scenarios)
-  if (!template %in% templates) trace_abort(sprintf("未知模板：%s。", template))
+  if (!nzchar(description) || nchar(description) > 12000L) trace_abort("项目描述必须为1至12000个字符。")
+  supported <- studio_supported_standards()
+  matched <- Filter(function(item) identical(item$standard, standard) && identical(item$version, standard_version), supported)
+  if (length(matched) != 1L) trace_abort(sprintf("当前未安装标准元数据：%s %s。", standard, standard_version))
+  metadata <- yaml::read_yaml(matched[[1]]$metadata)
+  unknown_domains <- setdiff(target_domains, names(metadata$domains))
+  if (length(unknown_domains)) trace_abort(sprintf("目标域不在当前标准目录中：%s。", paste(unknown_domains, collapse = "、")))
   path <- studio_project_path(project_id, must_exist = FALSE)
   if (file.exists(file.path(path, "project.yml"))) trace_abort(sprintf("项目已存在：%s。", project_id))
 
@@ -137,13 +181,16 @@ studio_create_project <- function(project_id, name, template = "basic", study_id
     "raw/original", "raw/normalized", "config", "runs", "audit", "exports"
   )) ensure_dir(file.path(path, relative))
 
-  frozen <- studio_frozen_file_map(template)
-  target_names <- c(
-    tasks = "tasks.yml", metadata = "metadata.yml", transform_registry = "transform_registry.yml",
-    transform_registry_schema = "transform_registry.schema.json",
-    controlled_terminology = "controlled_terminology.yml", unit_conversions = "unit_conversions.yml",
-    mapping_policies = "mapping_policies.yml"
+  frozen <- c(
+    metadata = matched[[1]]$metadata,
+    transform_registry = trace_path("config", "transform_registry.yml"),
+    transform_registry_schema = trace_path("config", "transform_registry.schema.json"),
+    controlled_terminology = trace_path("specs", "v0.2", "controlled_terminology.yml"),
+    unit_conversions = trace_path("specs", "v0.2", "unit_conversions.yml")
   )
+  target_names <- c(metadata = "metadata.yml", transform_registry = "transform_registry.yml",
+                    transform_registry_schema = "transform_registry.schema.json",
+                    controlled_terminology = "controlled_terminology.yml", unit_conversions = "unit_conversions.yml")
   frozen_manifest <- list()
   for (key in names(frozen)) {
     source <- trace_path(frozen[[key]])
@@ -153,21 +200,74 @@ studio_create_project <- function(project_id, name, template = "basic", study_id
     }
     frozen_manifest[[key]] <- list(file = file.path("config", target_names[[key]]), sha256 = file_sha256(target))
   }
+  write_yaml(studio_default_policy_v06(study_id), file.path(path, "config", "mapping_policies.yml"))
 
   project <- list(
-    schema_version = "0.5", project_id = project_id, name = name,
-    template = template, study_id = study_id, config_version = "0.5.0",
+    schema_version = "0.6", project_id = project_id, name = name,
+    study_id = study_id, description = description, standard = standard,
+    standard_version = standard_version, target_domains = as.list(target_domains),
+    config_version = "0.6.0",
     created_at = utc_now(), updated_at = utc_now(), archived = FALSE,
     active_run_id = NULL, active_run_stale = FALSE,
-    stages = list(data_sources = "not_started", policy = "frozen_template", profile = "not_started",
-                  recommendation = "not_started", review = "not_started", build = "not_started",
-                  validation = "not_started", report = "not_started"),
+    stages = list(data_sources = "not_started", profile = "not_started", task_discovery = "not_started",
+                  task_confirmation = "not_started", mapping = "not_started", ai_review = "not_started",
+                  approval = "not_started", build = "not_started"),
     frozen_resources = frozen_manifest
   )
   write_yaml(project, file.path(path, "project.yml"))
-  write_yaml(list(schema_version = "0.5", datasets = list()), file.path(path, "config", "field_bindings.yml"))
-  studio_append_audit(project_id, "project_created", list(template = template, study_id = study_id))
+  studio_write_source_catalog(project_id, list())
+  studio_append_audit(project_id, "project_created", list(
+    study_id = study_id, standard = standard, standard_version = standard_version,
+    target_domains = as.list(target_domains), description_sha256 = digest::digest(description, algo = "sha256", serialize = FALSE)
+  ))
   project
+}
+
+studio_update_project_v06 <- function(project_id, name, study_id, description,
+                                      standard = "SDTMIG", standard_version = "3.4",
+                                      target_domains = character(), actor = "local_user") {
+  studio_with_project_lock(project_id, {
+    project <- studio_read_project(project_id)
+    if (isTRUE(project$archived)) trace_abort("归档项目不能修改。")
+    name <- trimws(as.character(name %||% ""))
+    study_id <- trimws(as.character(study_id %||% ""))
+    description <- trimws(as.character(description %||% ""))
+    target_domains <- unique(as.character(unlist(target_domains %||% character(), use.names = FALSE)))
+    if (!nzchar(name)) trace_abort("项目名称不能为空。")
+    if (!nzchar(study_id) || nchar(study_id) > 40L) trace_abort("研究编号必须为1至40个字符。")
+    if (!nzchar(description) || nchar(description) > 12000L) trace_abort("项目描述必须为1至12000个字符。")
+    supported <- studio_supported_standards()
+    matched <- Filter(function(item) identical(item$standard, standard) && identical(item$version, standard_version), supported)
+    if (length(matched) != 1L) trace_abort(sprintf("当前未安装标准元数据：%s %s。", standard, standard_version))
+    metadata <- yaml::read_yaml(matched[[1L]]$metadata)
+    unknown <- setdiff(target_domains, names(metadata$domains))
+    if (length(unknown)) trace_abort(sprintf("目标域不在当前标准目录中：%s。", paste(unknown, collapse = "、")))
+    before <- list(
+      name = project$name, study_id = project$study_id, description = project$description,
+      standard = project$standard, standard_version = project$standard_version,
+      target_domains = unlist(project$target_domains %||% character(), use.names = FALSE)
+    )
+    project$name <- name
+    project$study_id <- study_id
+    project$description <- description
+    project$standard <- standard
+    project$standard_version <- standard_version
+    project$target_domains <- as.list(target_domains)
+    studio_write_project(project_id, project)
+    changed <- !identical(before, list(
+      name = name, study_id = study_id, description = description,
+      standard = standard, standard_version = standard_version, target_domains = target_domains
+    ))
+    if (changed) {
+      studio_mark_active_run_stale(project_id, "项目描述、研究编号、标准或目标域范围已更新", actor)
+      studio_append_audit(project_id, "project_context_updated", list(
+        study_id = study_id, standard = standard, standard_version = standard_version,
+        target_domains = as.list(target_domains),
+        description_sha256 = digest::digest(description, algo = "sha256", serialize = FALSE)
+      ), actor = actor)
+    }
+    studio_read_project(project_id)
+  })
 }
 
 studio_list_projects <- function(include_archived = FALSE) {
@@ -177,10 +277,14 @@ studio_list_projects <- function(include_archived = FALSE) {
     file <- file.path(path, "project.yml")
     if (!file.exists(file)) return(NULL)
     value <- tryCatch(yaml::read_yaml(file), error = function(error) NULL)
-    if (is.null(value) || !identical(as.character(value$schema_version), "0.5")) return(NULL)
+    if (is.null(value) || !as.character(value$schema_version %||% "") %in% c("0.5", "0.6")) return(NULL)
+    compatible <- identical(as.character(value$schema_version), "0.6")
     data.frame(
       project_id = as.character(value$project_id), name = as.character(value$name),
-      template = as.character(value$template), study_id = as.character(value$study_id),
+      schema_version = as.character(value$schema_version), compatible = compatible,
+      study_id = as.character(value$study_id),
+      standard = if (compatible) paste(value$standard, value$standard_version) else "旧版模板项目",
+      target_domains = if (compatible) paste(unlist(value$target_domains %||% character()), collapse = "、") else "",
       active_run_id = as.character(value$active_run_id %||% ""),
       stale = isTRUE(value$active_run_stale), archived = isTRUE(value$archived),
       updated_at = as.character(value$updated_at %||% value$created_at), stringsAsFactors = FALSE
@@ -188,7 +292,8 @@ studio_list_projects <- function(include_archived = FALSE) {
   })
   result <- dplyr::bind_rows(Filter(Negate(is.null), rows))
   if (!nrow(result)) return(tibble::tibble(
-    project_id = character(), name = character(), template = character(), study_id = character(),
+    project_id = character(), name = character(), schema_version = character(), compatible = logical(),
+    study_id = character(), standard = character(), target_domains = character(),
     active_run_id = character(), stale = logical(), archived = logical(), updated_at = character()
   ))
   if (!isTRUE(include_archived)) result <- dplyr::filter(result, !.data$archived)
@@ -207,10 +312,10 @@ studio_archive_project <- function(project_id, actor = "local_user") {
 }
 
 studio_template_specification <- function(project_id) {
-  yaml::read_yaml(file.path(studio_project_path(project_id), "config", "tasks.yml"))
+  trace_abort("TraceSDTM 0.6 已取消模板规格。任务只存在于运行快照中。")
 }
 
-studio_source_catalog <- function(project_id) studio_template_specification(project_id)$source_catalog
+studio_source_catalog <- function(project_id) studio_read_source_catalog(project_id)
 
 studio_non_derived_sources <- function(project_id) {
   Filter(function(x) !isTRUE(x$derived), studio_source_catalog(project_id))
@@ -377,6 +482,98 @@ studio_mark_active_run_stale <- function(project_id, reason, actor = "local_user
   studio_write_project(project_id, project)
   if (has_active_run) studio_append_audit(project_id, "active_run_marked_stale", list(reason = as.character(reason)), project$active_run_id, actor)
   invisible(project)
+}
+
+studio_dataset_id_v06 <- function(filename) {
+  stem <- tools::file_path_sans_ext(basename(as.character(filename %||% "")))
+  ascii <- suppressWarnings(iconv(stem, from = "", to = "ASCII//TRANSLIT", sub = ""))
+  id <- tolower(gsub("[^A-Za-z0-9]+", "_", ascii))
+  id <- gsub("^_+|_+$", "", id)
+  if (!nzchar(id)) id <- paste0("dataset_", substr(digest::digest(stem, algo = "sha256", serialize = FALSE), 1L, 8L))
+  if (grepl("^[0-9]", id)) id <- paste0("d_", id)
+  substr(id, 1L, 48L)
+}
+
+studio_import_sources <- function(project_id, uploaded_paths, original_names,
+                                  actor = "local_user") {
+  uploaded_paths <- as.character(uploaded_paths %||% character())
+  original_names <- as.character(original_names %||% character())
+  if (!length(uploaded_paths) || length(uploaded_paths) != length(original_names)) {
+    trace_abort("请选择一个或多个CSV文件。")
+  }
+  studio_with_project_lock(project_id, {
+    project <- studio_read_project(project_id)
+    if (isTRUE(project$archived)) trace_abort("归档项目不能上传数据。")
+    ids <- vapply(original_names, studio_dataset_id_v06, character(1))
+    if (anyDuplicated(ids)) trace_abort(sprintf(
+      "本次上传存在重复数据集编号：%s。请先修改文件名。", paste(unique(ids[duplicated(ids)]), collapse = "、")
+    ))
+    catalog <- studio_read_source_catalog(project_id)
+    collisions <- intersect(ids, names(catalog))
+    if (length(collisions)) trace_abort(sprintf(
+      "数据集编号已存在：%s。为保留审计历史，请修改文件名后重新上传。", paste(collisions, collapse = "、")
+    ))
+    inspected <- lapply(uploaded_paths, studio_validate_utf8_csv)
+    hashes <- vapply(uploaded_paths, file_sha256, character(1))
+    stamp <- format(Sys.time(), "%Y%m%d_%H%M%S")
+    project_path <- studio_project_path(project_id)
+    rows <- list()
+    for (index in seq_along(uploaded_paths)) {
+      id <- ids[[index]]
+      original_target <- file.path(project_path, "raw", "original", sprintf(
+        "%s_%s_%s.csv", id, stamp, substr(hashes[[index]], 1L, 10L)
+      ))
+      normalized_target <- file.path(project_path, "raw", "normalized", paste0(id, ".csv"))
+      if (file.exists(original_target) || file.exists(normalized_target)) {
+        trace_abort(sprintf("数据集 %s 的目标文件已经存在。", id))
+      }
+      if (!isTRUE(file.copy(uploaded_paths[[index]], original_target, overwrite = FALSE, copy.date = TRUE)) ||
+          !isTRUE(file.copy(uploaded_paths[[index]], normalized_target, overwrite = FALSE, copy.date = TRUE))) {
+        trace_abort(sprintf("无法保存数据集 %s。", id))
+      }
+      data <- inspected[[index]]
+      catalog[[id]] <- list(
+        file = basename(normalized_target), original_name = basename(original_names[[index]]),
+        original_file = studio_relative_path(original_target, project_path),
+        form_name = tools::file_path_sans_ext(basename(original_names[[index]])),
+        grain = "unknown", keys = list(), derived = FALSE,
+        row_count = nrow(data), column_count = ncol(data), columns = as.list(names(data)),
+        sha256 = hashes[[index]], uploaded_at = utc_now()
+      )
+      rows[[length(rows) + 1L]] <- tibble::tibble(
+        dataset = id, original_name = basename(original_names[[index]]),
+        rows = nrow(data), columns = ncol(data), sha256 = hashes[[index]]
+      )
+      studio_append_audit(project_id, "source_uploaded", list(
+        dataset = id, original_name = basename(original_names[[index]]), sha256 = hashes[[index]],
+        row_count = nrow(data), column_count = ncol(data)
+      ), actor = actor)
+    }
+    studio_write_source_catalog(project_id, catalog)
+    project$stages$data_sources <- "ready"
+    studio_write_project(project_id, project)
+    studio_mark_active_run_stale(project_id, "通用来源数据已更新", actor)
+    dplyr::bind_rows(rows)
+  })
+}
+
+studio_source_manifest <- function(project_id) {
+  catalog <- studio_read_source_catalog(project_id)
+  purrr::imap_dfr(catalog, function(item, id) tibble::tibble(
+    dataset = id, original_name = as.character(item$original_name %||% item$file),
+    rows = as.integer(item$row_count %||% NA_integer_),
+    columns = as.integer(item$column_count %||% length(item$columns %||% list())),
+    grain = as.character(item$grain %||% "unknown"),
+    keys = paste(unlist(item$keys %||% character()), collapse = "、"),
+    sha256 = as.character(item$sha256 %||% "")
+  ))
+}
+
+studio_source_preview_v06 <- function(project_id, dataset, rows = 20L) {
+  source <- studio_read_source_catalog(project_id)[[dataset]]
+  if (is.null(source)) trace_abort(sprintf("未知数据集：%s。", dataset))
+  path <- file.path(studio_project_path(project_id), "raw", "normalized", source$file)
+  utils::head(studio_validate_utf8_csv(path), as.integer(rows))
 }
 
 studio_import_source <- function(project_id, dataset, uploaded_path, original_name = basename(uploaded_path),
@@ -621,11 +818,11 @@ studio_add_visit_mapping <- function(project_id, visit_map_id, visit_name, visit
 }
 
 studio_assert_sources_ready <- function(project_id) {
-  bindings <- studio_read_bindings(project_id)
-  sources <- studio_non_derived_sources(project_id)
-  source_ids <- names(sources)
-  missing <- source_ids[!vapply(source_ids, function(id) identical(bindings$datasets[[id]]$status %||% "", "confirmed"), logical(1))]
-  if (length(missing)) trace_abort(sprintf("以下来源尚未完成字段绑定：%s。", paste(missing, collapse = "、")))
+  sources <- studio_read_source_catalog(project_id)
+  if (!length(sources)) trace_abort("请先上传至少一个通用CSV来源文件。")
+  root <- file.path(studio_project_path(project_id), "raw", "normalized")
+  missing <- names(sources)[!vapply(sources, function(item) file.exists(file.path(root, item$file)), logical(1))]
+  if (length(missing)) trace_abort(sprintf("以下规范化来源文件不存在：%s。", paste(missing, collapse = "、")))
   invisible(TRUE)
 }
 
@@ -638,7 +835,13 @@ studio_run_path <- function(project_id, run_id, must_exist = TRUE) {
   normalizePath(path, winslash = "/", mustWork = FALSE)
 }
 
-studio_read_run <- function(project_id, run_id) yaml::read_yaml(file.path(studio_run_path(project_id, run_id), "run.yml"))
+studio_read_run <- function(project_id, run_id) {
+  value <- yaml::read_yaml(file.path(studio_run_path(project_id, run_id), "run.yml"))
+  if (!identical(as.character(value$schema_version %||% ""), "0.6")) {
+    trace_abort("该运行使用旧版工作台结构，不能在 TraceSDTM 0.6 中继续。")
+  }
+  value
+}
 
 studio_assert_run_writable <- function(config) {
   if (is.null(config$studio$project_id) || is.null(config$studio$run_id)) return(invisible(TRUE))
@@ -650,6 +853,15 @@ studio_assert_run_writable <- function(config) {
   }
   if (isTRUE(run$stale) || isTRUE(project$active_run_stale)) {
     trace_abort("当前运行已过期；请从最新数据和政策创建新运行。")
+  }
+  invisible(TRUE)
+}
+
+studio_assert_mapping_editable_v06 <- function(config) {
+  studio_assert_run_writable(config)
+  approved <- trace_path(config$paths$approved_specification %||% "")
+  if (nzchar(as.character(config$paths$approved_specification %||% "")) && file.exists(approved)) {
+    trace_abort("当前运行的映射已经最终批准并冻结；如需修改，请从项目数据创建新运行。")
   }
   invisible(TRUE)
 }
@@ -672,7 +884,7 @@ studio_create_run <- function(project_id, actor = "local_user") {
     run_id <- studio_next_run_id()
     run_path <- studio_run_path(project_id, run_id, must_exist = FALSE)
     for (relative in c(
-      "inputs", "config", "profile", "recommendations", "review", "specs", "sdtm/csv", "sdtm/xpt",
+      "inputs", "config", "profile", "tasks", "recommendations", "review", "specs", "sdtm/csv", "sdtm/xpt",
       "lineage", "validation/local", "validation/p21", "report", "manifests", "logs"
     )) ensure_dir(file.path(run_path, relative))
     sources <- studio_non_derived_sources(project_id)
@@ -685,8 +897,9 @@ studio_create_run <- function(project_id, actor = "local_user") {
       }
       input_manifest[[dataset]] <- list(file = file.path("inputs", sources[[dataset]]$file), sha256 = file_sha256(target))
     }
-    config_names <- c("tasks.yml", "metadata.yml", "transform_registry.yml", "transform_registry.schema.json",
-                      "controlled_terminology.yml", "unit_conversions.yml", "mapping_policies.yml")
+    config_names <- c("metadata.yml", "transform_registry.yml", "transform_registry.schema.json",
+                      "controlled_terminology.yml", "unit_conversions.yml", "mapping_policies.yml",
+                      "source_catalog.yml")
     config_manifest <- list()
     for (name in config_names) {
       source <- file.path(studio_project_path(project_id), "config", name)
@@ -694,16 +907,34 @@ studio_create_run <- function(project_id, actor = "local_user") {
       if (!isTRUE(file.copy(source, target, overwrite = FALSE, copy.date = TRUE))) trace_abort(sprintf("无法冻结运行配置：%s。", name))
       config_manifest[[name]] <- file_sha256(target)
     }
+    task_specification <- list(
+      schema_version = "0.4",
+      specification = list(
+        name = paste0(project$name, " 通用原子任务"), version = "0.6.0",
+        status = "profile_pending", standard = paste(project$standard, project$standard_version),
+        project_id = project_id, run_id = run_id
+      ),
+      source_catalog = sources, domain_sources = list(), tasks = list()
+    )
+    tasks_path <- file.path(run_path, "config", "tasks.yml")
+    write_yaml(task_specification, tasks_path)
+    config_manifest[["tasks.yml"]] <- file_sha256(tasks_path)
     manifest <- list(
-      schema_version = "0.5", run_id = run_id, project_id = project_id,
-      template = project$template, study_id = project$study_id,
+      schema_version = "0.6", run_id = run_id, project_id = project_id,
+      study_id = project$study_id, project_description = project$description,
+      standard = project$standard, standard_version = project$standard_version,
+      target_domains = project$target_domains,
       created_at = utc_now(), updated_at = utc_now(), stale = FALSE,
       status = "created", current_stage = "created",
-      stages = list(profile = "pending", recommend_targets = "pending", recommend_functions = "pending",
-                    recommend_parameters = "pending", assemble = "pending", review = "pending", approve = "pending",
-                    build = "pending", validate_local = "pending", validate_p21 = "pending", report = "pending"),
+      stages = list(
+        data_freeze = "completed", profile = "pending", task_discovery = "pending",
+        task_confirmation = "pending", recommend_targets = "pending",
+        recommend_functions = "pending", recommend_parameters = "pending", assemble = "pending",
+        ai_review = "pending", human_approval = "pending", build = "pending",
+        validate_local = "pending", validate_p21 = "pending", report = "pending"
+      ),
       inputs = input_manifest, configuration_sha256 = config_manifest,
-      studio_version = "0.5.0", contains_gold_standard = FALSE
+      studio_version = "0.6.0", contains_gold_standard = FALSE
     )
     write_yaml(manifest, file.path(run_path, "run.yml"))
     project$active_run_id <- run_id
@@ -711,7 +942,7 @@ studio_create_run <- function(project_id, actor = "local_user") {
     project$stages$profile <- "ready"
     studio_write_project(project_id, project)
     studio_append_audit(project_id, "run_created", list(
-      template = project$template, input_count = length(input_manifest),
+      input_count = length(input_manifest),
       configuration_count = length(config_manifest)
     ), run_id, actor)
   })
@@ -720,17 +951,21 @@ studio_create_run <- function(project_id, actor = "local_user") {
 
 studio_update_run_stage <- function(project_id, run_id, stage, status, message = NULL,
                                     actor = "system") {
-  allowed_stages <- c("profile", "recommend_targets", "recommend_functions", "recommend_parameters", "assemble",
-                      "review", "approve", "build", "validate_local", "validate_p21", "report")
-  allowed_status <- c("pending", "running", "completed", "completed_with_warnings", "failed", "blocked", "cancelled", "interrupted")
+  allowed_stages <- c(
+    "data_freeze", "profile", "task_discovery", "task_confirmation",
+    "recommend_targets", "recommend_functions", "recommend_parameters", "assemble",
+    "ai_review", "human_approval", "build", "validate_local", "validate_p21", "report"
+  )
+  allowed_status <- c("pending", "running", "completed", "completed_with_warnings", "needs_information", "failed", "blocked", "cancelled", "interrupted")
   if (!stage %in% allowed_stages || !status %in% allowed_status) trace_abort("运行阶段或状态无效。")
   run <- studio_read_run(project_id, run_id)
   run$stages[[stage]] <- status
   run$current_stage <- stage
   terminal_failure <- status %in% c("failed", "cancelled", "interrupted")
   completed_values <- c("completed", "completed_with_warnings")
-  pipeline_stages <- c("profile", "recommend_targets", "recommend_functions", "recommend_parameters", "assemble",
-                       "review", "approve", "build", "validate_local", "validate_p21", "report")
+  pipeline_stages <- c("data_freeze", "profile", "task_discovery", "task_confirmation",
+                       "recommend_targets", "recommend_functions", "recommend_parameters", "assemble",
+                       "ai_review", "human_approval", "build")
   all_complete <- all(vapply(run$stages[pipeline_stages], function(value) as.character(value) %in% completed_values, logical(1)))
   run$status <- if (terminal_failure) status else if (all_complete) "completed" else "active"
   run$last_message <- as.character(message %||% "")
@@ -763,9 +998,13 @@ studio_load_run_config <- function(project_id, run_id) {
   run_path <- studio_run_path(project_id, run_id)
   config <- yaml::read_yaml(trace_path("config", "project.yml"))
   config$project$name <- project$name
-  config$project$version <- "0.5.0"
+  config$project$version <- "0.6.0"
   config$project$study_id <- project$study_id
-  config$project$scenario <- project$template
+  config$project$description <- project$description
+  config$project$standard <- project$standard
+  config$project$standard_version <- project$standard_version
+  config$project$target_domains <- project$target_domains
+  config$project$scenario <- "generic"
   config$project$studio <- TRUE
   config$project$project_id <- project_id
   config$project$run_id <- run_id
@@ -781,6 +1020,14 @@ studio_load_run_config <- function(project_id, run_id) {
     generated_transform_docs = file.path(run_path, "report", "transform_catalog.md")
   )
   config <- configure_output_paths(config, run_path)
+  config$paths$task_dir <- file.path(run_path, "tasks")
+  config$paths$project_context <- file.path(run_path, "profile", "project_context.json")
+  task_specification <- yaml::read_yaml(config$paths$specification_template)
+  task_domains <- unique(vapply(task_specification$tasks %||% list(), function(task) as.character(task$target_domain %||% ""), character(1)))
+  task_domains <- task_domains[nzchar(task_domains)]
+  if (!length(task_domains)) task_domains <- unlist(project$target_domains %||% character(), use.names = FALSE)
+  if (!length(task_domains)) task_domains <- names(yaml::read_yaml(config$paths$metadata)$domains)
+  config$project$generated_domains <- as.list(task_domains)
   config$studio <- list(project_id = project_id, run_id = run_id, project_path = studio_project_path(project_id),
                         run_path = run_path, contains_gold_standard = FALSE)
   config
@@ -796,8 +1043,7 @@ studio_resolve_cli_config <- function(args, scenario = scenario_from_args(args))
 
 studio_project_summary <- function(project_id) {
   project <- studio_read_project(project_id)
-  bindings <- studio_read_bindings(project_id)
-  sources <- studio_non_derived_sources(project_id)
-  source_status <- vapply(names(sources), function(id) bindings$datasets[[id]]$status %||% "not_uploaded", character(1))
+  sources <- studio_read_source_catalog(project_id)
+  source_status <- stats::setNames(rep("ready", length(sources)), names(sources))
   list(project = project, source_status = as.list(source_status), runs = studio_list_runs(project_id))
 }

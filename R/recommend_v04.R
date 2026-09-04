@@ -54,10 +54,11 @@ v04_task_context <- function(task, specification, dictionary = NULL) {
 }
 
 v04_prompt_privacy_mode <- function() {
-  tolower(Sys.getenv("TRACE_SDTM_PROMPT_PRIVACY", unset = "legacy"))
+  tolower(Sys.getenv("TRACE_SDTM_PROMPT_PRIVACY", unset = "metadata_only"))
 }
 
 v04_sensitive_profile <- function(profile) {
+  if (isTRUE(profile$is_key)) return(TRUE)
   role <- tolower(as.character(profile$role %||% ""))
   key <- tolower(as.character(profile$declared_source_key %||% ""))
   grepl("identifier|subject|site|center|(^|_)key($|_)", role) ||
@@ -187,7 +188,91 @@ parse_target_identifications_v04 <- function(records, group, metadata) {
   v04_isolated_parse(records, tasks, function(record, task) validate_target_identification_v04(record, task, metadata), "target_identification")
 }
 
-v04_transform_compatible <- function(entry, task, decision) {
+v04_normalize_source_type <- function(value) {
+  value <- as.character(value %||% "")
+  if (value %in% c("integer", "double")) return("numeric")
+  if (value %in% c("POSIXt", "POSIXlt")) return("POSIXct")
+  value
+}
+
+v04_source_ref_type <- function(ref, dictionary = NULL) {
+  if (is.null(dictionary) || !is.data.frame(dictionary) || !nrow(dictionary)) return(NA_character_)
+  hit <- dictionary[
+    as.character(dictionary$source_dataset) == as.character(ref$dataset) &
+      as.character(dictionary$source_variable) == as.character(ref$variable),
+    , drop = FALSE
+  ]
+  if (nrow(hit) != 1L) return(NA_character_)
+  v04_normalize_source_type(hit$data_type[[1L]])
+}
+
+v04_source_profile_row <- function(ref, dictionary = NULL) {
+  if (is.null(dictionary) || !is.data.frame(dictionary) || !nrow(dictionary)) return(NULL)
+  hit <- dictionary[
+    as.character(dictionary$source_dataset) == as.character(ref$dataset) &
+      as.character(dictionary$source_variable) == as.character(ref$variable),
+    , drop = FALSE
+  ]
+  if (nrow(hit) == 1L) hit else NULL
+}
+
+v04_ref_meets_known_preconditions <- function(entry, ref, dictionary = NULL, policies = NULL) {
+  row <- v04_source_profile_row(ref, dictionary)
+  if (is.null(row)) return(TRUE)
+  preconditions <- unlist(entry$preconditions %||% character(), use.names = FALSE)
+  data_type <- v04_normalize_source_type(row$data_type[[1L]])
+  if ("numeric_result" %in% preconditions && !identical(data_type, "numeric")) return(FALSE)
+  if (any(c("complete_dates_only", "no_missing_subject_keys") %in% preconditions) &&
+      as.numeric(row$missing_rate[[1L]] %||% 0) > 0) return(FALSE)
+  formats <- trimws(unlist(strsplit(as.character(row$format_candidates[[1L]] %||% ""), "|", fixed = TRUE)))
+  formats <- formats[nzchar(formats)]
+  if ("contains_date_component" %in% preconditions &&
+      !length(formats) && !data_type %in% c("Date", "POSIXct")) return(FALSE)
+  if ("unambiguous_date_format" %in% preconditions) {
+    approved <- if (is.null(policies)) list() else policies$date_time_formats$approved_sources %||% list()
+    records <- Filter(function(item) {
+      identical(as.character(item$source$dataset %||% ""), as.character(ref$dataset)) &&
+        identical(as.character(item$source$variable %||% ""), as.character(ref$variable))
+    }, approved)
+    approved_formats <- if (length(records) == 1L) unlist(records[[1L]]$formats %||% character(), use.names = FALSE) else character()
+    if (length(formats) != 1L || length(approved_formats) != 1L || !identical(formats[[1L]], approved_formats[[1L]])) return(FALSE)
+  }
+  TRUE
+}
+
+v04_known_resources_compatible <- function(entry, decision, resources = NULL) {
+  if (is.null(resources)) return(TRUE)
+  preconditions <- unlist(entry$preconditions %||% character(), use.names = FALSE)
+  targets <- unlist(decision$target_variables %||% character(), use.names = FALSE)
+  if ("codelist_exists" %in% preconditions) {
+    codelists <- resources$controlled_terminology$codelists %||% resources$codelists %||% list()
+    ids <- vapply(targets, v04_target_codelist, character(1))
+    if (!length(ids) || any(!nzchar(ids)) || any(!ids %in% names(codelists))) return(FALSE)
+  }
+  if ("conversion_set_exists" %in% preconditions) {
+    sets <- resources$unit_conversions$sets %||% resources$unit_conversion_sets %||% list()
+    if (!length(sets)) return(FALSE)
+  }
+  if ("visit_map_exists" %in% preconditions) {
+    maps <- resources$controlled_terminology$visit_maps %||% resources$visit_maps %||% list()
+    if (!length(maps)) return(FALSE)
+  }
+  TRUE
+}
+
+v04_allowed_source_ref_ids <- function(entry, task, dictionary = NULL, policies = NULL) {
+  refs <- task_source_refs_v04(task)
+  allowed_types <- vapply(unlist(entry$source_contract$types %||% character(), use.names = FALSE), v04_normalize_source_type, character(1))
+  if (!length(refs)) return(character())
+  keep <- vapply(refs, function(ref) {
+    observed <- v04_source_ref_type(ref, dictionary)
+    (is.na(observed) || !length(allowed_types) || observed %in% allowed_types) &&
+      v04_ref_meets_known_preconditions(entry, ref, dictionary, policies)
+  }, logical(1))
+  vapply(refs[keep], `[[`, character(1), "ref_id")
+}
+
+v04_transform_compatible <- function(entry, task, decision, dictionary = NULL, policies = NULL, resources = NULL) {
   if (!isTRUE(entry$model_selectable)) return(FALSE)
   if (!task$target_domain %in% unname(unlist(entry$target_contract$domains, use.names = FALSE))) return(FALSE)
   mode <- as.character(entry$target_contract$output_mode)
@@ -196,9 +281,21 @@ v04_transform_compatible <- function(entry, task, decision) {
   if (identical(kind, "none") && !identical(mode, "none")) return(FALSE)
   if (identical(kind, "variables") && mode %in% c("dataset", "none")) return(FALSE)
   targets <- unname(unlist(decision$target_variables, use.names = FALSE))
+  target_codelists <- vapply(targets, v04_target_codelist, character(1))
+  has_controlled_target <- length(target_codelists) > 0L && any(nzchar(target_codelists))
+  if (has_controlled_target && entry$transform_id %in% c("assign_no_ct", "hardcode_no_ct", "normalize_case")) return(FALSE)
+  if (!has_controlled_target && entry$transform_id %in% c("assign_ct", "hardcode_ct")) return(FALSE)
   patterns <- unname(unlist(entry$target_contract$patterns %||% character(), use.names = FALSE))
   if (length(targets) && length(patterns) && any(!vapply(targets, function(x) any(vapply(patterns, grepl, logical(1), x = x)), logical(1)))) return(FALSE)
   if (identical(mode, "single") && length(targets) != 1L) return(FALSE)
+  refs <- task_source_refs_v04(task)
+  if (!v04_known_resources_compatible(entry, decision, resources)) return(FALSE)
+  allowed_ids <- v04_allowed_source_ref_ids(entry, task, dictionary, policies)
+  eligible <- refs[vapply(refs, function(ref) ref$ref_id %in% allowed_ids, logical(1))]
+  contract <- entry$source_contract
+  if (length(eligible) < as.integer(contract$minimum)) return(FALSE)
+  eligible_datasets <- unique(vapply(eligible, function(ref) as.character(ref$dataset), character(1)))
+  if (length(eligible_datasets) < as.integer(contract$minimum_datasets)) return(FALSE)
   TRUE
 }
 
@@ -223,6 +320,7 @@ v04_function_task_context <- function(task, specification, dictionary = NULL) {
   context$field_profiles <- lapply(context$field_profiles, function(profile) list(
     declared_source_key = profile$declared_source_key,
     role = profile$role,
+    is_key = isTRUE(profile$is_key),
     resolution = profile$resolution,
     example_values_included = isTRUE(profile$example_values_included),
     evidence = lapply(if (is.data.frame(profile$evidence)) {
@@ -252,17 +350,21 @@ v04_function_task_context <- function(task, specification, dictionary = NULL) {
   context
 }
 
-function_selection_prompt_v04 <- function(group, target_results, registry, specification, policies, dictionary = NULL) {
+function_selection_prompt_v04 <- function(group, target_results, registry, specification, policies, dictionary = NULL, resources = NULL) {
   tasks <- v04_group_tasks(group)
   task_index <- stats::setNames(tasks, vapply(tasks, task_id_v04, character(1)))
   decisions <- target_results$valid %||% target_results
   payload <- lapply(decisions, function(decision) {
     task <- task_index[[decision$task_id]]
-    entries <- Filter(function(entry) v04_transform_compatible(entry, task, decision), registry$transforms)
+    entries <- Filter(function(entry) v04_transform_compatible(entry, task, decision, dictionary, policies, resources), registry$transforms)
+    allowed_sources <- stats::setNames(lapply(entries, function(entry) {
+      as.list(v04_allowed_source_ref_ids(entry, task, dictionary, policies))
+    }), vapply(entries, `[[`, character(1), "transform_id"))
     list(
       target_decision = decision,
       task = v04_function_task_context(task, specification, dictionary),
-      allowed_transform_ids = as.list(vapply(entries, `[[`, character(1), "transform_id"))
+      allowed_transform_ids = as.list(vapply(entries, `[[`, character(1), "transform_id")),
+      allowed_source_ref_ids_by_transform = allowed_sources
     )
   })
   used_ids <- unique(unlist(lapply(payload, `[[`, "allowed_transform_ids"), use.names = FALSE))
@@ -270,7 +372,7 @@ function_selection_prompt_v04 <- function(group, target_results, registry, speci
   prompt <- paste(
     "你是临床数据标准映射助手。当前只选择转换函数和来源引用，不填写或推测任何参数。",
     "每项任务可返回一到三个候选，candidate_rank 为 1 到 3且不可重复。",
-    "只能使用该任务 allowed_functions 中的 transform_id，以及该任务 source_refs 中的 ref_id。不得返回 dataset.variable。",
+    "只能使用该任务 allowed_transform_ids 中的 transform_id；来源编号还必须位于 allowed_source_ref_ids_by_transform 对应函数的列表中。不得返回 dataset.variable。",
     "一个候选只代表当前原子临床动作；不得添加相邻动作的函数。",
     "status 只能为 proposed 或 needs_information。proposed 必须有 transform_id；needs_information 的 transform_id 必须为空且 source_ref_ids 必须为空。",
     "review_required 必须为 true；所有模型建议均需人工审核。",
@@ -285,7 +387,7 @@ function_selection_prompt_v04 <- function(group, target_results, registry, speci
   assert_blind_prompt(prompt)
 }
 
-validate_function_candidate_v04 <- function(record, task, decision, registry) {
+validate_function_candidate_v04 <- function(record, task, decision, registry, dictionary = NULL, policies = NULL, resources = NULL) {
   required <- c("task_id", "candidate_rank", "transform_id", "source_ref_ids", "score", "reason", "uncertainties", "status", "review_required")
   v04_strict_fields(record, required, required, paste0(task_id_v04(task), " 函数选择"))
   id <- task_id_v04(task)
@@ -303,12 +405,18 @@ validate_function_candidate_v04 <- function(record, task, decision, registry) {
   } else {
     if (!nzchar(transform_id)) trace_abort(sprintf("%s 的 proposed 候选缺少函数。", id))
     entry <- registry_entry(transform_id, registry)
-    if (!v04_transform_compatible(entry, task, decision)) trace_abort(sprintf("%s 选择的函数 %s 与目标决定不兼容。", id, transform_id))
+    if (!v04_transform_compatible(entry, task, decision, dictionary, policies, resources)) trace_abort(sprintf("%s 选择的函数 %s 与目标决定、来源画像或已知前置条件不兼容。", id, transform_id))
     refs <- task_source_refs_v04(task)
     index <- stats::setNames(refs, vapply(refs, `[[`, character(1), "ref_id"))
     unknown <- setdiff(source_ids, names(index))
     if (length(unknown)) trace_abort(sprintf("%s 引用了未知来源编号：%s", id, paste(unknown, collapse = ", ")))
     selected <- unname(index[source_ids])
+    allowed_source_ids <- v04_allowed_source_ref_ids(entry, task, dictionary, policies)
+    incompatible_sources <- setdiff(source_ids, allowed_source_ids)
+    if (length(incompatible_sources)) trace_abort(sprintf(
+      "%s/%s 的来源字段类型不符合注册表：%s", id, transform_id,
+      paste(incompatible_sources, collapse = ", ")
+    ))
     source_count <- length(selected)
     dataset_count <- length(unique(vapply(selected, function(x) x$dataset, character(1))))
     contract <- entry$source_contract
@@ -324,7 +432,7 @@ validate_function_candidate_v04 <- function(record, task, decision, registry) {
   )
 }
 
-parse_function_candidates_v04 <- function(records, group, target_results, registry) {
+parse_function_candidates_v04 <- function(records, group, target_results, registry, dictionary = NULL, policies = NULL, resources = NULL) {
   tasks <- v04_group_tasks(group)
   decisions <- target_results$valid %||% target_results
   lookup <- stats::setNames(tasks, vapply(tasks, task_id_v04, character(1)))
@@ -340,7 +448,7 @@ parse_function_candidates_v04 <- function(records, group, target_results, regist
       valid[[key]] <- NULL; failures[[length(failures) + 1L]] <- list(task_id = id, candidate_rank = rank, stage = "function_selection", error = "函数阶段候选序号重复。", record_index = index); next
     }
     keys <- c(keys, key)
-    value <- tryCatch(validate_function_candidate_v04(record, lookup[[id]], decisions[[id]], registry), error = identity)
+    value <- tryCatch(validate_function_candidate_v04(record, lookup[[id]], decisions[[id]], registry, dictionary, policies, resources), error = identity)
     if (inherits(value, "error")) failures[[length(failures) + 1L]] <- list(task_id = id, candidate_rank = rank, stage = "function_selection", error = sanitize_for_log(conditionMessage(value)), record_index = index)
     else valid[[key]] <- value
   }
@@ -352,7 +460,7 @@ parse_function_candidates_v04 <- function(records, group, target_results, regist
 }
 
 parameter_completion_prompt_v04 <- function(resolutions) {
-  requested <- Filter(function(x) identical(x$status, "ready") && !isTRUE(x$fully_resolved) && length(x$unresolved_parameters), resolutions)
+  requested <- Filter(function(x) !isTRUE(x$fully_resolved) && length(x$unresolved_parameters), resolutions)
   if (!length(requested)) return(NULL)
   payload <- lapply(requested, function(x) list(
     task_id = x$task_id, candidate_rank = x$candidate_rank, transform_id = x$transform_id,
@@ -391,7 +499,7 @@ parse_parameter_completions_v04 <- function(records, resolutions) {
     if (inherits(value, "error")) failures[[length(failures) + 1L]] <- list(task_id = id, candidate_rank = rank, stage = "parameter_completion", error = sanitize_for_log(conditionMessage(value)), record_index = index)
     else valid[[key]] <- c(list(task_id = id, candidate_rank = rank, status = as.character(record$status), uncertainties = recommendation_text(record, "uncertainties")), value)
   }
-  expected <- names(Filter(function(x) identical(x$status, "ready") && !isTRUE(x$fully_resolved) && length(x$unresolved_parameters), resolutions))
+  expected <- names(Filter(function(x) !isTRUE(x$fully_resolved) && length(x$unresolved_parameters), resolutions))
   missing <- setdiff(expected, seen)
   for (key in missing) failures[[length(failures) + 1L]] <- list(task_id = strsplit(key, "#", fixed = TRUE)[[1]][[1]], candidate_rank = NA_integer_, stage = "parameter_completion", error = "参数阶段遗漏候选。", record_index = NA_integer_)
   list(valid = valid, failures = failures, missing_candidate_keys = missing, stage = "parameter_completion")
@@ -501,15 +609,15 @@ parse_target_decisions_v04 <- function(response, group, metadata) {
 }
 
 function_prompt_v04 <- function(group, target_results, registry, specification,
-                                policies, dictionary = NULL) {
+                                policies, dictionary = NULL, resources = NULL) {
   function_selection_prompt_v04(
-    group, target_results, registry, specification, policies, dictionary
+    group, target_results, registry, specification, policies, dictionary, resources
   )
 }
 
-parse_function_selections_v04 <- function(response, group, target_results, registry) {
+parse_function_selections_v04 <- function(response, group, target_results, registry, dictionary = NULL, policies = NULL, resources = NULL) {
   records <- v04_stage_records(response, "function_candidates")
-  parse_function_candidates_v04(records, group, target_results, registry)
+  parse_function_candidates_v04(records, group, target_results, registry, dictionary, policies, resources)
 }
 
 v04_registry_resolution_metadata <- function(entry) {
@@ -548,12 +656,17 @@ v04_apply_registry_resolution <- function(resolution, task, decision, candidate,
     value <- declaration$value
     source <- declared_source
     reference <- as.character(declaration$reference %||% paste0("registry:", entry$transform_id, ":", name))
-    if (is.null(value) && resolver_id %in% c("target_domain", "target_constant")) {
+    targets <- unname(unlist(decision$target_variables %||% character(), use.names = FALSE))
+    if (is.null(value) && identical(resolver_id, "target_domain")) {
+      value <- task$target_domain
+      source <- "derived"
+    }
+    if (is.null(value) && identical(resolver_id, "target_constant") &&
+        length(targets) == 1L && identical(targets[[1L]], "DOMAIN")) {
       value <- task$target_domain
       source <- "derived"
     }
     if (is.null(value) && identical(resolver_id, "target_variable")) {
-      targets <- unname(unlist(decision$target_variables %||% character(), use.names = FALSE))
       if (length(targets) == 1L) value <- targets[[1]]
       source <- "derived"
     }
@@ -739,6 +852,11 @@ load_source_dictionary_v04 <- function(config) {
   readr::read_csv(path, show_col_types = FALSE, progress = FALSE)
 }
 
+load_recommendation_resources <- function(config) list(
+  controlled_terminology = load_controlled_terminology(config),
+  unit_conversions = load_unit_conversions(config)
+)
+
 recommendation_groups_v04 <- function(specification) {
   tasks <- prepare_tasks_v04(specification)
   domains <- unique(vapply(tasks, function(x) as.character(x$target_domain), character(1)))
@@ -782,6 +900,7 @@ v04_call_request <- function(request_fn, prompt, stage, group_id) {
 }
 
 v04_default_request_fn <- function(config, directory) {
+  config <- apply_model_runtime_overrides(config)
   api_key <- Sys.getenv("TRACE_SDTM_API_KEY", unset = "")
   base_url <- Sys.getenv("TRACE_SDTM_BASE_URL", unset = "")
   model <- Sys.getenv("TRACE_SDTM_MODEL", unset = "")
@@ -861,6 +980,10 @@ recommend_targets_v04 <- function(config = NULL, provider = c("model", "seed"),
   combined <- v04_merge_stage_results(results, "target_identification")
   combined$provider <- provider
   combined$attempts <- attempts
+  combined$prompt_version <- "target_selection_v06_1"
+  combined$model <- if (identical(provider, "model")) Sys.getenv("TRACE_SDTM_MODEL", unset = "") else "reference_seed"
+  combined$call_count <- if (identical(provider, "model")) sum(vapply(attempts, length, integer(1))) else 0L
+  combined$failure_reason <- if (length(combined$failures)) paste(vapply(combined$failures, function(item) item$error, character(1)), collapse = "；") else NULL
   v04_write_stage(combined, directory, "target_decisions.json")
   combined
 }
@@ -902,6 +1025,7 @@ recommend_functions_v04 <- function(target_results, config = NULL,
   registry <- registry %||% load_transform_registry(config)
   policies <- policies %||% load_mapping_policies(config)
   dictionary <- dictionary %||% load_source_dictionary_v04(config)
+  resources <- load_recommendation_resources(config)
   directory <- v04_recommendation_dir(config, recommendation_dir)
   groups <- recommendation_groups_v04(specification)
   if (identical(provider, "seed")) gold <- gold %||% load_gold_specification(config)
@@ -910,17 +1034,17 @@ recommend_functions_v04 <- function(target_results, config = NULL,
   for (group in groups) {
     target_subset <- v04_group_stage_subset(target_results, group)
     if (!length(target_subset$valid)) next
-    prompt <- function_prompt_v04(group, target_subset, registry, specification, policies, dictionary)
+    prompt <- function_prompt_v04(group, target_subset, registry, specification, policies, dictionary, resources)
     writeLines(enc2utf8(prompt), file.path(prompt_dir, paste0(group$group_id, "_functions.txt")), useBytes = TRUE)
     if (identical(provider, "seed")) {
       records <- v04_seed_function_records(group, gold)
-      result <- parse_function_selections_v04(list(function_candidates = records), group, target_subset, registry)
+      result <- parse_function_selections_v04(list(function_candidates = records), group, target_subset, registry, dictionary, policies, resources)
       attempts[[group$group_id]] <- list(provider = "seed", attempt_count = 0L)
     } else {
       execution <- execute_model_stage_v04(
         prompt,
         function(value) v04_call_request(request_fn, value, "functions", group$group_id),
-        function(value) parse_function_selections_v04(value, group, target_subset, registry),
+        function(value) parse_function_selections_v04(value, group, target_subset, registry, dictionary, policies, resources),
         blind = blind
       )
       if (!is.null(execution$error)) result <- list(valid = list(), failures = list(list(task_id = "", stage = "function_selection", error = execution$error)))
@@ -931,6 +1055,10 @@ recommend_functions_v04 <- function(target_results, config = NULL,
   }
   combined <- v04_merge_stage_results(results, "function_selection")
   combined$provider <- provider; combined$attempts <- attempts
+  combined$prompt_version <- "function_selection_v06_1"
+  combined$model <- if (identical(provider, "model")) Sys.getenv("TRACE_SDTM_MODEL", unset = "") else "reference_seed"
+  combined$call_count <- if (identical(provider, "model")) sum(vapply(attempts, length, integer(1))) else 0L
+  combined$failure_reason <- if (length(combined$failures)) paste(vapply(combined$failures, function(item) item$error, character(1)), collapse = "；") else NULL
   v04_write_stage(combined, directory, "function_candidates.json")
   combined
 }
@@ -1004,6 +1132,10 @@ recommend_parameters_v04 <- function(target_results, function_results,
   }
   result$provider <- provider
   result$resolutions <- resolutions
+  result$prompt_version <- "finite_parameter_selection_v06_1"
+  result$model <- if (identical(provider, "model") && !isTRUE(result$skipped)) Sys.getenv("TRACE_SDTM_MODEL", unset = "") else ""
+  result$call_count <- if (isTRUE(result$skipped) || identical(provider, "seed")) 0L else length(result$attempts %||% list())
+  result$failure_reason <- if (length(result$failures %||% list())) paste(vapply(result$failures, function(item) item$error, character(1)), collapse = "；") else NULL
   v04_write_stage(result, directory, "parameter_completions.json")
   result
 }

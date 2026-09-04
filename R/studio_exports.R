@@ -1,8 +1,8 @@
-# TraceSDTM Studio 0.5 reports and evidence exports --------------------------
+# TraceSDTM Studio 0.6 reports and evidence exports --------------------------
 
 studio_evidence_files <- function(config) {
   run_path <- config$studio$run_path %||% trace_path(config$paths$output_base)
-  allowed <- c("run.yml", "config", "profile", "recommendations", "review", "specs",
+  allowed <- c("run.yml", "config", "profile", "tasks", "recommendations", "review", "specs",
                "sdtm", "lineage", "validation", "report", "manifests", "logs")
   files <- unlist(lapply(allowed, function(relative) {
     path <- file.path(run_path, relative)
@@ -84,7 +84,7 @@ studio_export_evidence <- function(config, secrets = character()) {
   if (length(findings)) trace_abort(sprintf("证据包密钥扫描未通过：%s。", paste(basename(findings), collapse = "、")))
   relative <- vapply(files, studio_relative_path, character(1), root = run_path)
   manifest <- list(
-    schema_version = "0.5", project_id = config$studio$project_id, run_id = config$studio$run_id,
+    schema_version = "0.6", project_id = config$studio$project_id, run_id = config$studio$run_id,
     generated_at = utc_now(), raw_data_included = FALSE,
     files = lapply(seq_along(files), function(index) list(path = relative[[index]], sha256 = file_sha256(files[[index]])))
   )

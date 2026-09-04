@@ -20,9 +20,9 @@ if (!exists("trace_root", mode = "function")) {
   root <- normalizePath(root_candidates[[1]], winslash = "/", mustWork = TRUE)
   Sys.setenv(TRACE_SDTM_ROOT = root)
   files <- c(
-    "utils.R", "config.R", "studio_projects.R", "registry.R", "profile.R", "recommend.R", "review.R", "review_v04.R", "studio_review.R",
+    "utils.R", "config.R", "studio_projects.R", "registry.R", "profile.R", "recommend.R", "task_discovery.R", "manual_parameters.R", "review.R", "review_v04.R", "studio_review.R", "ai_review.R",
     "transforms.R", "build.R", "validate_local.R", "p21.R", "evaluate.R", "evaluate_v04.R",
-    "report.R", "studio_exports.R", "studio_jobs.R", "studio_app.R", "pipeline.R"
+    "report.R", "studio_exports.R", "studio_jobs.R", "studio_app.R", "studio_app_v06.R", "pipeline.R"
   )
   for (file in files) source(file.path(root, "R", file), encoding = "UTF-8")
 }

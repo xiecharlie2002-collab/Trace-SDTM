@@ -66,7 +66,7 @@ validate_one_domain <- function(data, domain, metadata, lineage, run_id) {
   issues <- list()
   add <- function(value) issues[[length(issues) + 1L]] <<- value
 
-  expected <- unlist(domain_metadata$expected_order, use.names = FALSE)
+  expected <- intersect(unlist(domain_metadata$expected_order, use.names = FALSE), names(data))
   required <- names(Filter(function(item) isTRUE(item$required), variables))
   missing_variables <- setdiff(required, names(data))
   for (variable in missing_variables) {
@@ -129,8 +129,10 @@ validate_one_domain <- function(data, domain, metadata, lineage, run_id) {
 }
 
 validate_subject_links <- function(datasets, metadata, lineage, run_id) {
+  linked_domains <- intersect(c("AE", "VS"), names(datasets))
+  if (!"DM" %in% names(datasets) || !length(linked_domains)) return(empty_issue_table())
   dm_ids <- unique(datasets$DM$USUBJID)
-  purrr::map_dfr(c("AE", "VS"), function(domain) {
+  purrr::map_dfr(linked_domains, function(domain) {
     data <- datasets[[domain]]
     issue_rows(
       data,
@@ -148,7 +150,10 @@ validate_subject_links <- function(datasets, metadata, lineage, run_id) {
 }
 
 validate_sequences <- function(datasets, metadata, lineage, run_id) {
-  purrr::imap_dfr(c(AE = "AESEQ", VS = "VSSEQ"), function(sequence_variable, domain) {
+  sequence_variables <- c(AE = "AESEQ", VS = "VSSEQ")
+  sequence_variables <- sequence_variables[names(sequence_variables) %in% names(datasets)]
+  if (!length(sequence_variables)) return(empty_issue_table())
+  purrr::imap_dfr(sequence_variables, function(sequence_variable, domain) {
     data <- datasets[[domain]]
     grouped <- split(data[[sequence_variable]], data$USUBJID)
     invalid_subjects <- names(Filter(function(value) {
@@ -241,8 +246,8 @@ validate_local <- function(config = load_project_config()) {
     issues,
     validate_subject_links(datasets, metadata, lineage, run_id),
     validate_sequences(datasets, metadata, lineage, run_id),
-    validate_ae_dates(datasets$AE, metadata, lineage, run_id),
-    validate_vs_pairs(datasets$VS, metadata, lineage, run_id),
+    if ("AE" %in% names(datasets)) validate_ae_dates(datasets$AE, metadata, lineage, run_id) else empty_issue_table(),
+    if ("VS" %in% names(datasets)) validate_vs_pairs(datasets$VS, metadata, lineage, run_id) else empty_issue_table(),
     validate_partial_date_derivations(datasets, metadata, lineage, run_id)
   )
   if (!nrow(issues)) issues <- empty_issue_table()

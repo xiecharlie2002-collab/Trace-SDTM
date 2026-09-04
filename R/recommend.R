@@ -199,6 +199,29 @@ validate_recommendations <- function(recommendations, config, tasks, metadata) {
   tibble::as_tibble(recommendations)
 }
 
+apply_model_runtime_overrides <- function(config) {
+  timeout_override <- Sys.getenv("TRACE_SDTM_TIMEOUT_SECONDS", unset = "")
+  if (nzchar(timeout_override)) {
+    timeout_value <- suppressWarnings(as.integer(timeout_override))
+    if (is.na(timeout_value) || timeout_value < 1L) trace_abort("TRACE_SDTM_TIMEOUT_SECONDS 必须是正整数。")
+    config$model$timeout_seconds <- timeout_value
+  }
+  token_override <- Sys.getenv("TRACE_SDTM_MAX_COMPLETION_TOKENS", unset = "")
+  if (nzchar(token_override)) {
+    token_value <- suppressWarnings(as.integer(token_override))
+    if (is.na(token_value) || token_value < 256L) trace_abort("TRACE_SDTM_MAX_COMPLETION_TOKENS 必须是不小于 256 的整数。")
+    config$model$max_completion_tokens <- token_value
+  }
+  thinking_override <- tolower(Sys.getenv("TRACE_SDTM_THINKING_MODE", unset = ""))
+  if (nzchar(thinking_override)) {
+    if (!thinking_override %in% c("enabled", "disabled")) {
+      trace_abort("TRACE_SDTM_THINKING_MODE 只能是 enabled 或 disabled。")
+    }
+    config$model$thinking_mode <- thinking_override
+  }
+  config
+}
+
 perform_mapping_request <- function(prompt, endpoint, api_key, model, config) {
   request_body <- list(
     model = model,
@@ -407,6 +430,7 @@ source_profile_context <- function(ref, specification, dictionary) {
   list(
     declared_source_key = declared_key,
     role = as.character(ref$role %||% ""),
+    is_key = ref_variable %in% unlist(specification$source_catalog[[ref$dataset]]$keys %||% character(), use.names = FALSE),
     resolution = resolution,
     evidence = as.data.frame(evidence)
   )
@@ -840,25 +864,7 @@ call_mapping_model <- function(config = load_project_config()) {
   if (!nzchar(api_key) || !nzchar(base_url) || !nzchar(model)) {
     trace_abort("未配置 TRACE_SDTM_API_KEY、TRACE_SDTM_BASE_URL 和 TRACE_SDTM_MODEL。可用 recommend --seed 生成明确标记的离线参考种子。")
   }
-  timeout_override <- Sys.getenv("TRACE_SDTM_TIMEOUT_SECONDS", unset = "")
-  if (nzchar(timeout_override)) {
-    timeout_value <- suppressWarnings(as.integer(timeout_override))
-    if (is.na(timeout_value) || timeout_value < 1L) trace_abort("TRACE_SDTM_TIMEOUT_SECONDS 必须是正整数。")
-    config$model$timeout_seconds <- timeout_value
-  }
-  token_override <- Sys.getenv("TRACE_SDTM_MAX_COMPLETION_TOKENS", unset = "")
-  if (nzchar(token_override)) {
-    token_value <- suppressWarnings(as.integer(token_override))
-    if (is.na(token_value) || token_value < 256L) trace_abort("TRACE_SDTM_MAX_COMPLETION_TOKENS 必须是不小于 256 的整数。")
-    config$model$max_completion_tokens <- token_value
-  }
-  thinking_override <- tolower(Sys.getenv("TRACE_SDTM_THINKING_MODE", unset = ""))
-  if (nzchar(thinking_override)) {
-    if (!thinking_override %in% c("enabled", "disabled")) {
-      trace_abort("TRACE_SDTM_THINKING_MODE 只能是 enabled 或 disabled。")
-    }
-    config$model$thinking_mode <- thinking_override
-  }
+  config <- apply_model_runtime_overrides(config)
   specification <- load_mapping_template(config)
   validate_specification_v02(specification, config)
   metadata <- load_metadata(config)

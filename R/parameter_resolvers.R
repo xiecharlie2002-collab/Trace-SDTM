@@ -88,7 +88,8 @@ v04_target_codelist <- function(target) {
     AESEV = "AESEV", AESER = "NY", AESHOSP = "NY", AEREL = "AEREL",
     AEOUT = "AEOUT", AEENRF = "AEENRF", VSPOS = "VSPOS", VSBLFL = "VSBLFL"
   )
-  unname(map[[target]] %||% "")
+  value <- unname(map[as.character(target)])
+  if (!length(value) || is.na(value[[1L]])) "" else value[[1L]]
 }
 
 v04_findings_policy <- function(task, selected_refs, policies) {

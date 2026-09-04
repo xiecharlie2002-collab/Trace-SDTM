@@ -1,220 +1,170 @@
-# TraceSDTM
+<div align="center">
 
-TraceSDTM 是一个人工监督、注册表约束、规格驱动、可追溯的 SDTM 自动化作品集项目。0.5 版新增单用户、本地运行的浏览器工作台，同时保留0.4版的三阶段推荐和命令行接口。首版继续只覆盖 DM、AE、VS。
+# TraceSDTM Studio 0.6
 
-## 启动本地工作台
+**人工监督、程序约束、可追溯的 SDTM 映射与生成工作台**
 
-首次使用先恢复依赖：
+[![R](https://img.shields.io/badge/R-%E2%89%A54.5-276DC3?logo=r&logoColor=white)](https://www.r-project.org/)
+[![SDTMIG](https://img.shields.io/badge/SDTMIG-3.4-0F9D8A)](https://www.cdisc.org/standards/foundational/sdtmig)
+[![流程](https://img.shields.io/badge/%E6%B5%81%E7%A8%8B-%E4%BA%BA%E5%B7%A5%E7%9B%91%E7%9D%A3-7C3AED)](#安全边界)
+[![License](https://img.shields.io/badge/License-MIT-F59E0B)](LICENSE)
+
+TraceSDTM 把人工智能限制在“提出建议”和“独立审查”两个职责内。画像、结构校验、函数筛选、参数注入、状态控制和最终构建均由程序确定性执行。
+
+</div>
+
+## 项目预览
+
+[![TraceSDTM 0.6 架构](docs/images/trace-sdtm-v06-architecture.png)](docs/diagrams/trace-sdtm-v06.html)
+
+点击架构图可打开 [Archify 交互式架构图](docs/diagrams/trace-sdtm-v06.html)。图中展示了五步工作台、分阶段模型请求、人工批准边界和确定性构建链路。
+
+<table>
+  <tr>
+    <td width="50%"><img src="docs/images/studio-01-project-profile.png" alt="项目、原始数据和画像"></td>
+    <td width="50%"><img src="docs/images/studio-02-task-confirmation.png" alt="原子任务确认"></td>
+  </tr>
+  <tr>
+    <td align="center">1. 项目与数据</td>
+    <td align="center">2. 任务确认</td>
+  </tr>
+  <tr>
+    <td width="50%"><img src="docs/images/studio-03-mapping-generation.png" alt="映射生成和参数处理"></td>
+    <td width="50%"><img src="docs/images/studio-04-review-approval.png" alt="独立审查和人工批准"></td>
+  </tr>
+  <tr>
+    <td align="center">3. 映射生成</td>
+    <td align="center">4. 审查批准</td>
+  </tr>
+</table>
+
+![确定性结果与字段级追溯](docs/images/studio-05-result-lineage.png)
+
+## 核心能力
+
+- 导入任意多个 UTF-8 CSV，保留只读原文件，并为每次运行创建冻结副本。
+- 根据实际数据生成数据集、字段、日期候选和关联关系画像，不要求预先绑定固定模板。
+- 由人工智能发现原子任务；程序检查目标域、来源字段、任务编号、依赖关系和记录粒度后才允许人工冻结任务。
+- 将目标变量选择、函数选择和有限参数选择拆成独立请求；人工智能只能从程序提供的标准变量和候选函数中选择。
+- 从任务、画像、项目规则和受控资源自动注入参数；自由参数必须通过结构化人工表单填写并再次校验。
+- 以全新上下文执行独立人工智能审查。错误阻止批准，警告必须由人工填写说明。
+- 最终构建只读取冻结的 `approved_mapping.yml`，通过白名单函数生成 CSV、XPT、字段级追溯、检查结果和证据包。
+
+当前仓库内置 DM、AE 和 VS 元数据，以及 23 个登记转换函数。0.6 工作台不兼容旧版模板项目；旧项目会提示重新创建通用项目。
+
+## 系统架构
+
+程序控制的主流程如下：
+
+```text
+来源 CSV 冻结与画像
+    ↓
+人工智能发现原子任务 → 程序结构校验 → 人工确认并冻结
+    ↓
+人工智能选择目标变量 → 程序筛选函数 → 人工智能选择候选函数
+    ↓
+程序自动注入参数 → 有限选项才调用模型 → 自由参数交给人工
+    ↓
+程序组装映射计划 → 独立人工智能审查 → 人工最终批准
+    ↓
+批准规格 → 确定性生成 → 本地检查、追溯、报告与证据包
+```
+
+架构设计和状态产物说明见 [架构文档](docs/architecture.md)，转换函数契约见 [函数目录](docs/transform_catalog.md)。
+
+## 真实演示结果
+
+仓库内 `data/raw/dm_raw.csv` 用于一次端到端演示。该文件包含 6 条模拟受试者记录和 14 个来源字段；项目研究编号为 `TRACE001`，目标域限定为 DM，未授权向模型发送字段示例值。
+
+| 项目 | 本次结果 |
+|---|---:|
+| 冻结原子任务 | 17 |
+| 最终映射 | 17 |
+| 最终有效的 `deepseek-v4-flash` 请求 | 3 次：任务、目标变量、函数各 1 次 |
+| 参数模型请求 | 0 次 |
+| 人工参数 | 2 组：SITEID 拆分规则、RFSTDTC 日期格式 |
+| `deepseek-v4-pro` 独立审查 | 1 次 |
+| 审查结果 | 15 项通过、2 项警告、0 项错误 |
+| 生成结果 | DM 6 条记录、17 个变量 |
+| 本地检查 | 0 个问题 |
+| 产物 | CSV、XPT、批准规格、字段追溯、离线报告、证据包均已生成 |
+
+任务草案首次通过程序结构校验；冻结前由人工修正了 DOMAIN 任务的记录粒度。两条审查警告均涉及人工参数来源，已由演示审核者确认后批准。演示审核者标识为 `demo-reviewer`，只说明流程中存在明确的人工决定，不代表法规意义上的专家批准。
+
+调试过程中发现函数筛选和参数解析缺陷，修复后在同一运行中分别重跑了一次目标变量与函数阶段。因此该运行实际产生 6 次接口请求；上表的 4 次是最终有效阶段记录，其中包括 3 次映射请求和 1 次独立审查请求。重跑前的阶段状态保留在本地审计事件中，最终结果只引用重跑后的输入输出校验值。
+
+以上数字来自一次成功运行，只用于证明 0.6 流程能够完整执行，不是模型正确率、稳定性或生产性能的估计。本轮未运行 Pinnacle 21、完整回归测试、性能测试或旧项目兼容测试。
+
+## 技术栈
+
+| 层次 | 主要技术 |
+|---|---|
+| 本地工作台 | R、Shiny、bslib、DT |
+| 数据处理与输出 | dplyr、readr、haven、sdtm.oak |
+| 规格与校验 | YAML、JSON Schema Draft-07、内容校验值 |
+| 模型接口 | httr2、OpenAI 兼容接口、DeepSeek |
+| 审核与审计 | 人工确认、独立模型审查、字段级追溯、离线报告 |
+| 架构文档 | Archify 交互式 HTML 与静态图片 |
+
+## 快速启动
+
+需要 R 4.5 或更高版本。首次使用先恢复依赖：
 
 ```powershell
 Rscript -e "install.packages('renv', repos='https://cloud.r-project.org')"
 Rscript -e "renv::restore()"
 ```
 
-随后运行：
+启动只监听 `127.0.0.1` 的本地工作台：
 
 ```powershell
 .\scripts\start_trace_sdtm_studio.ps1
 ```
 
-也可以直接使用R命令：
+也可以直接运行：
 
 ```powershell
 Rscript scripts/trace_sdtm.R studio
 ```
 
-启动器只在 `127.0.0.1` 上监听，并从3838至3848选择可用端口。显式指定端口时，如果端口已被占用就立即报错：
+使用 DeepSeek 时，只在当前终端会话中注入密钥：
 
 ```powershell
-.\scripts\start_trace_sdtm_studio.ps1 -Port 3839
+$env:TRACE_SDTM_API_KEY = '<当前会话密钥>'
+$env:TRACE_SDTM_BASE_URL = 'https://api.deepseek.com'
+$env:TRACE_SDTM_MODEL = 'deepseek-v4-flash'
+$env:TRACE_SDTM_REVIEW_MODEL = 'deepseek-v4-pro'
+$env:TRACE_SDTM_THINKING_MODE = 'disabled'
+.\scripts\start_trace_sdtm_studio.ps1
 ```
 
-工作台项目默认保存在被 Git 忽略的 `workspace/projects`。可用 `TRACE_SDTM_STUDIO_HOME` 指定其他本地根目录。完整操作见 [工作台用户手册](docs/studio_user_guide.md)，可离线查看的高级模板验收结果见 [0.5脱敏示例](examples/studio_v05/README.md)。
+不要把接口密钥写入源码、配置、日志、截图或提交记录。完整操作见 [工作台用户手册](docs/studio_user_guide.md)，五步演示见 [演示说明](docs/demo.md)。
 
-## 工作台能力
-
-- 创建、打开、切换和归档多个本地项目，不提供网页删除功能；
-- 使用基础、中等、高级模板上传UTF-8 CSV，并在网页确认字段绑定；
-- 通过受控表单配置日期、标识符、术语、访视、序号、基线和单位政策；
-- 分阶段或一键执行目标识别、函数选择、参数解析和计划组装；
-- 在网页结构化审核，也可导出或导入Excel审核工作簿；
-- 从批准规格确定性生成DM、AE、VS的CSV与XPT；
-- 运行本地检查、自动调用Pinnacle 21，或导入Community生成的Excel报告；
-- 查询字段级追溯，打开离线报告并下载不含原始输入的证据包。
-
-模型密钥只保存在当前 Shiny 会话内存。默认模型请求不含原始示例值；只有使用者明确授权后才加入所选去标识化字段的示例，并且标识符、键和中心字段始终排除。完整请求可在发送前预览并计算校验值。
-
-## 流程
+## 目录结构
 
 ```text
-来源数据登记与画像
-    ↓
-拆成带依赖关系的原子临床动作
-    ↓
-模型第一阶段：识别目标变量
-    ↓
-模型第二阶段：选择登记函数和来源编号
-    ↓
-政策、注册表和资源目录自动注入已知参数
-    ↓
-模型第三阶段：只补全仍未知且有有限选项的参数
-    ↓
-确定性组装、人工审核并锁定 0.4 YAML 规格
-    ↓
-R 与 sdtm.oak 确定性生成 CSV、XPT 和追溯
-    ↓
-本地检查 + Pinnacle 21 Community
-    ↓
-评价明细与离线 HTML 报告
+R/                    画像、推荐、审查、工作台和确定性构建代码
+config/               项目配置、工作台配置和转换函数注册表
+data/raw/             仓库内模拟来源数据
+specs/                SDTM 元数据、受控资源和基准规格
+docs/diagrams/         Archify 架构规格与交互式 HTML
+docs/images/           架构图和五步工作台截图
+scripts/               命令行入口和本地启动器
+tests/                 自动检查与测试代码
+workspace/projects/    本地工作台项目和运行产物，Git 默认忽略
 ```
 
-模型不能生成或执行 R 代码、单位公式、正则表达式、连接键或自由条件。正式构建只读取批准后的 YAML，不再次调用模型。
+## 安全边界
 
-## 三级基准场景
+- 默认不向模型发送完整原始记录或示例值；标识符、受试者键和中心字段始终排除。
+- 接口密钥只保存在当前进程或 Shiny 会话内存中，不写入调用审计记录。
+- 模型不能生成或执行 R 代码、自由公式、正则表达式或连接键，也不能绕过函数白名单和参数模式。
+- 模型审查只能报告问题，不能直接修改映射；未经人工批准的规格不能构建。
+- 每次模型请求记录模型名称、提示词版本、输入输出校验值、调用次数和失败原因，以便复核。
+- 本项目是本地单用户研究原型，不是经过计算机化系统验证的生产平台，也不生成完整法规提交包。
 
-`basic` 包含18个常见原子任务，`intermediate` 包含49个同一数据集内的关系型任务，`advanced` 包含57个跨来源、不完整日期、单位换算和多阶段依赖任务。合计124项，并可聚合回原来的18、20和21个审核概念。
+项目不包含 Define-XML、aCRF、完整试验设计域、ADaM、TLF、电子签名或多用户权限。所有输出仍需由具备相应资质的临床数据标准专家审核。仓库中的数据均为模拟数据，不对应真实受试者；数据边界见 [数据来源说明](DATA_SOURCES.md)，安全报告方式见 [安全说明](SECURITY.md)。
 
-一次按层级和域隔离的真实子代理盲评中，语义正确和端到端结构正确均为124/124；真实串联完整计划为121/124，给定正确上游决定的条件完整计划为122/124。该结果来自单次、按域聚集的实验，只用于说明流程的可评价性，不用于估计模型长期正确率。详细分层结果、残余错误和协议边界见 `docs/v04_three_stage_benchmark.md`。
+## 许可证
 
-高级场景当前实际结果：
-
-- 画像包含57个来源字段，形成57个原子任务，并聚合为21个审核概念。
-- 生成 DM 4 行、AE 5 行、VS 44 行。
-- 从两个暴露来源取得各受试者最早给药日期时间，生成 RFSTDTC。
-- AE 保留年、年月和完整日期时间等不同精度，不进行日期填补。
-- `70 in → 177.8 cm`、`180 lb → 81.6 kg`、`98.6 F → 37.0 C` 已通过自动测试。SDTM 中将 `lb` 规范为受控术语 `LB`，原始来源仍保留在追溯证据中。
-- 24 条给药前最后一次有效检查记录被标记为 VSBLFL。
-- 本地检查为 0 个问题。
-- Pinnacle 21 Community 4.2.0.5013 已用 FDA 2508.1、SDTMIG 3.4 和 2026-03-27 受控术语真实验证；DM、AE、VS 没有域内缺陷，只保留缺少 Define-XML、TS 等最小范围问题。
-
-项目不生成完整提交包，因此不能把范围问题描述为“全部合规通过”。
-
-## 0.4命令行与评价模式
-
-```powershell
-Rscript scripts/trace_sdtm.R registry-check --scenario advanced
-Rscript scripts/trace_sdtm.R recommend --seed --scenario advanced
-Rscript scripts/trace_sdtm.R evaluate-v04 --scenario advanced
-Rscript scripts/trace_sdtm.R approve --scenario advanced
-Rscript scripts/trace_sdtm.R run --scenario advanced
-```
-
-`recommend --seed` 使用专家金标准生成离线参考种子，只用于演示审核、构建和评价程序，不是实际模型输出。
-
-常用命令：
-
-```powershell
-Rscript scripts/trace_sdtm.R registry-docs --scenario advanced
-Rscript scripts/trace_sdtm.R profile --scenario advanced
-Rscript scripts/trace_sdtm.R build --scenario advanced
-Rscript scripts/trace_sdtm.R validate-local --scenario advanced
-Rscript scripts/trace_sdtm.R doctor-p21 --scenario advanced
-Rscript scripts/trace_sdtm.R validate-p21 --scenario advanced
-Rscript scripts/trace_sdtm.R report --scenario advanced
-Rscript scripts/trace_sdtm.R test --scenario advanced
-```
-
-三级子代理盲评使用一次性编排脚本，原始响应按字节冻结，正式口径不进行结构修复或选择性重试：
-
-```powershell
-Rscript scripts/experiments/v04_subagent_benchmark.R prepare-targets --scenario basic --domain DM --experiment-id <实验编号>
-Rscript scripts/experiments/v04_subagent_benchmark.R import-targets --scenario basic --domain DM --experiment-id <实验编号> --response-file <响应文件> --task-id <子代理任务编号>
-Rscript scripts/experiments/v04_report.R --experiment-id <实验编号>
-```
-
-完整协议还包括函数阶段、给定正确目标的条件函数阶段、参数阶段和场景汇总。每个层级与域使用一个全新子代理，同一子代理完成该域的各阶段；子代理盲法属于过程约束，不是操作系统级隔离。
-
-## 使用真实大模型
-
-配置 OpenAI 兼容接口后运行：
-
-```powershell
-$env:TRACE_SDTM_API_KEY = '<密钥>'
-$env:TRACE_SDTM_BASE_URL = 'https://api.example.com/v1'
-$env:TRACE_SDTM_MODEL = '<模型名称>'
-$env:TRACE_SDTM_EXPERIMENT_ID = 'model-20260902'
-Rscript scripts/trace_sdtm.R recommend --scenario advanced
-```
-
-接口密钥只应在当前终端会话中设置，不得写入源码、配置、日志或报告。如果确实需要本地持久化，可以复制 `.Renviron.example` 为 `.Renviron`；本地文件已被 Git 忽略。任何曾出现在聊天记录、终端记录或提交中的密钥都应立即撤销。完整要求见 [安全说明](SECURITY.md)。
-
-常规模型实验产物写入 `output/benchmark/v2/<场景>/experiments/<实验编号>/`，不会覆盖基线。`recommend-targets`、`recommend-functions`、`recommend-parameters` 和 `assemble-recommendations` 也可分别运行，便于恢复和定位错误。打开实验目录中的 `review/mapping_review.xlsx` 完成人工审核后运行：
-
-```powershell
-$env:TRACE_SDTM_REVIEWER = '<审核者标识>'
-Rscript scripts/trace_sdtm.R approve --scenario advanced
-Rscript scripts/trace_sdtm.R run --scenario advanced
-```
-
-为了可重复评价，可以用专家金标准代填审核表：
-
-```powershell
-Rscript scripts/trace_sdtm.R review-gold --scenario advanced
-Rscript scripts/trace_sdtm.R approve --scenario advanced
-```
-
-这只适用于作品集实验，不等同于法规流程中的独立专家签字。
-
-## 注册表和 sdtm.oak
-
-`config/transform_registry.yml` 1.2.0 是转换函数及参数解析策略的唯一元数据源，同时服务于提示词、模型结果验证、审核工作簿、YAML 检查、函数调度、自动测试和文档生成。
-
-项目选择性使用 sdtm.oak 0.2.0 的普通赋值、受控术语、日期时间、参考日期、序号、研究日和基线算法。单位换算由项目版本化受控表完成。参数使用 JSON Schema Draft-07 验证，函数只能从 R 中的受控绑定表解析。
-
-自动生成的函数目录见 `docs/transform_catalog.md`，整体架构见 `docs/architecture.md`。
-
-## Pinnacle 21
-
-共享配置位于 `config/p21.yml`，只保存版本和验证规则。本机安装路径使用不提交的 `config/p21.local.yml`：
-
-```powershell
-Copy-Item config/p21.local.example.yml config/p21.local.yml
-```
-
-复制后修改其中四个路径。本项目完成验证时使用的本机环境为：
-
-```text
-Community：4.2.0.5013
-安装目录：D:\Pinnacle
-命令行组件：1.0.9
-规则引擎：FDA 2508.1
-标准：SDTMIG 3.4
-受控术语：2026-03-27
-```
-
-程序只调用已安装组件，不复制、修改或提交 Pinnacle 21 文件。也可以导入图形界面生成的报告：
-
-```powershell
-Rscript scripts/trace_sdtm.R import-p21 --file '<报告路径>' --scenario advanced
-```
-
-还可以使用 `TRACE_SDTM_P21_CONFIG` 指定其他本地配置文件，或分别设置 `TRACE_SDTM_P21_EXECUTABLE`、`TRACE_SDTM_P21_JAVA`、`TRACE_SDTM_P21_CLIENT_JAR` 和 `TRACE_SDTM_P21_CONFIG_ROOT`。未安装 Pinnacle 21 时，外部环境测试会明确跳过，不影响本地转换和规则测试。
-
-## 依赖复现
-
-```powershell
-Rscript -e "install.packages('renv', repos='https://cloud.r-project.org')"
-Rscript -e "renv::restore()"
-```
-
-## 重要产物
-
-- `config/transform_registry.yml`：唯一转换元数据源。
-- `specs/benchmark/v2/*_tasks.yml`：124项原子任务及稳定来源编号。
-- `specs/benchmark/v2/*_gold.yml`：只用于盲评后的独立评价。
-- `output/benchmark/v2/<场景>/review/mapping_review.xlsx`：按原子任务审核的工作簿。
-- `output/benchmark/v2/<场景>/specs/approved_mapping.yml`：唯一允许进入构建的0.4规格。
-- `output/benchmark/v2/<场景>/sdtm/xpt`：供 Pinnacle 21 验证的 XPT。
-- `output/benchmark/v2/<场景>/lineage/field_lineage.csv`：字段级追溯。
-
-`output/` 默认忽略新生成文件，避免先导实验、日志和重复输出被批量提交。当前 Git 标签已经保存正式基线；以后若要保存新的正式报告或冻结实验，应逐项复核后使用 `git add -f <明确路径>`，不要执行 `git add .`。
-
-当前 `main` 只保留最新的0.5脱敏工作台验收示例。旧版正式结果通过 v0.1—v0.4 的 Git 标签复核。
-
-## 边界
-
-本项目不包含 Define-XML、aCRF、完整试验设计域、ADaM、TLF、电子签名、多用户权限、法规申报级系统验证或 CDISC CORE。工作台固定为本机单用户工具，不是经过计算机化系统验证的生产平台。所有输出仍需合格的临床数据标准专家审核。
-
-仓库中的数据均为公开示例数据的改编版本或模拟数据，不对应真实受试者。数据使用边界见 [数据来源说明](DATA_SOURCES.md)，软件许可见 [MIT许可证](LICENSE)。
-
-五分钟演示见 [docs/demo.md](docs/demo.md)，工作台手册见 [docs/studio_user_guide.md](docs/studio_user_guide.md)，v0.4评价设计见 [docs/v04_three_stage_benchmark.md](docs/v04_three_stage_benchmark.md)。
+本项目采用 [MIT 许可证](LICENSE)。

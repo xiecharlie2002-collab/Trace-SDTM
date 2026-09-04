@@ -1,4 +1,4 @@
-# TraceSDTM Studio 0.5 background jobs and diagnostics -----------------------
+# TraceSDTM Studio 0.6 background jobs and diagnostics -----------------------
 
 .trace_studio_jobs <- new.env(parent = emptyenv())
 .trace_studio_jobs$active <- NULL
@@ -13,7 +13,21 @@ studio_recorded_stage <- function(config, stage, code) {
     studio_update_run_stage(project_id, run_id, stage, "failed", sanitize_for_log(conditionMessage(result)))
     stop(result)
   }
-  studio_update_run_stage(project_id, run_id, stage, "completed")
+  outcome <- "completed"
+  if (identical(stage, "task_discovery") && identical(as.character(result$status %||% ""), "needs_manual_edit")) {
+    outcome <- "needs_information"
+  } else if (stage %in% c("recommend_targets", "recommend_functions", "recommend_parameters", "assemble") &&
+             length(result$failures %||% list())) {
+    outcome <- "needs_information"
+  } else if (identical(stage, "recommend_parameters")) {
+    resolutions <- result$resolutions$valid %||% list()
+    if (any(vapply(resolutions, function(item) length(item$unavailable_parameters %||% list()) > 0L, logical(1)))) outcome <- "needs_information"
+  } else if (identical(stage, "ai_review") &&
+             (as.integer(result$summary$warning %||% 0L) > 0L || as.integer(result$summary$error %||% 0L) > 0L ||
+              length(result$deterministic_validation$issues %||% list()))) {
+    outcome <- "completed_with_warnings"
+  }
+  studio_update_run_stage(project_id, run_id, stage, outcome)
   result
 }
 
@@ -44,8 +58,8 @@ studio_start_job <- function(project_id, run_id, command, credentials = list(),
                              privacy = list(include_examples = FALSE, source_keys = character())) {
   current <- studio_active_job()
   if (!is.null(current) && current$process$is_alive()) trace_abort("工作台已有一个后台任务正在运行。")
-  allowed <- c("profile", "recommend-targets", "recommend-functions", "recommend-parameters",
-               "assemble-recommendations", "recommend", "build", "validate-local", "doctor-p21",
+  allowed <- c("profile", "discover-tasks", "recommend-targets", "recommend-functions", "recommend-parameters",
+               "assemble-recommendations", "recommend", "ai-review", "build", "validate-local", "doctor-p21",
                "validate-p21", "report", "run")
   if (!command %in% allowed) trace_abort("工作台后台命令不在允许列表中。")
   config <- studio_load_run_config(project_id, run_id)
@@ -59,6 +73,11 @@ studio_start_job <- function(project_id, run_id, command, credentials = list(),
     TRACE_SDTM_API_KEY = key,
     TRACE_SDTM_BASE_URL = as.character(credentials$base_url %||% Sys.getenv("TRACE_SDTM_BASE_URL", unset = "")),
     TRACE_SDTM_MODEL = as.character(credentials$model %||% Sys.getenv("TRACE_SDTM_MODEL", unset = "")),
+    TRACE_SDTM_REVIEW_BASE_URL = as.character(credentials$review_base_url %||% Sys.getenv("TRACE_SDTM_REVIEW_BASE_URL", unset = "")),
+    TRACE_SDTM_REVIEW_MODEL = as.character(credentials$review_model %||% Sys.getenv("TRACE_SDTM_REVIEW_MODEL", unset = "")),
+    TRACE_SDTM_TIMEOUT_SECONDS = Sys.getenv("TRACE_SDTM_TIMEOUT_SECONDS", unset = ""),
+    TRACE_SDTM_MAX_COMPLETION_TOKENS = Sys.getenv("TRACE_SDTM_MAX_COMPLETION_TOKENS", unset = ""),
+    TRACE_SDTM_THINKING_MODE = Sys.getenv("TRACE_SDTM_THINKING_MODE", unset = ""),
     TRACE_SDTM_REVIEWER = as.character(credentials$reviewer %||% "")
   )
   environment <- environment[nzchar(environment) | names(environment) %in% c(
@@ -80,7 +99,7 @@ studio_start_job <- function(project_id, run_id, command, credentials = list(),
   )
   log_path <- file.path(trace_path(config$paths$log_dir), "studio_job.log")
   state <- list(
-    schema_version = "0.5", project_id = project_id, run_id = run_id,
+    schema_version = "0.6", project_id = project_id, run_id = run_id,
     command = command, status = "running", pid = process$get_pid(),
     started_at = utc_now(), updated_at = utc_now(), exit_status = NULL,
     log_file = basename(log_path), secrets_logged = FALSE
@@ -142,6 +161,7 @@ studio_cancel_job <- function() {
 
 studio_recover_interrupted_jobs <- function() {
   projects <- studio_list_projects(include_archived = TRUE)
+  projects <- dplyr::filter(projects, .data$compatible)
   recovered <- list()
   for (project_id in projects$project_id) {
     runs <- studio_list_runs(project_id)

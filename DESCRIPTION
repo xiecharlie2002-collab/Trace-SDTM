@@ -1,7 +1,7 @@
 Package: TraceSDTM
 Type: Project
 Title: Traceable Human-in-the-Loop SDTM Automation Demonstration
-Version: 0.5.0
+Version: 0.6.0
 Authors@R: person("Jiacheng", "Xie", role = c("aut", "cre"), email = "xiecharlie2002@gmail.com")
 Description: A local single-user browser workbench and reproducible demonstration of metadata profiling, three-stage
     constrained mapping recommendation, deterministic parameter injection,

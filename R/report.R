@@ -145,7 +145,7 @@ comparison_manifest_v02 <- function() {
 generate_report <- function(config = load_project_config()) {
   ensure_output_directories(config)
   is_studio <- isTRUE(config$project$studio)
-  is_v04 <- is_studio || as.character(config$project$version) %in% c("0.4.0", "0.5.0")
+  is_v04 <- is_studio || as.character(config$project$version) %in% c("0.4.0", "0.5.0", "0.6.0")
   if (is_studio) {
     stage_paths <- file.path(trace_path(config$paths$recommendation_dir), c(
       "target_decisions.json", "function_candidates.json",
@@ -238,11 +238,11 @@ generate_report <- function(config = load_project_config()) {
   document <- htmltools::tags$html(
     htmltools::tags$head(
       htmltools::tags$meta(charset = "utf-8"),
-      htmltools::tags$title(if (is_studio) "TraceSDTM Studio 0.5 项目报告" else "TraceSDTM 0.4 项目报告"),
+      htmltools::tags$title(if (is_studio) "TraceSDTM Studio 0.6 项目报告" else "TraceSDTM 0.4 项目报告"),
       htmltools::tags$style(htmltools::HTML(css))
     ),
     htmltools::tags$body(htmltools::tags$main(
-      htmltools::tags$h1(if (is_studio) "TraceSDTM Studio 0.5" else "TraceSDTM 0.4"),
+      htmltools::tags$h1(if (is_studio) "TraceSDTM Studio 0.6" else "TraceSDTM 0.4"),
       htmltools::tags$p(class = "subtitle", sprintf("%s 场景：人工监督、注册表约束、规格驱动、可追溯的 SDTM 自动化生成", config$project$scenario)),
       htmltools::tags$div(class = "grid",
         metric_card("原始字段", nrow(dictionary)),
@@ -318,6 +318,6 @@ generate_report <- function(config = load_project_config()) {
   output <- trace_path(config$paths$report_dir, "trace_sdtm_report.html")
   ensure_parent(output)
   htmltools::save_html(document, output, background = "white")
-  trace_info("已生成 %s 离线报告：%s", if (is_studio) "Studio 0.5" else "0.4", output)
+  trace_info("已生成 %s 离线报告：%s", if (is_studio) "Studio 0.6" else "0.4", output)
   invisible(output)
 }

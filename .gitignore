@@ -16,3 +16,6 @@ workspace/
 ~$*.xlsx
 ~$*.xls
 *.tmp
+.tmp/
+.playwright-cli/
+docs/diagrams/*.visual-check.*

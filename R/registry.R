@@ -485,13 +485,28 @@ compile_specification_v04 <- function(specification, config = load_project_confi
     first <- members[[1]]
     refs <- unlist(lapply(members, concept_source_refs), recursive = FALSE)
     if (length(refs)) refs <- refs[!duplicated(vapply(refs, source_ref_key, character(1)))]
+    canonical_ref_ids <- if (length(refs)) stats::setNames(
+      vapply(refs, function(ref) as.character(ref$ref_id), character(1)),
+      vapply(refs, source_ref_key, character(1))
+    ) else stats::setNames(character(), character())
     dependencies <- unique(unlist(lapply(members, function(task) {
       ids <- unlist(task$depends_on %||% character(), use.names = FALSE)
       unname(task_to_group[ids])
     }), use.names = FALSE))
     dependencies <- setdiff(dependencies, group_id)
     steps <- unlist(lapply(members, function(task) {
-      lapply(task_steps_v04(task), resolve_step_sources_v04, task = task)
+      lapply(task_steps_v04(task), function(step) {
+        resolved <- resolve_step_sources_v04(step, task)
+        source_keys <- unlist(resolved$source_keys %||% character(), use.names = FALSE)
+        if (length(source_keys)) {
+          canonical <- unname(canonical_ref_ids[source_keys])
+          if (any(is.na(canonical))) trace_abort(sprintf(
+            "%s 的步骤无法映射到组合组 %s 的规范来源编号。", task_id_v04(task), group_id
+          ))
+          resolved$source_ref_ids <- as.list(canonical)
+        }
+        resolved
+      })
     }), recursive = FALSE)
     list(
       concept_id = group_id,

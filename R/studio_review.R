@@ -1,4 +1,4 @@
-# TraceSDTM Studio 0.5 structured review service -----------------------------
+# TraceSDTM Studio 0.6 structured review service -----------------------------
 
 studio_review_state_path <- function(config) file.path(trace_path(config$paths$review_dir), "studio_review_state.json")
 
@@ -27,7 +27,7 @@ studio_initialize_review <- function(config, overwrite = FALSE) {
     )
   }), vapply(specification$tasks, task_id_v04, character(1)))
   state <- list(
-    schema_version = "0.5", status = "in_review", created_at = utc_now(), updated_at = utc_now(),
+    schema_version = "0.6", status = "in_review", created_at = utc_now(), updated_at = utc_now(),
     project_id = config$studio$project_id %||% NULL, run_id = config$studio$run_id %||% NULL,
     assembled_sha256 = file_sha256(file.path(trace_path(config$paths$recommendation_dir), "assembled_recommendations.json")),
     tasks = task_state
@@ -80,7 +80,7 @@ studio_validate_modified_step <- function(config, task_id, step) {
 studio_save_review_decision <- function(config, task_id, decision, reviewer,
                                         selected_rank = NULL, review_comment = "",
                                         modified_step = NULL) {
-  studio_assert_run_writable(config)
+  studio_assert_mapping_editable_v06(config)
   reviewer <- trimws(as.character(reviewer %||% ""))
   if (!nzchar(reviewer) || tolower(reviewer) %in% c("portfolio_demo_reviewer", "demo", "default")) {
     trace_abort("请填写可识别的审核者标识，不能使用默认演示名称。")
@@ -121,8 +121,8 @@ studio_save_review_decision <- function(config, task_id, decision, reviewer,
       task_id = task_id, decision = decision,
       selected_rank = if (identical(decision, "accept")) item$selected_rank else NULL
     ), config$studio$run_id, reviewer)
-    studio_update_run_stage(config$studio$project_id, config$studio$run_id, "review",
-                            if (identical(state$status, "ready_for_approval")) "completed" else "running",
+    studio_update_run_stage(config$studio$project_id, config$studio$run_id, "human_approval",
+                            if (identical(state$status, "ready_for_approval")) "running" else "pending",
                             actor = reviewer)
   }
   invisible(state)
@@ -169,6 +169,11 @@ studio_review_tables <- function(config, state = studio_read_review(config)) {
 
 studio_write_review_workbook <- function(config, state = studio_read_review(config), filename = "mapping_review.xlsx") {
   path <- file.path(trace_path(config$paths$review_dir), filename)
+  approved_path <- trace_path(config$paths$approved_specification %||% "")
+  if (nzchar(as.character(config$paths$approved_specification %||% "")) && file.exists(approved_path)) {
+    if (file.exists(path)) return(path)
+    trace_abort("批准后的审核记录为只读状态，且没有既有审核工作簿。")
+  }
   if (!is.null(config$studio$project_id)) {
     project <- studio_read_project(config$studio$project_id)
     run <- studio_read_run(config$studio$project_id, config$studio$run_id)
@@ -185,7 +190,7 @@ studio_write_review_workbook <- function(config, state = studio_read_review(conf
   workbook <- openxlsx::createWorkbook()
   write_review_sheet(workbook, "Instructions", data.frame(
     item = c("用途", "审核边界", "批准边界"),
-    description = c("TraceSDTM Studio 0.5 审核快照。", "只允许登记函数、来源编号、目标变量和受控参数。", "构建只读取批准规格，不调用模型。"),
+    description = c("TraceSDTM Studio 0.6 只读审核快照。", "只允许登记函数、来源编号、目标变量和受控参数。", "构建只读取批准规格，不调用模型。"),
     stringsAsFactors = FALSE
   ), filter = FALSE)
   write_review_sheet(workbook, "Task Review", tables$review)
@@ -201,9 +206,10 @@ studio_write_review_workbook <- function(config, state = studio_read_review(conf
 }
 
 studio_approve_review <- function(config, reviewer = NULL) {
-  studio_assert_run_writable(config)
+  studio_assert_mapping_editable_v06(config)
   state <- studio_read_review(config)
   if (!identical(state$status, "ready_for_approval")) trace_abort("仍有未完成或信息不足的审核任务，不能批准。")
+  ai_review <- studio_assert_ai_review_approvable_v06(config)
   reviewers <- unique(vapply(state$tasks, function(x) trimws(as.character(x$reviewer %||% "")), character(1)))
   reviewers <- reviewers[nzchar(reviewers)]
   reviewer <- trimws(as.character(reviewer %||% if (length(reviewers) == 1L) reviewers else ""))
@@ -216,10 +222,12 @@ studio_approve_review <- function(config, reviewer = NULL) {
   output <- trace_path(config$paths$approved_specification)
   write_yaml(specification, output)
   approval <- list(
-    schema_version = "0.5", status = "approved", reviewer = reviewer,
+    schema_version = "0.6", status = "approved", reviewer = reviewer,
     approved_at = utc_now(), compatible_mapping_schema = "0.4",
     approved_specification = studio_relative_path(output, config$studio$run_path %||% dirname(output)),
-    approved_specification_sha256 = file_sha256(output), review_workbook_sha256 = file_sha256(workbook)
+    approved_specification_sha256 = file_sha256(output), review_workbook_sha256 = file_sha256(workbook),
+    ai_review_sha256 = file_sha256(v06_ai_review_path(config)),
+    ai_review_summary = ai_review$summary
   )
   write_yaml(approval, file.path(trace_path(config$paths$review_dir), "studio_approval.yml"))
   write_csv(tables$review, file.path(trace_path(config$paths$review_dir), "task_review_audit.csv"))
@@ -229,7 +237,7 @@ studio_approve_review <- function(config, reviewer = NULL) {
   state$approved_specification_sha256 <- approval$approved_specification_sha256
   write_json(state, studio_review_state_path(config))
   if (!is.null(config$studio$project_id)) {
-    studio_update_run_stage(config$studio$project_id, config$studio$run_id, "approve", "completed", actor = reviewer)
+    studio_update_run_stage(config$studio$project_id, config$studio$run_id, "human_approval", "completed", actor = reviewer)
     studio_append_audit(config$studio$project_id, "review_approved", list(
       specification_sha256 = approval$approved_specification_sha256,
       workbook_sha256 = approval$review_workbook_sha256
@@ -239,40 +247,7 @@ studio_approve_review <- function(config, reviewer = NULL) {
 }
 
 studio_import_review_workbook <- function(config, uploaded_file, reviewer) {
-  studio_assert_run_writable(config)
-  reviewer <- trimws(as.character(reviewer %||% ""))
-  if (!nzchar(reviewer)) trace_abort("导入审核表时必须填写审核者标识。")
-  if (!file.exists(uploaded_file) || tolower(tools::file_ext(uploaded_file)) != "xlsx") trace_abort("请选择有效的XLSX审核工作簿。")
-  sheets <- openxlsx::getSheetNames(uploaded_file)
-  required <- c("Task Review", "Candidate Plans", "Final Steps")
-  missing <- setdiff(required, sheets)
-  if (length(missing)) trace_abort(sprintf("审核工作簿缺少工作表：%s。", paste(missing, collapse = "、")))
-  review <- openxlsx::read.xlsx(uploaded_file, sheet = "Task Review", check.names = FALSE)
-  candidates <- openxlsx::read.xlsx(uploaded_file, sheet = "Candidate Plans", check.names = FALSE)
-  final_steps <- openxlsx::read.xlsx(uploaded_file, sheet = "Final Steps", check.names = FALSE)
-  specification <- approved_specification_from_review_tables_v04(
-    review, candidates, final_steps, config, reviewer, file_sha256(uploaded_file)
-  )
-  stamp <- format(Sys.time(), "%Y%m%d_%H%M%S")
-  snapshot <- file.path(trace_path(config$paths$review_dir), paste0("imported_review_", stamp, ".xlsx"))
-  if (!isTRUE(file.copy(uploaded_file, snapshot, overwrite = FALSE, copy.date = TRUE))) trace_abort("无法保存导入的审核快照。")
-  output <- trace_path(config$paths$approved_specification)
-  write_yaml(specification, output)
-  write_csv(review, file.path(trace_path(config$paths$review_dir), "task_review_audit.csv"))
-  write_csv(final_steps, file.path(trace_path(config$paths$review_dir), "final_steps_audit.csv"))
-  write_yaml(list(
-    schema_version = "0.5", status = "approved", reviewer = reviewer,
-    approved_at = utc_now(), imported_workbook = basename(snapshot),
-    imported_workbook_sha256 = file_sha256(snapshot), compatible_mapping_schema = "0.4",
-    approved_specification_sha256 = file_sha256(output)
-  ), file.path(trace_path(config$paths$review_dir), "studio_approval.yml"))
-  if (!is.null(config$studio$project_id)) {
-    studio_update_run_stage(config$studio$project_id, config$studio$run_id, "approve", "completed", actor = reviewer)
-    studio_append_audit(config$studio$project_id, "review_workbook_imported", list(
-      workbook_sha256 = file_sha256(snapshot), specification_sha256 = file_sha256(output)
-    ), config$studio$run_id, reviewer)
-  }
-  invisible(specification)
+  trace_abort("TraceSDTM 0.6 的审核工作簿是只读审计导出，不再作为批准或导入入口。请在工作台中完成结构化审核。")
 }
 
 studio_review_task_details <- function(config, task_id) {

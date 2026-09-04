@@ -1,6 +1,6 @@
 project:
   name: TraceSDTM
-  version: 0.5.0
+  version: 0.6.0
   study_id: TRACE001
   standard: SDTMIG
   standard_version: '3.4'

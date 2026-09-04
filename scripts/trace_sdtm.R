@@ -19,9 +19,12 @@ source_order <- c(
   "registry.R",
   "profile.R",
   "recommend.R",
+  "task_discovery.R",
+  "manual_parameters.R",
   "review.R",
   "review_v04.R",
   "studio_review.R",
+  "ai_review.R",
   "transforms.R",
   "build.R",
   "validate_local.R",
@@ -32,6 +35,7 @@ source_order <- c(
   "studio_exports.R",
   "studio_jobs.R",
   "studio_app.R",
+  "studio_app_v06.R",
   "pipeline.R"
 )
 for (file in source_order) source(file.path(project_root, "R", file), encoding = "UTF-8")

@@ -15,16 +15,18 @@ print_trace_help <- function() {
     "  studio-doctor          检查工作台依赖、目录和本机配置",
     "  registry-check         验证注册表、参数模式和实现绑定",
     "  registry-docs          由注册表生成函数目录",
-    "  profile",
+    "  profile                生成数据集、字段和关系画像",
+    "  discover-tasks         人工智能发现原子任务并由程序校验",
     "  recommend-targets      仅执行目标变量识别",
     "  recommend-functions    读取目标结果并执行函数选择",
     "  recommend-parameters   读取目标和函数结果并解析参数",
-    "  assemble-recommendations  组装完整候选并生成审核工作簿",
-    "  recommend              顺序执行 v0.4 三阶段推荐",
+    "  assemble-recommendations  组装完整候选并初始化结构化审核",
+    "  recommend              顺序执行目标、函数和参数阶段",
+    "  ai-review              使用全新上下文执行独立人工智能审查",
     "  recommend --seed       生成明确标记的离线参考种子",
     "  evaluate-v04          评价当前 v0.4 三阶段推荐产物",
     "  review-gold            仅用于实验评价：按金标准填写审核表",
-    "  approve                从审核工作簿锁定规格",
+    "  approve                人工最终批准并锁定映射规格",
     "  build",
     "  validate-local",
     "  doctor-p21",
@@ -53,6 +55,10 @@ run_tests <- function() {
 trace_execute_command <- function(command, args, config) {
   is_studio <- isTRUE(config$project$studio)
   if (is_studio && !identical(command, "export-evidence")) studio_assert_run_writable(config)
+  if (is_studio && command %in% c(
+    "profile", "discover-tasks", "recommend-targets", "recommend-functions",
+    "recommend-parameters", "assemble-recommendations", "recommend", "ai-review", "approve"
+  )) studio_assert_mapping_editable_v06(config)
   stage <- function(name, value) studio_recorded_stage(config, name, value)
   if (is_studio && ("--seed" %in% args || command %in% c("evaluate-v04", "review-gold"))) {
     trace_abort("普通工作台项目不包含金标准，禁止使用 --seed、review-gold 或准确率评价。")
@@ -65,7 +71,12 @@ trace_execute_command <- function(command, args, config) {
     },
     `registry-docs` = write_transform_catalog(config),
     profile = stage("profile", profile_sources(config)),
+    `discover-tasks` = {
+      if (!file.exists(trace_path(config$paths$project_context))) stage("profile", profile_sources(config))
+      stage("task_discovery", run_task_discovery_v06(config))
+    },
     `recommend-targets` = {
+      if (is_studio) v06_assert_tasks_frozen(config)
       if (!file.exists(file.path(trace_path(config$paths$profile_dir), "source_dictionary.csv"))) stage("profile", profile_sources(config))
       stage("recommend_targets", recommend_targets_v04(
         config, provider = if ("--seed" %in% args) "seed" else "model",
@@ -73,6 +84,7 @@ trace_execute_command <- function(command, args, config) {
       ))
     },
     `recommend-functions` = {
+      if (is_studio) v06_assert_tasks_frozen(config)
       targets <- read_recommendation_stage_v04(config, "target_decisions.json")
       stage("recommend_functions", recommend_functions_v04(
         targets, config, provider = if ("--seed" %in% args) "seed" else "model",
@@ -80,6 +92,7 @@ trace_execute_command <- function(command, args, config) {
       ))
     },
     `recommend-parameters` = {
+      if (is_studio) v06_assert_tasks_frozen(config)
       targets <- read_recommendation_stage_v04(config, "target_decisions.json")
       functions <- read_recommendation_stage_v04(config, "function_candidates.json")
       stage("recommend_parameters", recommend_parameters_v04(
@@ -88,6 +101,7 @@ trace_execute_command <- function(command, args, config) {
       ))
     },
     `assemble-recommendations` = {
+      if (is_studio) v06_assert_tasks_frozen(config)
       targets <- read_recommendation_stage_v04(config, "target_decisions.json")
       functions <- read_recommendation_stage_v04(config, "function_candidates.json")
       parameters <- read_recommendation_stage_v04(config, "parameter_completions.json")
@@ -98,6 +112,7 @@ trace_execute_command <- function(command, args, config) {
     recommend = {
       provider <- if ("--seed" %in% args) "seed" else "model"
       if (is_studio) {
+        v06_assert_tasks_frozen(config)
         if (!file.exists(file.path(trace_path(config$paths$profile_dir), "source_dictionary.csv"))) stage("profile", profile_sources(config))
         targets <- stage("recommend_targets", recommend_targets_v04(config, provider = provider, blind = "--blind" %in% args))
         functions <- stage("recommend_functions", recommend_functions_v04(targets, config, provider = provider, blind = "--blind" %in% args))
@@ -105,12 +120,15 @@ trace_execute_command <- function(command, args, config) {
         assembled <- stage("assemble", assemble_recommendations_v04(targets, functions, parameters, config))
         create_review_workbook_v04(assembled, config, preapprove = FALSE)
         studio_initialize_review(config, overwrite = TRUE)
-        studio_update_run_stage(config$studio$project_id, config$studio$run_id, "review", "running")
       } else {
         profile_sources(config)
         recommendation <- run_recommendation_v04(config, provider = provider, blind = "--blind" %in% args)
         create_review_workbook_v04(recommendation$assembled, config, preapprove = identical(provider, "seed"))
       }
+    },
+    `ai-review` = {
+      if (!is_studio) trace_abort("独立人工智能审查命令只适用于 0.6 工作台运行。")
+      stage("ai_review", run_ai_review_v06(config))
     },
     `evaluate-v04` = {
       targets <- read_recommendation_stage_v04(config, "target_decisions.json")
@@ -126,7 +144,12 @@ trace_execute_command <- function(command, args, config) {
       )
     },
     `review-gold` = review_against_gold_v04(config),
-    approve = stage("approve", approve_mapping_v04(config)),
+    approve = if (is_studio) {
+      reviewer <- Sys.getenv("TRACE_SDTM_REVIEWER", unset = "")
+      stage("human_approval", studio_approve_review(config, reviewer))
+    } else {
+      approve_mapping_v04(config)
+    },
     build = stage("build", build_sdtm(config)),
     `validate-local` = stage("validate_local", validate_local(config)),
     `doctor-p21` = doctor_p21(config),

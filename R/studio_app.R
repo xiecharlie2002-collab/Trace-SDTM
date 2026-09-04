@@ -1,4 +1,4 @@
-# TraceSDTM Studio 0.5 Shiny application ------------------------------------
+# Historical TraceSDTM Studio 0.5 application retained for tagged reference --
 
 studio_notify_error <- function(session, expression) {
   tryCatch(
@@ -151,7 +151,7 @@ studio_prompt_preview <- function(config, stage = "targets", include_examples = 
       lapply(groups, function(group) {
         ids <- vapply(group$tasks, task_id_v04, character(1))
         subset <- list(valid = targets$valid[intersect(ids, names(targets$valid))], failures = list())
-        function_prompt_v04(group, subset, registry, specification, policies, dictionary)
+        function_prompt_v04(group, subset, registry, specification, policies, dictionary, load_recommendation_resources(config))
       })
     } else {
       targets <- read_recommendation_stage_v04(config, "target_decisions.json")
@@ -166,7 +166,7 @@ studio_prompt_preview <- function(config, stage = "targets", include_examples = 
   })
 }
 
-trace_studio_ui <- function() {
+trace_studio_ui_v05_legacy <- function() {
   bslib::page_sidebar(
     title = shiny::div(class = "trace-title", "TraceSDTM Studio", shiny::tags$small("0.5")),
     fillable = TRUE,
@@ -367,7 +367,7 @@ trace_studio_ui <- function() {
   )
 }
 
-trace_studio_server <- function(input, output, session) {
+trace_studio_server_v05_legacy <- function(input, output, session) {
   refresh <- shiny::reactiveVal(0L)
   binding_state <- shiny::reactiveVal(NULL)
   binding_input_ids <- shiny::reactiveVal(list())

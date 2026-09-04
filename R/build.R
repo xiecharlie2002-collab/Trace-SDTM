@@ -134,9 +134,10 @@ finalize_domain <- function(data, domain, metadata) {
   transient <- intersect(c(".SOURCE_ROW", ".MAPPING_ID"), names(data))
   if (length(transient)) data <- dplyr::select(data, -dplyr::all_of(transient))
   expected <- unlist(metadata$domains[[domain]]$expected_order, use.names = FALSE)
-  missing <- setdiff(expected, names(data))
-  if (length(missing)) trace_abort(sprintf("%s 构建后缺少预期字段：%s", domain, paste(missing, collapse = ", ")))
   definitions <- metadata$domains[[domain]]$variables
+  required <- names(Filter(function(definition) isTRUE(definition$required), definitions))
+  missing <- setdiff(required, names(data))
+  if (length(missing)) trace_abort(sprintf("%s 构建后缺少必需字段：%s", domain, paste(missing, collapse = ", ")))
   for (variable in intersect(names(data), names(definitions))) {
     if (identical(definitions[[variable]]$type, "numeric") && !is.numeric(data[[variable]])) {
       original <- data[[variable]]
@@ -149,7 +150,7 @@ finalize_domain <- function(data, domain, metadata) {
       data[[variable]] <- as.character(data[[variable]])
     }
   }
-  data <- dplyr::select(data, dplyr::all_of(expected))
+  data <- dplyr::select(data, dplyr::all_of(intersect(expected, names(data))))
   apply_sdtm_labels(data, domain, metadata)
 }
 
@@ -186,7 +187,9 @@ build_sdtm <- function(config = load_project_config()) {
   lineage <- list()
   manifest <- list()
 
-  for (domain in unlist(config$project$generated_domains, use.names = FALSE)) {
+  domains <- unlist(config$project$generated_domains, use.names = FALSE)
+  domains <- unique(c(intersect("DM", domains), setdiff(domains, "DM")))
+  for (domain in domains) {
     domain_spec <- specification$domains[[domain]]
     raw_path <- trace_path(config$paths$raw_dir, domain_spec$source_file)
     raw <- read_raw_csv(raw_path)
@@ -370,7 +373,9 @@ build_sdtm <- function(config = load_project_config()) {
   datasets <- list()
   lineage <- list()
   manifests <- list()
-  for (domain in unlist(config$project$generated_domains, use.names = FALSE)) {
+  domains <- unlist(config$project$generated_domains, use.names = FALSE)
+  domains <- unique(c(intersect("DM", domains), setdiff(domains, "DM")))
+  for (domain in domains) {
     result <- execute_domain_v02(domain, specification, sources, datasets$DM, config, registry)
     sources <- result$sources
     data <- finalize_domain(result$data, domain, metadata)

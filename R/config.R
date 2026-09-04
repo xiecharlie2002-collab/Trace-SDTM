@@ -17,7 +17,7 @@ argument_value <- function(args, name, default = NULL) {
 configure_output_paths <- function(config, output_base) {
   config$paths$output_base <- output_base
   generated_paths <- c(
-    profile_dir = "profile", recommendation_dir = "recommendations",
+    profile_dir = "profile", task_dir = "tasks", recommendation_dir = "recommendations",
     review_dir = "review", csv_dir = file.path("sdtm", "csv"),
     xpt_dir = file.path("sdtm", "xpt"), lineage_dir = "lineage",
     local_validation_dir = file.path("validation", "local"),
@@ -155,9 +155,12 @@ resolve_config_path <- function(relative_path) {
 
 ensure_output_directories <- function(config = load_project_config()) {
   keys <- c(
-    "profile_dir", "recommendation_dir", "review_dir", "csv_dir", "xpt_dir",
+    "profile_dir", "task_dir", "recommendation_dir", "review_dir", "csv_dir", "xpt_dir",
     "lineage_dir", "local_validation_dir", "p21_validation_dir", "report_dir",
     "manifest_dir", "log_dir"
   )
-  invisible(lapply(keys, function(key) ensure_dir(trace_path(config$paths[[key]]))))
+  invisible(lapply(keys, function(key) {
+    path <- config$paths[[key]] %||% ""
+    if (nzchar(as.character(path))) ensure_dir(trace_path(path)) else NULL
+  }))
 }
