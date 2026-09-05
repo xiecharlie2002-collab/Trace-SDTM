@@ -4,13 +4,14 @@ domains:
   DM:
     label: Demographics
     keys: [STUDYID, USUBJID]
-    expected_order: [STUDYID, DOMAIN, USUBJID, SUBJID, RFSTDTC, RFICDTC, SITEID, AGE, AGEU, SEX, RACE, ETHNIC, ARMCD, ARM, ACTARMCD, ACTARM, COUNTRY]
+    expected_order: [STUDYID, DOMAIN, USUBJID, SUBJID, RFSTDTC, RFENDTC, RFICDTC, SITEID, AGE, AGEU, SEX, RACE, ETHNIC, ARMCD, ARM, ACTARMCD, ACTARM, COUNTRY]
     variables:
       STUDYID: {label: Study Identifier, type: character, required: true}
       DOMAIN: {label: Domain Abbreviation, type: character, required: true}
       USUBJID: {label: Unique Subject Identifier, type: character, required: true}
       SUBJID: {label: Subject Identifier for the Study, type: character, required: true}
       RFSTDTC: {label: Subject Reference Start Date/Time, type: character, required: false, iso8601: true}
+      RFENDTC: {label: Subject Reference End Date/Time, type: character, required: false, iso8601: true}
       RFICDTC: {label: Date/Time of Informed Consent, type: character, required: false, iso8601: true}
       SITEID: {label: Study Site Identifier, type: character, required: true}
       AGE: {label: Age, type: numeric, required: false}

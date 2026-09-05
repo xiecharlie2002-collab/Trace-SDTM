@@ -1,0 +1,207 @@
+{
+  "schema_version": 2,
+  "diagram_type": "workflow",
+  "meta": {
+    "title": "TraceSDTM Studio 0.7 简洁流程",
+    "locale": "zh-CN",
+    "quality_profile": "showcase",
+    "output": "docs/diagrams/trace-sdtm-v07-simple.html"
+  },
+  "lanes": [
+    {"id": "main_flow", "label": "主流程"},
+    {"id": "supporting", "label": "复核、规格与证据"}
+  ],
+  "phases": [
+    {"id": "prepare", "label": "准备与批准", "fromCol": 0, "toCol": 2},
+    {"id": "sdtm_phase", "label": "SDTM", "fromCol": 3, "toCol": 3, "variant": "emphasis"},
+    {"id": "adam_phase", "label": "ADaM", "fromCol": 4, "toCol": 4},
+    {"id": "report_phase", "label": "汇总与证据", "fromCol": 5, "toCol": 5, "variant": "dashed"}
+  ],
+  "mainPath": [
+    "raw_snapshot",
+    "sdtm_suggestion",
+    "ai_review",
+    "mapping_gate",
+    "sdtm_stage",
+    "adam_stage",
+    "summary_stage",
+    "evidence_bundle"
+  ],
+  "semanticChecks": {
+    "allowedRoots": ["raw_snapshot", "frozen_analysis_rules"],
+    "allowedTerminals": ["evidence_bundle"],
+    "requiredPaths": [
+      {"from": "raw_snapshot", "to": "evidence_bundle"},
+      {"from": "frozen_analysis_rules", "to": "summary_stage"}
+    ]
+  },
+  "nodes": [
+    {
+      "id": "raw_snapshot",
+      "lane": "main_flow",
+      "col": 0,
+      "type": "database",
+      "label": "原始数据与画像",
+      "sublabel": "冻结 DM、AE、VS"
+    },
+    {
+      "id": "sdtm_suggestion",
+      "lane": "main_flow",
+      "col": 1,
+      "type": "cloud",
+      "label": "AI 发现任务并推荐映射",
+      "sublabel": "候选域、目标变量、转换函数",
+      "tag": "仅从白名单选择",
+      "width": 148
+    },
+    {
+      "id": "ai_review",
+      "lane": "supporting",
+      "col": 2,
+      "type": "cloud",
+      "label": "AI 独立复核",
+      "sublabel": "全新上下文；只报告问题",
+      "tag": "不能批准",
+      "width": 132
+    },
+    {
+      "id": "mapping_gate",
+      "lane": "main_flow",
+      "col": 2,
+      "type": "security",
+      "label": "程序复验 + 人工批准",
+      "sublabel": "错误阻断；警告需说明",
+      "tag": "最终决定权在人",
+      "width": 142
+    },
+    {
+      "id": "sdtm_stage",
+      "lane": "main_flow",
+      "col": 3,
+      "type": "backend",
+      "label": "生成并检查 SDTM",
+      "sublabel": "DM · AE · VS",
+      "tag": "零错误后继续",
+      "width": 130
+    },
+    {
+      "id": "adam_stage",
+      "lane": "main_flow",
+      "col": 4,
+      "type": "backend",
+      "label": "生成并检查 ADaM",
+      "sublabel": "ADSL · ADAE",
+      "tag": "零错误后继续",
+      "width": 134
+    },
+    {
+      "id": "summary_stage",
+      "lane": "main_flow",
+      "col": 5,
+      "type": "backend",
+      "label": "生成两张汇总表",
+      "sublabel": "CSV · HTML · RTF",
+      "width": 126
+    },
+    {
+      "id": "frozen_analysis_rules",
+      "lane": "supporting",
+      "col": 3,
+      "type": "security",
+      "label": "冻结分析规格",
+      "sublabel": "分析与表格规则"
+    },
+    {
+      "id": "evidence_bundle",
+      "lane": "supporting",
+      "col": 5,
+      "type": "database",
+      "label": "报告与证据包",
+      "sublabel": "三级追溯"
+    }
+  ],
+  "edges": [
+    {
+      "from": "raw_snapshot",
+      "to": "sdtm_suggestion",
+      "label": "默认仅发送元数据",
+      "role": "main"
+    },
+    {
+      "from": "sdtm_suggestion",
+      "to": "ai_review",
+      "label": "受控映射计划",
+      "role": "main"
+    },
+    {
+      "from": "ai_review",
+      "to": "mapping_gate",
+      "label": "问题清单",
+      "variant": "security",
+      "role": "main"
+    },
+    {
+      "from": "mapping_gate",
+      "to": "sdtm_stage",
+      "label": "批准映射",
+      "variant": "security",
+      "role": "main"
+    },
+    {
+      "from": "sdtm_stage",
+      "to": "adam_stage",
+      "label": "通过 SDTM 检查",
+      "variant": "emphasis",
+      "role": "main"
+    },
+    {
+      "from": "frozen_analysis_rules",
+      "to": "adam_stage",
+      "label": "登记规则",
+      "variant": "security",
+      "role": "branch"
+    },
+    {
+      "from": "adam_stage",
+      "to": "summary_stage",
+      "label": "通过 ADaM 检查",
+      "variant": "emphasis",
+      "role": "main"
+    },
+    {
+      "from": "summary_stage",
+      "to": "evidence_bundle",
+      "label": "结果、追溯与清单",
+      "role": "main"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "orange",
+      "title": "AI 的作用",
+      "items": [
+        "发现原子任务与候选目标域",
+        "选择目标变量和登记转换函数",
+        "使用全新上下文复核最终映射"
+      ]
+    },
+    {
+      "dot": "violet",
+      "title": "AI 的限制",
+      "items": [
+        "默认只看元数据，不发送敏感示例值",
+        "禁止代码、自由公式、正则和自创连接键",
+        "不能批准，不参与 ADaM 和统计计算"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "质量门",
+      "items": [
+        "程序规则不通过立即阻断",
+        "人工批准后才允许构建",
+        "SDTM、ADaM 零错误后进入下一层"
+      ]
+    }
+  ]
+}

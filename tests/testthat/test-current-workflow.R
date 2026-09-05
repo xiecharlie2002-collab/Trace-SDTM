@@ -28,8 +28,11 @@ test_that("通用项目可导入、冻结和生成画像", {
   run_id <- studio_create_run("smoke-project")
   config <- studio_load_run_config("smoke-project", run_id)
   dictionary <- profile_sources(config)
-  expect_equal(nrow(dictionary), 14L)
+  expect_equal(nrow(dictionary), 15L)
   expect_identical(as.character(load_task_specification(config)$schema_version), "0.6")
+  run <- studio_read_run("smoke-project", run_id)
+  expect_true(all(vapply(run$stages[c("build_adam", "validate_adam", "build_tlf", "validate_tlf")], identical, logical(1), "not_configured")))
+  expect_false(analysis_plan_configured(config))
 })
 
 test_that("工作台只显示五个主步骤", {

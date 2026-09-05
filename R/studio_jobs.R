@@ -60,7 +60,8 @@ studio_start_job <- function(project_id, run_id, command, credentials = list(),
   if (!is.null(current) && current$process$is_alive()) trace_abort("工作台已有一个后台任务正在运行。")
   allowed <- c("profile", "discover-tasks", "recommend-targets", "recommend-functions", "recommend-parameters",
                "assemble-recommendations", "recommend", "ai-review", "build", "validate-local", "doctor-p21",
-               "validate-p21", "report", "run")
+               "validate-p21", "build-adam", "validate-adam", "build-tlf", "validate-tlf",
+               "run-analysis", "report", "run")
   if (!command %in% allowed) trace_abort("工作台后台命令不在允许列表中。")
   config <- studio_load_run_config(project_id, run_id)
   studio_assert_run_writable(config)
@@ -190,7 +191,7 @@ studio_recover_interrupted_jobs <- function() {
 
 studio_doctor <- function() {
   settings <- studio_settings()
-  packages <- c("shiny", "bslib", "DT", "callr", "processx", "ps", "zip")
+  packages <- c("shiny", "bslib", "DT", "callr", "processx", "ps", "zip", "admiral", "r2rtf")
   package_checks <- tibble::tibble(
     category = "R依赖", check = packages,
     passed = vapply(packages, requireNamespace, logical(1), quietly = TRUE),

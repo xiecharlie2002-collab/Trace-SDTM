@@ -68,7 +68,7 @@ studio_read_project <- function(project_id) {
   path <- studio_project_path(project_id)
   value <- yaml::read_yaml(file.path(path, "project.yml"))
   if (!identical(as.character(value$schema_version), "0.6")) {
-    trace_abort("该项目使用旧版工作台结构，不能在 TraceSDTM 0.6 中运行。请新建通用项目并重新上传原始数据。")
+    trace_abort("该项目使用不兼容的旧版工作台结构，不能在 TraceSDTM 0.7 中运行。请新建项目并重新上传原始数据。")
   }
   value
 }
@@ -186,11 +186,13 @@ studio_create_project <- function(project_id, name, study_id = "TRACE001", descr
     transform_registry = trace_path("config", "transform_registry.yml"),
     transform_registry_schema = trace_path("config", "transform_registry.schema.json"),
     controlled_terminology = trace_path("specs", "resources", "controlled_terminology.yml"),
-    unit_conversions = trace_path("specs", "resources", "unit_conversions.yml")
+    unit_conversions = trace_path("specs", "resources", "unit_conversions.yml"),
+    analysis_plan_schema = trace_path("specs", "analysis_plan.schema.json")
   )
   target_names <- c(metadata = "metadata.yml", transform_registry = "transform_registry.yml",
                     transform_registry_schema = "transform_registry.schema.json",
-                    controlled_terminology = "controlled_terminology.yml", unit_conversions = "unit_conversions.yml")
+                    controlled_terminology = "controlled_terminology.yml", unit_conversions = "unit_conversions.yml",
+                    analysis_plan_schema = "analysis_plan.schema.json")
   frozen_manifest <- list()
   for (key in names(frozen)) {
     source <- trace_path(frozen[[key]])
@@ -206,7 +208,7 @@ studio_create_project <- function(project_id, name, study_id = "TRACE001", descr
     schema_version = "0.6", project_id = project_id, name = name,
     study_id = study_id, description = description, standard = standard,
     standard_version = standard_version, target_domains = as.list(target_domains),
-    config_version = "0.6.0",
+    config_version = "0.7.0", analysis_configured = FALSE,
     created_at = utc_now(), updated_at = utc_now(), archived = FALSE,
     active_run_id = NULL, active_run_stale = FALSE,
     stages = list(data_sources = "not_started", profile = "not_started", task_discovery = "not_started",
@@ -221,6 +223,28 @@ studio_create_project <- function(project_id, name, study_id = "TRACE001", descr
     target_domains = as.list(target_domains), description_sha256 = digest::digest(description, algo = "sha256", serialize = FALSE)
   ))
   project
+}
+
+studio_import_analysis_plan_v07 <- function(project_id, upload_path, actor = "local_user") {
+  studio_with_project_lock(project_id, {
+    project <- studio_read_project(project_id)
+    if (isTRUE(project$archived)) trace_abort("归档项目不能修改。")
+    upload_path <- normalizePath(upload_path, winslash = "/", mustWork = TRUE)
+    config <- load_project_config()
+    config$paths$analysis_plan_schema <- file.path(studio_project_path(project_id), "config", "analysis_plan.schema.json")
+    plan <- yaml::read_yaml(upload_path)
+    validate_analysis_plan(plan, config)
+    target <- file.path(studio_project_path(project_id), "config", "analysis_plan.yml")
+    if (!isTRUE(file.copy(upload_path, target, overwrite = TRUE, copy.date = TRUE))) trace_abort("无法导入分析规格。")
+    project$analysis_configured <- TRUE
+    project$analysis_plan_sha256 <- file_sha256(target)
+    studio_write_project(project_id, project)
+    studio_mark_active_run_stale(project_id, "项目分析规格已更新", actor)
+    studio_append_audit(project_id, "analysis_plan_imported", list(
+      analysis_plan_sha256 = project$analysis_plan_sha256, schema_version = as.character(plan$schema_version)
+    ), actor = actor)
+  })
+  invisible(TRUE)
 }
 
 studio_update_project_v06 <- function(project_id, name, study_id, description,
@@ -312,7 +336,7 @@ studio_archive_project <- function(project_id, actor = "local_user") {
 }
 
 studio_template_specification <- function(project_id) {
-  trace_abort("TraceSDTM 0.6 已取消模板规格。任务只存在于运行快照中。")
+  trace_abort("TraceSDTM 0.7 不使用模板规格。任务只存在于运行快照中。")
 }
 
 studio_source_catalog <- function(project_id) studio_read_source_catalog(project_id)
@@ -838,7 +862,10 @@ studio_run_path <- function(project_id, run_id, must_exist = TRUE) {
 studio_read_run <- function(project_id, run_id) {
   value <- yaml::read_yaml(file.path(studio_run_path(project_id, run_id), "run.yml"))
   if (!identical(as.character(value$schema_version %||% ""), "0.6")) {
-    trace_abort("该运行使用旧版工作台结构，不能在 TraceSDTM 0.6 中继续。")
+    trace_abort("该运行使用不兼容的旧版工作台结构，不能在 TraceSDTM 0.7 中继续。")
+  }
+  for (stage in c("build_adam", "validate_adam", "build_tlf", "validate_tlf")) {
+    if (is.null(value$stages[[stage]])) value$stages[[stage]] <- "not_configured"
   }
   value
 }
@@ -885,7 +912,8 @@ studio_create_run <- function(project_id, actor = "local_user") {
     run_path <- studio_run_path(project_id, run_id, must_exist = FALSE)
     for (relative in c(
       "inputs", "config", "profile", "tasks", "recommendations", "review", "specs", "sdtm/csv", "sdtm/xpt",
-      "lineage", "validation/local", "validation/p21", "report", "manifests", "logs"
+      "adam/csv", "adam/xpt", "tlf/csv", "tlf/html", "tlf/rtf", "lineage",
+      "validation/local", "validation/adam", "validation/tlf", "validation/p21", "report", "manifests", "logs"
     )) ensure_dir(file.path(run_path, relative))
     sources <- studio_non_derived_sources(project_id)
     input_manifest <- list()
@@ -900,6 +928,8 @@ studio_create_run <- function(project_id, actor = "local_user") {
     config_names <- c("metadata.yml", "transform_registry.yml", "transform_registry.schema.json",
                       "controlled_terminology.yml", "unit_conversions.yml", "mapping_policies.yml",
                       "source_catalog.yml")
+    project_analysis <- file.path(studio_project_path(project_id), "config", "analysis_plan.yml")
+    if (file.exists(project_analysis)) config_names <- c(config_names, "analysis_plan.yml", "analysis_plan.schema.json")
     config_manifest <- list()
     for (name in config_names) {
       source <- file.path(studio_project_path(project_id), "config", name)
@@ -910,7 +940,7 @@ studio_create_run <- function(project_id, actor = "local_user") {
     task_specification <- list(
       schema_version = "0.6",
       specification = list(
-        name = paste0(project$name, " 通用原子任务"), version = "0.6.0",
+        name = paste0(project$name, " 通用原子任务"), version = "0.7.0",
         status = "profile_pending", standard = paste(project$standard, project$standard_version),
         project_id = project_id, run_id = run_id
       ),
@@ -931,10 +961,16 @@ studio_create_run <- function(project_id, actor = "local_user") {
         task_confirmation = "pending", recommend_targets = "pending",
         recommend_functions = "pending", recommend_parameters = "pending", assemble = "pending",
         ai_review = "pending", human_approval = "pending", build = "pending",
-        validate_local = "pending", validate_p21 = "pending", report = "pending"
+        validate_local = "pending", validate_p21 = "pending",
+        build_adam = if (file.exists(project_analysis)) "pending" else "not_configured",
+        validate_adam = if (file.exists(project_analysis)) "pending" else "not_configured",
+        build_tlf = if (file.exists(project_analysis)) "pending" else "not_configured",
+        validate_tlf = if (file.exists(project_analysis)) "pending" else "not_configured",
+        report = "pending"
       ),
       inputs = input_manifest, configuration_sha256 = config_manifest,
-      studio_version = "0.6.0"
+      analysis_plan_sha256 = if (file.exists(project_analysis)) file_sha256(project_analysis) else NULL,
+      studio_version = "0.7.0"
     )
     write_yaml(manifest, file.path(run_path, "run.yml"))
     project$active_run_id <- run_id
@@ -954,9 +990,10 @@ studio_update_run_stage <- function(project_id, run_id, stage, status, message =
   allowed_stages <- c(
     "data_freeze", "profile", "task_discovery", "task_confirmation",
     "recommend_targets", "recommend_functions", "recommend_parameters", "assemble",
-    "ai_review", "human_approval", "build", "validate_local", "validate_p21", "report"
+    "ai_review", "human_approval", "build", "validate_local", "validate_p21",
+    "build_adam", "validate_adam", "build_tlf", "validate_tlf", "report"
   )
-  allowed_status <- c("pending", "running", "completed", "completed_with_warnings", "needs_information", "failed", "blocked", "cancelled", "interrupted")
+  allowed_status <- c("pending", "not_configured", "running", "completed", "completed_with_warnings", "needs_information", "failed", "blocked", "cancelled", "interrupted")
   if (!stage %in% allowed_stages || !status %in% allowed_status) trace_abort("运行阶段或状态无效。")
   run <- studio_read_run(project_id, run_id)
   run$stages[[stage]] <- status
@@ -998,7 +1035,7 @@ studio_load_run_config <- function(project_id, run_id) {
   run_path <- studio_run_path(project_id, run_id)
   config <- yaml::read_yaml(trace_path("config", "project.yml"))
   config$project$name <- project$name
-  config$project$version <- "0.6.0"
+  config$project$version <- "0.7.0"
   config$project$study_id <- project$study_id
   config$project$description <- project$description
   config$project$standard <- project$standard
@@ -1020,6 +1057,10 @@ studio_load_run_config <- function(project_id, run_id) {
     generated_transform_docs = file.path(run_path, "report", "transform_catalog.md")
   )
   config <- configure_output_paths(config, run_path)
+  analysis_path <- file.path(run_path, "config", "analysis_plan.yml")
+  schema_path <- file.path(run_path, "config", "analysis_plan.schema.json")
+  config$paths$analysis_plan_frozen <- if (file.exists(analysis_path)) analysis_path else ""
+  config$paths$analysis_plan_schema_frozen <- if (file.exists(schema_path)) schema_path else ""
   config$paths$task_dir <- file.path(run_path, "tasks")
   config$paths$project_context <- file.path(run_path, "profile", "project_context.json")
   task_specification <- yaml::read_yaml(config$paths$task_specification)

@@ -11,7 +11,12 @@ configure_output_paths <- function(config, output_base) {
     profile_dir = "profile", task_dir = "tasks", recommendation_dir = "recommendations",
     review_dir = "review", csv_dir = file.path("sdtm", "csv"),
     xpt_dir = file.path("sdtm", "xpt"), lineage_dir = "lineage",
+    adam_csv_dir = file.path("adam", "csv"), adam_xpt_dir = file.path("adam", "xpt"),
+    tlf_csv_dir = file.path("tlf", "csv"), tlf_html_dir = file.path("tlf", "html"),
+    tlf_rtf_dir = file.path("tlf", "rtf"),
     local_validation_dir = file.path("validation", "local"),
+    adam_validation_dir = file.path("validation", "adam"),
+    tlf_validation_dir = file.path("validation", "tlf"),
     p21_validation_dir = file.path("validation", "p21"), report_dir = "report",
     manifest_dir = "manifests", log_dir = "logs"
   )
@@ -19,6 +24,9 @@ configure_output_paths <- function(config, output_base) {
     config$paths[[key]] <- file.path(output_base, generated_paths[[key]])
   }
   config$paths$approved_specification <- file.path(output_base, "specs", "approved_mapping.yml")
+  if (is.null(config$paths$analysis_plan_frozen)) {
+    config$paths$analysis_plan_frozen <- file.path(output_base, "specs", "analysis_plan.yml")
+  }
   config
 }
 
@@ -101,7 +109,9 @@ resolve_config_path <- function(relative_path) trace_path(relative_path)
 ensure_output_directories <- function(config = load_project_config()) {
   keys <- c(
     "profile_dir", "task_dir", "recommendation_dir", "review_dir", "csv_dir", "xpt_dir",
-    "lineage_dir", "local_validation_dir", "p21_validation_dir", "report_dir",
+    "adam_csv_dir", "adam_xpt_dir", "tlf_csv_dir", "tlf_html_dir", "tlf_rtf_dir",
+    "lineage_dir", "local_validation_dir", "adam_validation_dir", "tlf_validation_dir",
+    "p21_validation_dir", "report_dir",
     "manifest_dir", "log_dir"
   )
   invisible(lapply(keys, function(key) {

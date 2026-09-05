@@ -1,11 +1,13 @@
 project:
   name: TraceSDTM
-  version: 0.6.0
+  version: 0.7.0
   study_id: TRACE001
   standard: SDTMIG
   standard_version: '3.4'
   generated_domains:
     - DM
+    - AE
+    - VS
 paths:
   raw_dir: data/raw
   metadata: specs/sdtm_metadata.yml
@@ -14,6 +16,8 @@ paths:
   transform_registry: config/transform_registry.yml
   transform_registry_schema: config/transform_registry.schema.json
   generated_transform_docs: docs/transform_catalog.md
+  analysis_plan: specs/analysis_plan.yml
+  analysis_plan_schema: specs/analysis_plan.schema.json
   output_base: output/local
 model:
   timeout_seconds: 60

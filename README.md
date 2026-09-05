@@ -1,23 +1,23 @@
 <div align="center">
 
-# TraceSDTM Studio 0.6
+# TraceSDTM Studio 0.7
 
-**人工监督、程序约束、可追溯的 SDTM 映射与生成工作台**
+**人工监督的 SDTM 映射，以及确定性的 ADaM 与汇总表工作台**
 
 [![R](https://img.shields.io/badge/R-%E2%89%A54.5-276DC3?logo=r&logoColor=white)](https://www.r-project.org/)
 [![SDTMIG](https://img.shields.io/badge/SDTMIG-3.4-0F9D8A)](https://www.cdisc.org/standards/foundational/sdtmig)
 [![流程](https://img.shields.io/badge/%E6%B5%81%E7%A8%8B-%E4%BA%BA%E5%B7%A5%E7%9B%91%E7%9D%A3-7C3AED)](#安全边界)
 [![License](https://img.shields.io/badge/License-MIT-F59E0B)](LICENSE)
 
-TraceSDTM 把人工智能限制在“提出建议”和“独立审查”两个职责内。画像、结构校验、函数筛选、参数注入、状态控制和最终构建均由程序确定性执行。
+TraceSDTM 把人工智能限制在 SDTM 的“提出候选”和“独立审查”两个职责内。批准后的 SDTM、ADSL、ADAE 与两张汇总表均由冻结规则确定性生成。
 
 </div>
 
 ## 项目预览
 
-[![TraceSDTM 0.6 架构](docs/images/trace-sdtm-v06-architecture.png)](docs/diagrams/trace-sdtm-v06.html)
+[![TraceSDTM 0.7 架构](docs/images/trace-sdtm-v07-architecture.png)](docs/diagrams/trace-sdtm-v07-simple.html)
 
-点击架构图可打开 [Archify 交互式架构图](docs/diagrams/trace-sdtm-v06.html)。图中展示了五步工作台、分阶段模型请求、人工批准边界和确定性构建链路。
+点击架构图可打开交互式架构图。0.7 保留五个主步骤，并在第 5 步中增加 SDTM、ADaM 和汇总表三个结果分区。
 
 <table>
   <tr>
@@ -49,8 +49,11 @@ TraceSDTM 把人工智能限制在“提出建议”和“独立审查”两个�
 - 从任务、画像、项目规则和受控资源自动注入参数；自由参数必须通过结构化人工表单填写并再次校验。
 - 以全新上下文执行独立人工智能审查。错误阻止批准，警告必须由人工填写说明。
 - 最终构建只读取冻结的 `approved_mapping.yml`，通过白名单函数生成 CSV、XPT、字段级追溯、检查结果和证据包。
+- 通过 JSON Schema 校验并冻结 `analysis_plan.yml`；分析规格只允许登记规则编号，不允许自由 R 表达式。
+- 从 DM 确定性生成 ADSL，从 AE 与 ADSL 生成 ADAE；治疗中出现事件规则由 `admiral` 1.5.0 执行。
+- 从同一个规范化结果对象输出两张汇总表的 CSV、HTML 和 RTF，RTF 由 `r2rtf` 1.3.1 生成。
 
-当前仓库内置 DM、AE 和 VS 元数据，以及 23 个登记转换函数。0.6 工作台不兼容旧版模板项目；旧项目会提示重新创建通用项目。
+当前仓库内置 DM、AE 和 VS 共 51 个项目元数据变量，以及 23 个登记转换函数。0.7 保持 0.6 项目、运行和批准映射结构可读；没有分析规格的既有项目仍可按 SDTM-only 模式使用。
 
 ## 系统架构
 
@@ -67,41 +70,40 @@ TraceSDTM 把人工智能限制在“提出建议”和“独立审查”两个�
     ↓
 程序组装映射计划 → 独立人工智能审查 → 人工最终批准
     ↓
-批准规格 → 确定性生成 → 本地检查、追溯、报告与证据包
+批准规格 → 确定性生成三域 SDTM → 本地检查
+    ↓
+冻结分析规格 → ADSL、ADAE → 两张汇总表 → 三级追溯、报告与证据包
 ```
 
 架构设计和状态产物说明见 [架构文档](docs/architecture.md)，转换函数契约见 [函数目录](docs/transform_catalog.md)。
 
-## 真实演示结果
+## 已复现的确定性演示结果
 
-仓库内 `data/raw/dm_raw.csv` 用于一次端到端演示。该文件包含 6 条模拟受试者记录和 14 个来源字段；项目研究编号为 `TRACE001`，目标域限定为 DM，未授权向模型发送字段示例值。
+仓库内的 DM、AE 和 VS 均为自行构造的模拟数据。`demo_three_domain_approved_mapping()` 提供不依赖外部模型的批准映射样例，用于持续集成和离线复现；分析阶段始终不调用模型。
+
+完整的三域清单、ADSL/ADAE 预览和两张表截图见 [公开演示结果](docs/demo_results.md)。
 
 | 项目 | 本次结果 |
 |---|---:|
-| 冻结原子任务 | 17 |
-| 最终映射 | 17 |
-| 最终有效的 `deepseek-v4-flash` 请求 | 3 次：任务、目标变量、函数各 1 次 |
-| 参数模型请求 | 0 次 |
-| 人工参数 | 2 组：SITEID 拆分规则、RFSTDTC 日期格式 |
-| `deepseek-v4-pro` 独立审查 | 1 次 |
-| 审查结果 | 15 项通过、2 项警告、0 项错误 |
-| 生成结果 | DM 6 条记录、17 个变量 |
-| 本地检查 | 0 个问题 |
-| 产物 | CSV、XPT、批准规格、字段追溯、离线报告、证据包均已生成 |
+| 三域批准映射样例 | 50 个原子任务，覆盖 51 个目标变量 |
+| SDTM | DM 6×18、AE 9×17、VS 60×16 |
+| ADaM | ADSL 6×19、ADAE 9×30 |
+| 治疗中出现事件 | 7 条事件；5 名受试者至少发生一次 |
+| T14.1.1 | 按计划治疗组和总体汇总意向治疗人群的人口学特征 |
+| T14.3.1 总体行 | 安慰剂 1/2（50.0%）；试验药 4/4（100.0%）；总体 5/6（83.3%） |
+| 本地检查 | SDTM、ADaM、汇总表检查均为 0 个问题 |
+| Pinnacle 21 Community | 4.2.0.5013 实际运行完成；FDA 2508.1 共报告 30 个范围内预期问题，DM、AE、VS 无 Reject |
+| 输出 | SDTM/ADaM CSV、XPT；表格 CSV、HTML、RTF；三级追溯与校验值 |
 
-任务草案首次通过程序结构校验；冻结前由人工修正了 DOMAIN 任务的记录粒度。两条审查警告均涉及人工参数来源，已由演示审核者确认后批准。演示审核者标识为 `demo-reviewer`，只说明流程中存在明确的人工决定，不代表法规意义上的专家批准。
-
-调试过程中发现函数筛选和参数解析缺陷，修复后在同一运行中分别重跑了一次目标变量与函数阶段。因此该运行实际产生 6 次接口请求；上表的 4 次是最终有效阶段记录，其中包括 3 次映射请求和 1 次独立审查请求。重跑前的阶段状态保留在本地审计事件中，最终结果只引用重跑后的输入输出校验值。
-
-以上数字来自一次成功运行，只用于证明 0.6 流程能够完整执行，不是模型正确率、稳定性或生产性能的估计。本轮未运行 Pinnacle 21、完整回归测试、性能测试或旧项目兼容测试。
+上述结果已由完整自动化测试和一次确定性分析运行复现。Pinnacle 21 Community 使用 SDTMIG 3.4、FDA 2508.1 规则及 2026-03-27 受控术语版本完成实际运行；30 个明细均被归入当前演示范围内的预期问题，包括未提供 Define-XML 和未生成范围外数据集，因此不表述为“验证通过”。模型辅助的三域五步演示只有在实际配置模型接口并完成人工修订、审查和批准后才会记录结果；本次环境未配置模型凭据。
 
 ## 技术栈
 
 | 层次 | 主要技术 |
 |---|---|
 | 本地工作台 | R、Shiny、bslib、DT |
-| 数据处理与输出 | dplyr、readr、haven、sdtm.oak |
-| 规格与校验 | YAML、JSON Schema Draft-07、内容校验值 |
+| 数据处理与输出 | dplyr、readr、haven、sdtm.oak、admiral 1.5.0、r2rtf 1.3.1 |
+| 规格与校验 | YAML、JSON Schema 2020-12、内容校验值 |
 | 模型接口 | httr2、OpenAI 兼容接口、DeepSeek |
 | 审核与审计 | 人工确认、独立模型审查、字段级追溯、离线报告 |
 | 架构文档 | Archify 交互式 HTML 与静态图片 |
@@ -153,15 +155,20 @@ R/
 ├─ mapping_review.R    映射审核表与批准规格组装
 ├─ registry.R          函数契约、规格校验与内部编译
 ├─ transforms.R        23 个受控转换函数
-└─ build.R             确定性生成与字段级追溯
+├─ build.R             三域 SDTM 与字段级追溯
+├─ adam_build.R        ADSL、ADAE 与变量级追溯
+├─ adam_validate.R     ADaM 本地规则检查
+└─ tlf.R               两张汇总表及三种格式输出
 config/                当前配置、工作台配置和转换函数注册表
 data/raw/              DM、AE、VS 模拟上传示例
 specs/
-├─ sdtm_metadata.yml   当前标准元数据
+├─ sdtm_metadata.yml   三域项目元数据
+├─ analysis_plan.yml   冻结分析规则与表壳样例
+├─ analysis_plan.schema.json
 └─ resources/          公共受控术语与单位换算资源
 docs/                  架构、演示、用户手册和截图
 scripts/               命令行入口和本地启动器
-tests/                 当前 0.6 加载与最小流程检查
+tests/                 三域、ADaM、汇总表、异常场景与兼容检查
 workspace/projects/    本地项目和运行产物，Git 默认忽略
 ```
 
@@ -173,12 +180,12 @@ workspace/projects/    本地项目和运行产物，Git 默认忽略
 
 - 默认不向模型发送完整原始记录或示例值；标识符、受试者键和中心字段始终排除。
 - 接口密钥只保存在当前进程或 Shiny 会话内存中，不写入调用审计记录。
-- 模型不能生成或执行 R 代码、自由公式、正则表达式或连接键，也不能绕过函数白名单和参数模式。
+- 模型不能生成或执行 R 代码、自由公式、正则表达式或连接键，也不能绕过函数白名单和参数模式；模型不参与 ADaM 派生或统计计算。
 - 模型审查只能报告问题，不能直接修改映射；未经人工批准的规格不能构建。
 - 每次模型请求记录模型名称、提示词版本、输入输出校验值、调用次数和失败原因，以便复核。
 - 本项目是本地单用户研究原型，不是经过计算机化系统验证的生产平台，也不生成完整法规提交包。
 
-项目不包含 Define-XML、aCRF、完整试验设计域、ADaM、TLF、电子签名或多用户权限。所有输出仍需由具备相应资质的临床数据标准专家审核。仓库中的数据均为模拟数据，不对应真实受试者；数据边界见 [数据来源说明](DATA_SOURCES.md)，安全报告方式见 [安全说明](SECURITY.md)。
+项目不包含 Define-XML、aCRF、EX、ADVS、图形、列表、完整递交包、电子签名或多用户权限。本地规则检查不等同于完整 ADaM/CDISC 合规验证。所有输出仍需由具备相应资质的临床数据标准与统计编程人员审核。仓库中的数据均为模拟数据，不对应真实受试者；数据边界见 [数据来源说明](DATA_SOURCES.md)，安全报告方式见 [安全说明](SECURITY.md)。
 
 ## 许可证
 

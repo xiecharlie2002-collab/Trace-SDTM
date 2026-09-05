@@ -190,7 +190,7 @@ studio_write_review_workbook <- function(config, state = studio_read_review(conf
   workbook <- openxlsx::createWorkbook()
   write_review_sheet(workbook, "Instructions", data.frame(
     item = c("用途", "审核边界", "批准边界"),
-    description = c("TraceSDTM Studio 0.6 只读审核快照。", "只允许登记函数、来源编号、目标变量和受控参数。", "构建只读取批准规格，不调用模型。"),
+    description = c("TraceSDTM Studio 0.7 只读审核快照。", "只允许登记函数、来源编号、目标变量和受控参数。", "构建只读取批准规格，不调用模型。"),
     stringsAsFactors = FALSE
   ), filter = FALSE)
   write_review_sheet(workbook, "Task Review", tables$review)
@@ -247,7 +247,7 @@ studio_approve_review <- function(config, reviewer = NULL) {
 }
 
 studio_import_review_workbook <- function(config, uploaded_file, reviewer) {
-  trace_abort("TraceSDTM 0.6 的审核工作簿是只读审计导出，不再作为批准或导入入口。请在工作台中完成结构化审核。")
+  trace_abort("TraceSDTM 0.7 的审核工作簿是只读审计导出，不再作为批准或导入入口。请在工作台中完成结构化审核。")
 }
 
 studio_review_task_details <- function(config, task_id) {

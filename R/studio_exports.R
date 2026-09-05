@@ -1,9 +1,9 @@
-# TraceSDTM Studio 0.6 reports and evidence exports --------------------------
+# TraceSDTM Studio 0.7 reports and evidence exports --------------------------
 
 studio_evidence_files <- function(config) {
   run_path <- config$studio$run_path %||% trace_path(config$paths$output_base)
   allowed <- c("run.yml", "config", "profile", "tasks", "recommendations", "review", "specs",
-               "sdtm", "lineage", "validation", "report", "manifests", "logs")
+               "sdtm", "adam", "tlf", "lineage", "validation", "report", "manifests", "logs")
   files <- unlist(lapply(allowed, function(relative) {
     path <- file.path(run_path, relative)
     if (file.exists(path) && !dir.exists(path)) return(path)
@@ -116,13 +116,29 @@ studio_run_summary <- function(config) {
   manifest_path <- file.path(trace_path(config$paths$manifest_dir), "dataset_manifest.csv")
   local_path <- file.path(trace_path(config$paths$local_validation_dir), "local_issues.csv")
   p21_path <- file.path(trace_path(config$paths$p21_validation_dir), "p21_issues.csv")
+  adam_manifest_path <- file.path(trace_path(config$paths$manifest_dir), "adam_manifest.csv")
+  tlf_manifest_path <- file.path(trace_path(config$paths$manifest_dir), "tlf_manifest.csv")
+  adam_issues_path <- file.path(trace_path(config$paths$adam_validation_dir), "adam_issues.csv")
+  tlf_issues_path <- file.path(trace_path(config$paths$tlf_validation_dir), "tlf_issues.csv")
   list(
     run = run,
     datasets = if (file.exists(manifest_path)) readr::read_csv(manifest_path, show_col_types = FALSE) else tibble::tibble(),
     local_issues = if (file.exists(local_path)) readr::read_csv(local_path, show_col_types = FALSE) else empty_issue_table(),
     p21_issues = if (file.exists(p21_path)) readr::read_csv(p21_path, show_col_types = FALSE) else empty_issue_table(),
+    adam_datasets = if (file.exists(adam_manifest_path)) readr::read_csv(adam_manifest_path, show_col_types = FALSE) else tibble::tibble(),
+    tables = if (file.exists(tlf_manifest_path)) readr::read_csv(tlf_manifest_path, show_col_types = FALSE) else tibble::tibble(),
+    adam_issues = if (file.exists(adam_issues_path)) readr::read_csv(adam_issues_path, show_col_types = FALSE) else analysis_issue_table(),
+    tlf_issues = if (file.exists(tlf_issues_path)) readr::read_csv(tlf_issues_path, show_col_types = FALSE) else analysis_issue_table(),
     lineage = {
       path <- file.path(trace_path(config$paths$lineage_dir), "field_lineage.csv")
+      if (file.exists(path)) readr::read_csv(path, show_col_types = FALSE) else tibble::tibble()
+    },
+    adam_lineage = {
+      path <- file.path(trace_path(config$paths$lineage_dir), "adam_lineage.csv")
+      if (file.exists(path)) readr::read_csv(path, show_col_types = FALSE) else tibble::tibble()
+    },
+    tlf_lineage = {
+      path <- file.path(trace_path(config$paths$lineage_dir), "tlf_lineage.csv")
       if (file.exists(path)) readr::read_csv(path, show_col_types = FALSE) else tibble::tibble()
     },
     report = file.path(trace_path(config$paths$report_dir), "trace_sdtm_report.html")

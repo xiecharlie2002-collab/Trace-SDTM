@@ -2,7 +2,8 @@ workflow_commands <- function() {
   c(
     "profile", "discover-tasks", "recommend-targets", "recommend-functions",
     "recommend-parameters", "assemble-recommendations", "recommend", "ai-review",
-    "approve", "build", "validate-local", "doctor-p21", "validate-p21",
+    "approve", "build", "validate-local", "build-adam", "validate-adam",
+    "build-tlf", "validate-tlf", "run-analysis", "doctor-p21", "validate-p21",
     "import-p21", "report", "export-evidence", "run"
   )
 }
@@ -25,6 +26,11 @@ print_trace_help <- function() {
     "  approve                   人工批准并冻结规格",
     "  build                     确定性生成 SDTM",
     "  validate-local            执行本地检查",
+    "  build-adam                从已批准且检查通过的 SDTM 生成 ADSL 和 ADAE",
+    "  validate-adam             执行 ADaM 本地规则检查",
+    "  build-tlf                 从检查通过的 ADaM 生成两张汇总表",
+    "  validate-tlf              检查表格分母、去重、同源结果和文件",
+    "  run-analysis              顺序执行 ADaM 与表格构建及检查",
     "  doctor-p21                检查 Pinnacle 21 配置",
     "  validate-p21              运行 Pinnacle 21",
     "  import-p21 --file <xlsx>  导入 Pinnacle 21 报告",
@@ -119,6 +125,16 @@ trace_execute_command <- function(command, args, config) {
     },
     build = stage("build", build_sdtm(config)),
     `validate-local` = stage("validate_local", validate_local(config)),
+    `build-adam` = stage("build_adam", build_adam(config)),
+    `validate-adam` = stage("validate_adam", validate_adam(config)),
+    `build-tlf` = stage("build_tlf", build_tlf(config)),
+    `validate-tlf` = stage("validate_tlf", validate_tlf(config)),
+    `run-analysis` = {
+      stage("build_adam", build_adam(config))
+      stage("validate_adam", validate_adam(config))
+      stage("build_tlf", build_tlf(config))
+      stage("validate_tlf", validate_tlf(config))
+    },
     `doctor-p21` = doctor_p21(config),
     `validate-p21` = stage("validate_p21", validate_p21(config)),
     `import-p21` = {

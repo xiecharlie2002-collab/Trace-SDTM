@@ -1,8 +1,8 @@
-# TraceSDTM Studio 0.6 用户手册
+# TraceSDTM Studio 0.7 用户手册
 
 ## 1. 定位与边界
 
-TraceSDTM Studio 是单用户、本地运行的 SDTM 映射工作台。浏览器只是操作界面，数据和产物保存在本机。系统目前只生成 DM、AE、VS，不包含电子签名、多人权限、数据库、Define-XML 或法规申报级系统认证。
+TraceSDTM Studio 是单用户、本地运行的临床数据标准工作台。浏览器只是操作界面，数据和产物保存在本机。系统生成 DM、AE、VS，以及可选的 ADSL、ADAE 和两张汇总表；不包含电子签名、多人权限、数据库、Define-XML 或法规申报级系统认证。
 
 工作台的职责分工是：模型提出候选，审核者作出判断，注册表限制合法函数与参数，R程序确定性生成数据，本地规则与 Pinnacle 21 分别检查，所有关键步骤保留校验值和审计事件。
 
@@ -50,7 +50,7 @@ $env:TRACE_SDTM_STUDIO_HOME = 'D:\TraceSDTM-Projects'
 
 ### 数据画像
 
-点击“创建运行并生成画像”。系统冻结当前规范化数据和配置，创建新的 `run_id`。项目上下文、目标域定义和特殊规则草案由程序自动生成，不作为使用者配置项。本地示例默认不会进入模型请求。
+如需分析输出，先在项目页导入 `analysis_plan.yml`。程序会用 JSON Schema 检查标准版本、治疗映射、分析人群、治疗中出现事件规则、分析元数据和表壳；规格只接受登记规则编号。点击“创建运行并生成画像”后，系统冻结当前规范化数据、SDTM 配置及分析规格，并创建新的 `run_id`。未导入分析规格时仍可执行 SDTM-only 流程。
 
 ### 任务确认
 
@@ -70,11 +70,13 @@ $env:TRACE_SDTM_STUDIO_HOME = 'D:\TraceSDTM-Projects'
 
 每个原子任务再由人工选择接受、修改、拒绝或信息不足。接受时选择候选序号；修改时只能选择注册表允许的函数、来源编号、目标变量和结构化参数。必需任务不能拒绝，信息不足未解决时不能批准。修改或更换候选会使旧的人工智能审查失效，必须重新审查。
 
-审核者标识必须填写，不能使用默认演示名称。审核工作簿只作为只读审计导出，不再作为导入或批准入口。批准后保存0.6审核状态、人工智能审查结果、Excel快照和供构建读取的0.6 YAML规格。
+审核者标识必须填写，不能使用默认演示名称。审核工作簿只作为只读审计导出，不再作为导入或批准入口。批准后保存兼容 0.6 的审核状态、人工智能审查结果、Excel 快照和供构建读取的 0.6 YAML 规格。
 
 ### 构建
 
-点击生成后，系统只读取批准规格，不调用模型。输出包括DM、AE、VS的CSV和XPT、字段级追溯、数据集清单、运行日志和文件校验值。
+点击生成后，系统只读取批准规格，不调用模型。SDTM 输出包括 DM、AE、VS 的 CSV 和 XPT、字段级追溯、数据集清单、运行日志和文件校验值。
+
+SDTM 本地检查无错误后才能生成 ADaM。ADSL 每名受试者一条记录；ADAE 保留 AE 记录，使用首次给药日至末次给药后 30 天的窗口派生治疗中出现事件标志。ADaM 检查无错误后才能生成汇总表。ADaM 与表格均不调用模型。
 
 ### 验证
 
@@ -84,7 +86,7 @@ $env:TRACE_SDTM_STUDIO_HOME = 'D:\TraceSDTM-Projects'
 
 ### 追溯与报告
 
-追溯表可按域、变量、任务或函数筛选。离线HTML报告不依赖网络。证据包包含批准规格、CSV、XPT、追溯、验证、报告、配置快照和审计事件，但不包含原始上传文件或字段示例值。
+追溯表覆盖 SDTM 字段、ADaM 变量和汇总表，并记录分析规格校验值与输入数据校验值。离线 HTML 报告不依赖网络。证据包包含批准规格、分析规格、SDTM、ADaM、汇总表、三级追溯、验证、报告、配置快照和审计事件，但不包含原始上传文件或字段示例值。
 
 ## 4. 后台任务与恢复
 
@@ -103,6 +105,11 @@ Rscript scripts/trace_sdtm.R recommend --project <项目编号> --run <运行编
 Rscript scripts/trace_sdtm.R ai-review --project <项目编号> --run <运行编号>
 Rscript scripts/trace_sdtm.R build --project <项目编号> --run <运行编号>
 Rscript scripts/trace_sdtm.R validate-local --project <项目编号> --run <运行编号>
+Rscript scripts/trace_sdtm.R build-adam --project <项目编号> --run <运行编号>
+Rscript scripts/trace_sdtm.R validate-adam --project <项目编号> --run <运行编号>
+Rscript scripts/trace_sdtm.R build-tlf --project <项目编号> --run <运行编号>
+Rscript scripts/trace_sdtm.R validate-tlf --project <项目编号> --run <运行编号>
+Rscript scripts/trace_sdtm.R run-analysis --project <项目编号> --run <运行编号>
 Rscript scripts/trace_sdtm.R validate-p21 --project <项目编号> --run <运行编号>
 Rscript scripts/trace_sdtm.R report --project <项目编号> --run <运行编号>
 Rscript scripts/trace_sdtm.R export-evidence --project <项目编号> --run <运行编号>

@@ -1,10 +1,10 @@
-# TraceSDTM Studio 0.6 five-step application --------------------------------
+# TraceSDTM Studio 0.7 five-step application --------------------------------
 
 trace_studio_ui <- function() {
   metadata <- yaml::read_yaml(trace_path("specs", "sdtm_metadata.yml"))
   domain_choices <- stats::setNames(names(metadata$domains), vapply(metadata$domains, function(item) item$label, character(1)))
   bslib::page_sidebar(
-    title = shiny::div(class = "trace-title", "TraceSDTM Studio", shiny::tags$small("0.6")),
+    title = shiny::div(class = "trace-title", "TraceSDTM Studio", shiny::tags$small("0.7")),
     fillable = TRUE,
     theme = bslib::bs_theme(version = 5, bootswatch = "flatly", primary = "#176B87", base_font = bslib::font_collection("Segoe UI", "Microsoft YaHei", "Arial", "sans-serif")),
     sidebar = bslib::sidebar(
@@ -68,6 +68,13 @@ trace_studio_ui <- function() {
           shiny::actionButton("create_run_profile", "创建运行并生成画像", class = "btn-primary"),
           shiny::actionButton("profile_existing", "重新生成当前运行画像", class = "btn-outline-primary"),
           shiny::p(class = "trace-muted", "原文件只读保存；运行使用冻结副本。字段画像和关系候选由程序自动生成。")
+        ),
+        shiny::div(class = "trace-card",
+          shiny::h3("可选分析规格"),
+          shiny::fileInput("analysis_plan_upload", "导入 analysis_plan.yml", accept = c(".yml", ".yaml")),
+          shiny::actionButton("import_analysis_plan", "校验并保存分析规格", class = "btn-outline-primary"),
+          shiny::uiOutput("analysis_plan_status"),
+          shiny::p(class = "trace-muted", "分析规格在创建运行时冻结；未配置时项目继续按 SDTM-only 模式使用。")
         ),
         shiny::div(class = "trace-card", shiny::h3("字段画像"), DT::DTOutput("profile_table")),
         shiny::div(class = "trace-card", shiny::h3("关系画像"), DT::DTOutput("relationship_table"))
@@ -173,20 +180,33 @@ trace_studio_ui <- function() {
         )
       ),
       bslib::nav_panel("5 结果",
-        shiny::div(class = "trace-card",
-          shiny::h3("确定性生成"),
-          shiny::actionButton("run_build", "生成批准的目标域", class = "btn-primary"),
-          shiny::p(class = "trace-muted", "构建只读取 approved_mapping.yml，不再调用模型。"),
-          DT::DTOutput("dataset_manifest"), DT::DTOutput("output_files")
+        bslib::accordion(
+          open = c("SDTM"),
+          bslib::accordion_panel("SDTM",
+            shiny::actionButton("run_build", "生成批准的三个域", class = "btn-primary"),
+            shiny::actionButton("run_local_validation", "运行 SDTM 本地检查", class = "btn-outline-primary"),
+            shiny::p(class = "trace-muted", "构建只读取批准映射，不再调用模型。"),
+            DT::DTOutput("dataset_manifest"), DT::DTOutput("output_files"), DT::DTOutput("local_issues")
+          ),
+          bslib::accordion_panel("ADaM",
+            shiny::actionButton("run_build_adam", "生成 ADSL 与 ADAE", class = "btn-primary"),
+            shiny::actionButton("run_validate_adam", "运行 ADaM 本地检查", class = "btn-outline-primary"),
+            shiny::p(class = "trace-muted", "仅执行冻结分析规则；要求 SDTM 已批准、生成且本地检查无错误。"),
+            DT::DTOutput("adam_manifest"), DT::DTOutput("adam_output_files"), DT::DTOutput("adam_issues")
+          ),
+          bslib::accordion_panel("汇总表",
+            shiny::actionButton("run_build_tlf", "生成两张汇总表", class = "btn-primary"),
+            shiny::actionButton("run_validate_tlf", "运行表格检查", class = "btn-outline-primary"),
+            shiny::p(class = "trace-muted", "CSV、HTML 和 RTF 均来自同一个规范化结果对象。"),
+            DT::DTOutput("tlf_manifest"), DT::DTOutput("tlf_output_files"), DT::DTOutput("tlf_issues"),
+            shiny::uiOutput("tlf_preview_links")
+          )
         ),
-        shiny::div(class = "trace-card", shiny::h3("字段级追溯"), shiny::textInput("lineage_filter", "筛选任务、域、变量或函数"), DT::DTOutput("lineage_table")),
-        shiny::div(class = "trace-card",
-          shiny::h3("可选检查与导出"),
-          shiny::actionButton("run_local_validation", "运行本地检查", class = "btn-outline-primary"),
+        shiny::div(class = "trace-card", shiny::h3("三级追溯"), shiny::textInput("lineage_filter", "筛选任务、域、变量或规则"),
+                   DT::DTOutput("lineage_table"), DT::DTOutput("adam_lineage_table"), DT::DTOutput("tlf_lineage_table")),
+        shiny::div(class = "trace-card", shiny::h3("报告与证据"),
           shiny::actionButton("run_report", "生成离线报告", class = "btn-outline-primary"),
-          shiny::uiOutput("report_link"),
-          shiny::downloadButton("download_evidence", "下载项目证据包"),
-          DT::DTOutput("local_issues")
+          shiny::uiOutput("report_link"), shiny::downloadButton("download_evidence", "下载项目证据包")
         )
       )
     )
@@ -233,11 +253,11 @@ trace_studio_server <- function(input, output, session) {
     if (!length(row)) return()
     selected <- all_projects()[row, , drop = FALSE]
     if (!isTRUE(selected$compatible[[1L]])) {
-      shiny::showNotification("这是旧版项目。请新建 0.6 通用项目并重新上传原始数据。", type = "warning", duration = 8)
+      shiny::showNotification("这是不兼容的旧版项目。请新建 0.7 项目并重新上传原始数据。", type = "warning", duration = 8)
     } else shiny::updateSelectInput(session, "active_project", selected = selected$project_id[[1L]])
   })
   output$sidebar_project_status <- shiny::renderUI({
-    if (!nzchar(input$active_project %||% "")) return(shiny::p(class = "trace-muted", "尚未创建 0.6 项目"))
+    if (!nzchar(input$active_project %||% "")) return(shiny::p(class = "trace-muted", "尚未创建 0.7 项目"))
     project <- studio_read_project(input$active_project)
     shiny::tagList(
       shiny::strong(project$name), shiny::br(),
@@ -260,7 +280,7 @@ trace_studio_server <- function(input, output, session) {
     )
     refresh(refresh() + 1L)
     shiny::updateSelectInput(session, "active_project", selected = project$project_id)
-    shiny::showNotification("0.6 通用项目已创建。", type = "message")
+    shiny::showNotification("0.7 通用项目已创建。", type = "message")
   }))
   shiny::observeEvent(input$archive_project, studio_notify_error(session, {
     studio_archive_project(active_project(), actor = input$reviewer_id %||% "local_user")
@@ -296,6 +316,18 @@ trace_studio_server <- function(input, output, session) {
     refresh(refresh() + 1L)
     shiny::showNotification("CSV 已导入并生成数据集编号。", type = "message")
   }))
+  shiny::observeEvent(input$import_analysis_plan, studio_notify_error(session, {
+    shiny::req(input$analysis_plan_upload$datapath)
+    studio_import_analysis_plan_v07(active_project(), input$analysis_plan_upload$datapath)
+    refresh(refresh() + 1L)
+    shiny::showNotification("分析规格已通过校验并保存；后续新运行会冻结该版本。", type = "message")
+  }))
+  output$analysis_plan_status <- shiny::renderUI({
+    refresh(); shiny::req(active_project())
+    project <- studio_read_project(active_project())
+    if (!isTRUE(project$analysis_configured)) return(shiny::p(class = "trace-muted", "当前状态：未配置"))
+    shiny::p(class = "trace-ok", paste0("当前状态：已配置；SHA-256 ", substr(project$analysis_plan_sha256 %||% "", 1L, 16L), "…"))
+  })
   output$source_preview <- studio_render_dt_v06({
     shiny::req(active_project(), nzchar(input$source_dataset %||% "")); refresh()
     DT::datatable(studio_source_preview_v06(active_project(), input$source_dataset, 20L), rownames = FALSE, options = list(scrollX = TRUE, pageLength = 10))
@@ -339,6 +371,10 @@ trace_studio_server <- function(input, output, session) {
   shiny::observeEvent(input$run_ai_review, studio_notify_error(session, start_job("ai-review")))
   shiny::observeEvent(input$run_build, studio_notify_error(session, start_job("build")))
   shiny::observeEvent(input$run_local_validation, studio_notify_error(session, start_job("validate-local")))
+  shiny::observeEvent(input$run_build_adam, studio_notify_error(session, start_job("build-adam")))
+  shiny::observeEvent(input$run_validate_adam, studio_notify_error(session, start_job("validate-adam")))
+  shiny::observeEvent(input$run_build_tlf, studio_notify_error(session, start_job("build-tlf")))
+  shiny::observeEvent(input$run_validate_tlf, studio_notify_error(session, start_job("validate-tlf")))
   shiny::observeEvent(input$run_report, studio_notify_error(session, start_job("report")))
   shiny::observeEvent(input$cancel_job, studio_notify_error(session, {
     studio_cancel_job(); refresh(refresh() + 1L); shiny::showNotification("已请求取消后台任务。", type = "warning")
@@ -577,10 +613,26 @@ trace_studio_server <- function(input, output, session) {
 
   run_summary <- shiny::reactive({ refresh(); studio_run_summary(active_config()) })
   output$dataset_manifest <- studio_render_dt_v06(DT::datatable(run_summary()$datasets, rownames = FALSE, options = list(scrollX = TRUE)))
+  output$adam_manifest <- studio_render_dt_v06(DT::datatable(run_summary()$adam_datasets, rownames = FALSE, options = list(scrollX = TRUE)))
+  output$tlf_manifest <- studio_render_dt_v06(DT::datatable(run_summary()$tables, rownames = FALSE, options = list(scrollX = TRUE)))
   output$local_issues <- studio_render_dt_v06(DT::datatable(run_summary()$local_issues, rownames = FALSE, options = list(scrollX = TRUE, pageLength = 10)))
+  output$adam_issues <- studio_render_dt_v06(DT::datatable(run_summary()$adam_issues, rownames = FALSE, options = list(scrollX = TRUE, pageLength = 10)))
+  output$tlf_issues <- studio_render_dt_v06(DT::datatable(run_summary()$tlf_issues, rownames = FALSE, options = list(scrollX = TRUE, pageLength = 10)))
   output$output_files <- studio_render_dt_v06({
     config <- active_config(); refresh(); root <- config$studio$run_path
     files <- unlist(lapply(c(config$paths$csv_dir, config$paths$xpt_dir), function(path) if (dir.exists(path)) list.files(path, full.names = TRUE) else character()))
+    rows <- tibble::tibble(file = basename(files), relative_path = vapply(files, studio_relative_path, character(1), root = root), size = file.info(files)$size, sha256 = vapply(files, file_sha256, character(1)))
+    DT::datatable(rows, rownames = FALSE, options = list(scrollX = TRUE))
+  })
+  output$adam_output_files <- studio_render_dt_v06({
+    config <- active_config(); refresh(); root <- config$studio$run_path
+    files <- unlist(lapply(c(config$paths$adam_csv_dir, config$paths$adam_xpt_dir), function(path) if (dir.exists(path)) list.files(path, full.names = TRUE) else character()))
+    rows <- tibble::tibble(file = basename(files), relative_path = vapply(files, studio_relative_path, character(1), root = root), size = file.info(files)$size, sha256 = vapply(files, file_sha256, character(1)))
+    DT::datatable(rows, rownames = FALSE, options = list(scrollX = TRUE))
+  })
+  output$tlf_output_files <- studio_render_dt_v06({
+    config <- active_config(); refresh(); root <- config$studio$run_path
+    files <- unlist(lapply(c(config$paths$tlf_csv_dir, config$paths$tlf_html_dir, config$paths$tlf_rtf_dir), function(path) if (dir.exists(path)) list.files(path, full.names = TRUE) else character()))
     rows <- tibble::tibble(file = basename(files), relative_path = vapply(files, studio_relative_path, character(1), root = root), size = file.info(files)$size, sha256 = vapply(files, file_sha256, character(1)))
     DT::datatable(rows, rownames = FALSE, options = list(scrollX = TRUE))
   })
@@ -588,6 +640,27 @@ trace_studio_server <- function(input, output, session) {
     data <- run_summary()$lineage; query <- tolower(trimws(input$lineage_filter %||% ""))
     if (nzchar(query) && nrow(data)) data <- data[apply(data, 1L, function(row) any(grepl(query, tolower(as.character(row)), fixed = TRUE))), , drop = FALSE]
     DT::datatable(data, rownames = FALSE, options = list(scrollX = TRUE, pageLength = 15))
+  })
+  output$adam_lineage_table <- studio_render_dt_v06({
+    data <- run_summary()$adam_lineage; query <- tolower(trimws(input$lineage_filter %||% ""))
+    if (nzchar(query) && nrow(data)) data <- data[apply(data, 1L, function(row) any(grepl(query, tolower(as.character(row)), fixed = TRUE))), , drop = FALSE]
+    DT::datatable(data, rownames = FALSE, options = list(scrollX = TRUE, pageLength = 15))
+  })
+  output$tlf_lineage_table <- studio_render_dt_v06({
+    data <- run_summary()$tlf_lineage; query <- tolower(trimws(input$lineage_filter %||% ""))
+    if (nzchar(query) && nrow(data)) data <- data[apply(data, 1L, function(row) any(grepl(query, tolower(as.character(row)), fixed = TRUE))), , drop = FALSE]
+    DT::datatable(data, rownames = FALSE, options = list(scrollX = TRUE, pageLength = 15))
+  })
+  output$tlf_preview_links <- shiny::renderUI({
+    config <- active_config(); refresh()
+    files <- list.files(trace_path(config$paths$tlf_html_dir), pattern = "[.]html$", full.names = TRUE)
+    if (!length(files)) return(shiny::p(class = "trace-muted", "尚未生成 HTML 表格。"))
+    prefix <- paste0("trace-tlf-", substr(digest::digest(dirname(files[[1L]]), serialize = FALSE), 1L, 10L))
+    if (!prefix %in% names(shiny::resourcePaths())) shiny::addResourcePath(prefix, dirname(files[[1L]]))
+    shiny::tagList(lapply(files, function(file) shiny::tags$a(
+      href = paste0("/", prefix, "/", basename(file)), target = "_blank",
+      class = "btn btn-outline-primary me-2", paste("预览", basename(file))
+    )))
   })
   output$report_link <- shiny::renderUI({
     report <- run_summary()$report

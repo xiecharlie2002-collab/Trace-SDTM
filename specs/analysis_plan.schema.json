@@ -1,0 +1,108 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://tracesdtm.local/schemas/analysis-plan-0.1.json",
+  "title": "TraceSDTM frozen analysis plan",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "standards", "data_cutoff_date", "treatments", "populations", "teae", "datasets", "tables"],
+  "properties": {
+    "schema_version": {"const": "0.1"},
+    "standards": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["adam", "adamig", "occds", "admiral", "r2rtf"],
+      "properties": {
+        "adam": {"const": "2.1"},
+        "adamig": {"const": "1.3"},
+        "occds": {"const": "1.1"},
+        "admiral": {"const": "1.5.0"},
+        "r2rtf": {"const": "1.3.1"}
+      }
+    },
+    "data_cutoff_date": {"type": "string", "format": "date"},
+    "treatments": {
+      "type": "array", "minItems": 1,
+      "items": {
+        "type": "object", "additionalProperties": false,
+        "required": ["name", "code", "number"],
+        "properties": {
+          "name": {"type": "string", "minLength": 1},
+          "code": {"type": "string", "minLength": 1},
+          "number": {"type": "integer", "minimum": 0}
+        }
+      }
+    },
+    "populations": {
+      "type": "object", "additionalProperties": false,
+      "required": ["itt", "safety"],
+      "properties": {
+        "itt": {"const": "POP_ITT_PLANNED_TREATMENT_PRESENT"},
+        "safety": {"const": "POP_SAF_FIRST_DOSE_PRESENT"}
+      }
+    },
+    "teae": {
+      "type": "object", "additionalProperties": false,
+      "required": ["rule_id", "end_window_days", "missing_start_rule"],
+      "properties": {
+        "rule_id": {"const": "TEAE_TRT_START_TO_END_PLUS_WINDOW"},
+        "end_window_days": {"type": "integer", "minimum": 0, "maximum": 365},
+        "missing_start_rule": {"const": "ADMIRAL_CONSERVATIVE"}
+      }
+    },
+    "datasets": {
+      "type": "object", "additionalProperties": false,
+      "required": ["ADSL", "ADAE"],
+      "properties": {
+        "ADSL": {"$ref": "#/$defs/dataset"},
+        "ADAE": {"$ref": "#/$defs/dataset"}
+      }
+    },
+    "tables": {
+      "type": "object", "additionalProperties": false,
+      "required": ["T14.1.1", "T14.3.1"],
+      "properties": {
+        "T14.1.1": {"$ref": "#/$defs/table"},
+        "T14.3.1": {"$ref": "#/$defs/table"}
+      }
+    }
+  },
+  "$defs": {
+    "variable": {
+      "type": "object", "additionalProperties": false,
+      "required": ["name", "label", "type", "rule_id", "sources"],
+      "properties": {
+        "name": {"type": "string", "pattern": "^[A-Z][A-Z0-9_]{0,31}$"},
+        "label": {"type": "string", "minLength": 1},
+        "type": {"enum": ["character", "numeric", "date"]},
+        "rule_id": {"type": "string", "pattern": "^[A-Z][A-Z0-9_]+$"},
+        "sources": {
+          "oneOf": [
+            {"type": "string", "minLength": 1},
+            {"type": "array", "items": {"type": "string", "minLength": 1}}
+          ]
+        }
+      }
+    },
+    "dataset": {
+      "type": "object", "additionalProperties": false,
+      "required": ["label", "class", "keys", "variables"],
+      "properties": {
+        "label": {"type": "string", "minLength": 1},
+        "class": {"enum": ["SUBJECT LEVEL ANALYSIS DATASET", "OCCURRENCE DATA STRUCTURE"]},
+        "keys": {"type": "array", "minItems": 1, "items": {"type": "string"}},
+        "variables": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/variable"}}
+      }
+    },
+    "table": {
+      "type": "object", "additionalProperties": false,
+      "required": ["title", "population", "treatment_basis", "shell_rule_id", "formats"],
+      "properties": {
+        "title": {"type": "string", "minLength": 1},
+        "population": {"enum": ["ITTFL", "SAFFL"]},
+        "treatment_basis": {"enum": ["planned", "actual"]},
+        "shell_rule_id": {"type": "string", "pattern": "^[A-Z][A-Z0-9_]+$"},
+        "formats": {"type": "array", "uniqueItems": true, "items": {"enum": ["csv", "html", "rtf"]}}
+      }
+    }
+  }
+}
