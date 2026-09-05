@@ -19,26 +19,7 @@ TraceSDTM 把人工智能限制在 SDTM 的“提出候选”和“独立审查�
 
 点击架构图可打开交互式架构图。0.7 保留五个主步骤，并在第 5 步中增加 SDTM、ADaM 和汇总表三个结果分区。
 
-<table>
-  <tr>
-    <td width="50%"><img src="docs/images/studio-01-project-profile.png" alt="项目、原始数据和画像"></td>
-    <td width="50%"><img src="docs/images/studio-02-task-confirmation.png" alt="原子任务确认"></td>
-  </tr>
-  <tr>
-    <td align="center">1. 项目与数据</td>
-    <td align="center">2. 任务确认</td>
-  </tr>
-  <tr>
-    <td width="50%"><img src="docs/images/studio-03-mapping-generation.png" alt="映射生成和参数处理"></td>
-    <td width="50%"><img src="docs/images/studio-04-review-approval.png" alt="独立审查和人工批准"></td>
-  </tr>
-  <tr>
-    <td align="center">3. 映射生成</td>
-    <td align="center">4. 审查批准</td>
-  </tr>
-</table>
-
-![确定性结果与字段级追溯](docs/images/studio-05-result-lineage.png)
+项目展示只保留当前版本的架构和可复现结果；三域数据集、ADSL、ADAE 及两张汇总表见[公开演示结果](docs/demo_results.md)。
 
 ## 核心能力
 

@@ -6,25 +6,17 @@
 
 创建项目，选择 DM、AE、VS，上传三个 CSV，并导入 `specs/analysis_plan.yml`。分析规格必须先通过 JSON Schema 校验；创建运行时，输入、SDTM 资源和分析规格一起冻结。
 
-![项目与数据](images/studio-01-project-profile.png)
-
 ## 2. 任务确认
 
 人工智能只提出任务及候选目标域。程序检查任务编号、来源字段、目标域、依赖关系和记录粒度，人工确认后冻结任务。
-
-![任务确认](images/studio-02-task-confirmation.png)
 
 ## 3. 映射生成
 
 系统依次选择目标变量、筛选并选择函数、注入参数。全部参数均可确定时跳过参数模型请求；自由参数由人工通过结构化表单填写。
 
-![映射生成](images/studio-03-mapping-generation.png)
-
 ## 4. 审查批准
 
 独立模型使用全新上下文审查最终映射，只报告通过、警告或错误。错误会阻止批准，警告需要人工说明，随后由审核者最终批准。
-
-![审查批准](images/studio-04-review-approval.png)
 
 ## 5. 结果与追溯
 
@@ -38,6 +30,6 @@
 
 T14.3.1 总体行应为：安慰剂 1/2（50.0%）、试验药 4/4（100.0%）、总体 5/6（83.3%）。
 
-![结果与追溯](images/studio-05-result-lineage.png)
+当前版本的三域清单、ADSL/ADAE 预览和汇总表截图见[公开演示结果](demo_results.md)。
 
 无模型环境下，可使用 `demo_three_domain_approved_mapping()` 复现相同的批准映射测试样例。该样例用于测试确定性构建，不冒充一次真实模型审查。模型辅助演示中的审核者标识只表示流程中存在明确的人工决定，不代表法规意义上的专家批准。
