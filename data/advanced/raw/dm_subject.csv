@@ -1,5 +1,0 @@
-STUDY,PATNUM,IC_DT,AGE,SEX,ETHNIC,RACE,COUNTRY,PLANNED_ARM,PLANNED_ARMCD,ACTUAL_ARM,ACTUAL_ARMCD
-TRACE002,701-2001,12/20/2024,42,Female,Not Hispanic or Latino,White,USA,Placebo,PBO,Placebo,PBO
-TRACE002,701-2002,12/21/2024,57,Male,Hispanic or Latino,Asian,USA,Trace Drug 10 mg,TRT10,Trace Drug 10 mg,TRT10
-TRACE002,702-2003,12/22/2024,35,Female,Not Hispanic or Latino,Black or African American,CAN,Trace Drug 10 mg,TRT10,Trace Drug 10 mg,TRT10
-TRACE002,702-2004,12/23/2024,64,Male,Not Hispanic or Latino,White,CAN,Placebo,PBO,Placebo,PBO

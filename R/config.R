@@ -1,12 +1,3 @@
-scenario_from_args <- function(args = commandArgs(trailingOnly = TRUE)) {
-  position <- match("--scenario", args)
-  if (!is.na(position)) {
-    if (position == length(args)) trace_abort("--scenario 后必须提供场景名称。")
-    return(as.character(args[[position + 1L]]))
-  }
-  Sys.getenv("TRACE_SDTM_SCENARIO", unset = "basic")
-}
-
 argument_value <- function(args, name, default = NULL) {
   position <- match(name, args)
   if (is.na(position)) return(default)
@@ -24,56 +15,24 @@ configure_output_paths <- function(config, output_base) {
     p21_validation_dir = file.path("validation", "p21"), report_dir = "report",
     manifest_dir = "manifests", log_dir = "logs"
   )
-  for (key in names(generated_paths)) config$paths[[key]] <- file.path(output_base, generated_paths[[key]])
+  for (key in names(generated_paths)) {
+    config$paths[[key]] <- file.path(output_base, generated_paths[[key]])
+  }
   config$paths$approved_specification <- file.path(output_base, "specs", "approved_mapping.yml")
   config
 }
 
-load_project_config <- function(scenario = Sys.getenv("TRACE_SDTM_SCENARIO", unset = "basic")) {
+load_project_config <- function() {
   config <- yaml::read_yaml(trace_path("config", "project.yml"))
-  if (!scenario %in% names(config$scenarios)) {
-    trace_abort(sprintf("未知场景：%s。允许值为 %s。", scenario, paste(names(config$scenarios), collapse = "、")))
-  }
-  scenario_config <- config$scenarios[[scenario]]
-  config$project$scenario <- scenario
-  config$paths <- c(config$paths, scenario_config)
-  output_base <- scenario_config$output_base
-  config <- configure_output_paths(config, output_base)
-  experiment_id <- Sys.getenv("TRACE_SDTM_EXPERIMENT_ID", unset = "")
-  if (nzchar(experiment_id)) config <- apply_experiment_paths(config, experiment_id)
-  config
-}
-
-apply_experiment_paths <- function(config, experiment_id) {
-  if (!grepl("^[A-Za-z0-9][A-Za-z0-9._-]*$", experiment_id)) {
-    trace_abort("TRACE_SDTM_EXPERIMENT_ID 只能包含字母、数字、点、下划线和连字符。")
-  }
-  base <- file.path(config$paths$output_base, "experiments", experiment_id)
-  generated_paths <- c(
-    profile_dir = "profile",
-    recommendation_dir = "recommendations",
-    review_dir = "review",
-    csv_dir = file.path("sdtm", "csv"),
-    xpt_dir = file.path("sdtm", "xpt"),
-    lineage_dir = "lineage",
-    local_validation_dir = file.path("validation", "local"),
-    p21_validation_dir = file.path("validation", "p21"),
-    report_dir = "report",
-    manifest_dir = "manifests",
-    log_dir = "logs"
-  )
-  for (key in names(generated_paths)) config$paths[[key]] <- file.path(base, generated_paths[[key]])
-  config$paths$approved_specification <- file.path(base, "specs", "approved_mapping.yml")
-  config$project$experiment_id <- experiment_id
-  config
+  config$project$scenario <- "generic"
+  config$project$studio <- FALSE
+  configure_output_paths(config, config$paths$output_base %||% "output/local")
 }
 
 load_p21_config <- function(local_path = Sys.getenv(
-  "TRACE_SDTM_P21_CONFIG",
-  unset = trace_path("config", "p21.local.yml")
+  "TRACE_SDTM_P21_CONFIG", unset = trace_path("config", "p21.local.yml")
 )) {
   config <- yaml::read_yaml(trace_path("config", "p21.yml"))
-
   if (nzchar(local_path)) {
     is_absolute <- grepl("^([A-Za-z]:[\\\\/]|/|\\\\\\\\)", local_path)
     resolved_local_path <- if (is_absolute) local_path else trace_path(local_path)
@@ -83,7 +42,6 @@ load_p21_config <- function(local_path = Sys.getenv(
       config <- utils::modifyList(config, local_config, keep.null = TRUE)
     }
   }
-
   environment_overrides <- list(
     TRACE_SDTM_P21_EXECUTABLE = c("community", "executable"),
     TRACE_SDTM_P21_JAVA = c("community", "java"),
@@ -96,7 +54,6 @@ load_p21_config <- function(local_path = Sys.getenv(
     path <- environment_overrides[[variable]]
     config[[path[[1L]]]][[path[[2L]]]] <- value
   }
-
   config
 }
 
@@ -104,22 +61,17 @@ load_metadata <- function(config = load_project_config()) {
   yaml::read_yaml(trace_path(config$paths$metadata))
 }
 
-load_mapping_template <- function(config = load_project_config()) {
-  yaml::read_yaml(trace_path(config$paths$specification_template))
-}
-
-load_gold_specification <- function(config = load_project_config()) {
-  if (isTRUE(config$project$studio) || !nzchar(as.character(config$paths$gold_specification %||% ""))) {
-    trace_abort("普通工作台项目不包含金标准，不能使用离线种子或准确率评价。")
+load_task_specification <- function(config = load_project_config()) {
+  path <- as.character(config$paths$task_specification %||% "")
+  if (!nzchar(path) || !file.exists(trace_path(path))) {
+    trace_abort("缺少当前运行的冻结任务规格；请从工作台创建项目和运行。")
   }
-  yaml::read_yaml(trace_path(config$paths$gold_specification))
+  yaml::read_yaml(trace_path(path))
 }
 
 load_mapping_policies <- function(config = load_project_config()) {
-  path <- config$paths$mapping_policies %||% ""
-  if (!nzchar(path) || !file.exists(trace_path(path))) {
-    trace_abort(sprintf("%s 场景缺少映射政策文件。", config$project$scenario))
-  }
+  path <- as.character(config$paths$mapping_policies %||% "")
+  if (!nzchar(path) || !file.exists(trace_path(path))) trace_abort("缺少当前运行的映射规则。")
   policies <- yaml::read_yaml(trace_path(path))
   required <- c(
     "policy_version", "scenario", "identifiers", "date_time_formats",
@@ -127,21 +79,16 @@ load_mapping_policies <- function(config = load_project_config()) {
     "unit_standardization", "dataset_output_contract"
   )
   missing <- setdiff(required, names(policies))
-  if (length(missing)) trace_abort(sprintf("映射政策缺少字段：%s。", paste(missing, collapse = "、")))
-  if (!identical(as.character(policies$scenario), config$project$scenario)) {
-    trace_abort(sprintf("映射政策场景 %s 与当前场景 %s 不一致。", policies$scenario, config$project$scenario))
-  }
+  if (length(missing)) trace_abort(sprintf("映射规则缺少字段：%s。", paste(missing, collapse = "、")))
   policies
 }
 
 load_approved_mapping <- function(config = load_project_config()) {
   path <- trace_path(config$paths$approved_specification)
-  if (!file.exists(path)) {
-    trace_abort("尚未生成已审核映射规格。请先执行 recommend --seed（或真实 recommend），完成人工审核后执行 approve。")
-  }
+  if (!file.exists(path)) trace_abort("尚未生成人工批准的映射规格，已阻止构建。")
   specification <- yaml::read_yaml(path)
-  if (!identical(as.character(specification$schema_version), "0.4")) {
-    trace_abort("TraceSDTM v0.4 只支持 schema_version 0.4 的批准规格。旧版成果请通过 v0.1-mvp、v0.2-registry 或 v0.3-three-level-eval Git 标签查看。")
+  if (!identical(as.character(specification$schema_version), "0.6")) {
+    trace_abort("当前版本只接受 schema_version 0.6 的批准规格。")
   }
   if (!identical(specification$specification$status, "approved")) {
     trace_abort("映射规格状态不是 approved，已阻止构建。")
@@ -149,9 +96,7 @@ load_approved_mapping <- function(config = load_project_config()) {
   specification
 }
 
-resolve_config_path <- function(relative_path) {
-  trace_path(relative_path)
-}
+resolve_config_path <- function(relative_path) trace_path(relative_path)
 
 ensure_output_directories <- function(config = load_project_config()) {
   keys <- c(

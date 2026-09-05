@@ -1,9 +1,0 @@
-{
-  "schema_version": "0.5",
-  "provider": "sanitized_acceptance_fixture",
-  "model": "none",
-  "run_id": "run_20260903_200120_15232_858",
-  "generated_at": "2026-09-03T12:01:24Z",
-  "note": "固定响应只用于无密钥集成验收，不属于模型准确率实验。",
-  "api_key_logged": false
-}

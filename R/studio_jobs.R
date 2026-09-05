@@ -207,7 +207,7 @@ studio_doctor <- function() {
   )
   p21_checks <- tryCatch({
     p21 <- load_p21_config()
-    paths <- p21_expected_paths(load_project_config("advanced"), p21)
+    paths <- p21_expected_paths(load_project_config(), p21)
     detected <- detect_windows_file_version(paths$executable)
     tibble::tibble(
       category = "Pinnacle 21",

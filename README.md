@@ -143,16 +143,31 @@ $env:TRACE_SDTM_THINKING_MODE = 'disabled'
 ## 目录结构
 
 ```text
-R/                    画像、推荐、审查、工作台和确定性构建代码
-config/               项目配置、工作台配置和转换函数注册表
-data/raw/             仓库内模拟来源数据
-specs/                SDTM 元数据、受控资源和基准规格
-docs/diagrams/         Archify 架构规格与交互式 HTML
-docs/images/           架构图和五步工作台截图
+R/
+├─ studio_*            五步界面、项目状态、后台任务、审核和导出
+├─ profile.R           数据集、字段与关系画像
+├─ task_discovery.R    任务发现、结构校验与冻结
+├─ model_gateway.R     公共模型接口与结构化响应读取
+├─ mapping_stages.R    目标变量、函数和有限参数选择
+├─ parameter_resolvers.R  参数自动注入
+├─ mapping_review.R    映射审核表与批准规格组装
+├─ registry.R          函数契约、规格校验与内部编译
+├─ transforms.R        23 个受控转换函数
+└─ build.R             确定性生成与字段级追溯
+config/                当前配置、工作台配置和转换函数注册表
+data/raw/              DM、AE、VS 模拟上传示例
+specs/
+├─ sdtm_metadata.yml   当前标准元数据
+└─ resources/          公共受控术语与单位换算资源
+docs/                  架构、演示、用户手册和截图
 scripts/               命令行入口和本地启动器
-tests/                 自动检查与测试代码
-workspace/projects/    本地工作台项目和运行产物，Git 默认忽略
+tests/                 当前 0.6 加载与最小流程检查
+workspace/projects/    本地项目和运行产物，Git 默认忽略
 ```
+
+旧基准数据、金标准、评价脚本和旧版工作台示例已移至
+[`archive/legacy-benchmarks`](https://github.com/xiecharlie2002-collab/Trace-SDTM/tree/archive/legacy-benchmarks)
+分支。主分支只保留当前工作台及其运行所需的公共资源。
 
 ## 安全边界
 

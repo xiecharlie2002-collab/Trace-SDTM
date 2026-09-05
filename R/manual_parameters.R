@@ -35,7 +35,7 @@ studio_save_manual_parameters_v06 <- function(config, key, values, reviewer) {
   resolution <- result$resolutions$valid[[key]]
   if (is.null(resolution)) trace_abort(sprintf("未知参数候选：%s。", key))
   missing <- unlist(resolution$unavailable_parameters %||% character(), use.names = FALSE)
-  values <- v04_named_list(values)
+  values <- named_list(values)
   if (!setequal(names(values), missing)) trace_abort("人工填写值必须完整覆盖且只能覆盖标记为信息不足的参数。")
   existing <- result$valid[[key]] %||% list(
     parameters = resolution$injected_parameters %||% list(),

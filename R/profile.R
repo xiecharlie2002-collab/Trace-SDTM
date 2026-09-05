@@ -200,7 +200,7 @@ v06_domain_definition <- function(domain, label, entry) {
 
 profile_sources_v06 <- function(config) {
   ensure_output_directories(config)
-  specification <- load_mapping_template(config)
+  specification <- load_task_specification(config)
   catalog <- specification$source_catalog %||% list()
   if (!length(catalog)) trace_abort("运行快照没有来源数据集。")
   data_by_dataset <- list()
@@ -248,7 +248,7 @@ profile_sources_v06 <- function(config) {
 
   specification$source_catalog <- catalog
   specification$specification$status <- "profiled"
-  write_yaml(specification, trace_path(config$paths$specification_template))
+  write_yaml(specification, trace_path(config$paths$task_specification))
 
   policies <- load_mapping_policies(config)
   allowed_formats <- c("m/d/y", "d-m-y", "dd-mmm-yyyy", "y-m-d", "H:M", "H:M:S")
@@ -295,7 +295,7 @@ profile_sources_v06 <- function(config) {
   write_json(summary, trace_path(config$paths$profile_dir, "profile_summary.json"))
   if (!is.null(config$studio$project_id)) {
     run <- studio_read_run(config$studio$project_id, config$studio$run_id)
-    run$configuration_sha256[["tasks.yml"]] <- file_sha256(trace_path(config$paths$specification_template))
+    run$configuration_sha256[["tasks.yml"]] <- file_sha256(trace_path(config$paths$task_specification))
     run$configuration_sha256[["mapping_policies.yml"]] <- file_sha256(trace_path(config$paths$mapping_policies))
     studio_write_run(config$studio$project_id, config$studio$run_id, run)
   }
@@ -304,72 +304,5 @@ profile_sources_v06 <- function(config) {
 }
 
 profile_sources <- function(config = load_project_config()) {
-  if (identical(as.character(config$project$scenario %||% ""), "generic")) return(profile_sources_v06(config))
-  ensure_output_directories(config)
-  specification <- load_mapping_template(config)
-  concepts <- specification$tasks %||% specification$concepts %||% list()
-  dictionary <- purrr::imap_dfr(specification$source_catalog, function(source, dataset) {
-    if (isTRUE(source$derived)) return(tibble::tibble())
-    path <- trace_path(config$paths$raw_dir, source$file)
-    if (!file.exists(path)) trace_abort(sprintf("缺少原始数据：%s", path))
-    data <- read_raw_csv(path)
-    literal_data <- readr::read_csv(
-      path, na = c("", "NA", "N/A"), show_col_types = FALSE, progress = FALSE,
-      name_repair = "minimal", col_types = readr::cols(.default = readr::col_character())
-    )
-    domains <- unique(vapply(Filter(function(concept) any(vapply(concept_source_refs(concept), function(ref) identical(ref$dataset, dataset), logical(1))), concepts), function(concept) concept$target_domain, character(1)))
-    purrr::map_dfr(names(data), function(variable) {
-      values <- data[[variable]]
-      literal_values <- literal_data[[variable]]
-      observed <- unique(as.character(stats::na.omit(literal_values)))
-      roles <- unique(unlist(lapply(concepts, function(concept) {
-        refs <- Filter(function(ref) identical(ref$dataset, dataset) && identical(ref$variable, variable), concept_source_refs(concept))
-        vapply(refs, function(ref) as.character(ref$role %||% ""), character(1))
-      })))
-      character_values <- as.character(stats::na.omit(literal_values))
-      partial_tokens <- unique(unlist(stringr::str_extract_all(character_values, stringr::regex("UNK|\\bUN\\b", ignore_case = TRUE))))
-      formats <- infer_source_formats(character_values)
-      tibble::tibble(
-        source_domain = paste(domains, collapse = " | "),
-        source_dataset = dataset,
-        source_variable = variable,
-        label = infer_source_label(variable),
-        data_type = class(values)[1],
-        example_values = compact_value(utils::head(observed, 5L)),
-        missing_rate = mean(is.na(values)),
-        unique_count = length(observed),
-        form_name = source$form_name,
-        grain = source$grain,
-        keys = paste(unlist(source$keys), collapse = " | "),
-        concept_roles = paste(roles[nzchar(roles)], collapse = " | "),
-        format_candidates = paste(unique(formats), collapse = " | "),
-        partial_tokens = paste(partial_tokens, collapse = " | "),
-        record_count = nrow(data)
-      )
-    })
-  })
-  dictionary <- dplyr::arrange(dictionary, source_dataset, source_variable)
-  output <- trace_path(config$paths$profile_dir, "source_dictionary.csv")
-  write_csv(dictionary, output)
-
-  relationships <- purrr::imap_dfr(specification$source_catalog, function(source, dataset) tibble::tibble(
-    source_dataset = dataset,
-    file = source$file %||% "",
-    derived = isTRUE(source$derived),
-    form_name = source$form_name,
-    grain = source$grain,
-    keys = paste(unlist(source$keys), collapse = " | ")
-  ))
-  write_csv(relationships, trace_path(config$paths$profile_dir, "source_relationships.csv"))
-
-  summary <- list(
-    generated_at = utc_now(),
-    datasets = dplyr::n_distinct(dictionary$source_dataset),
-    fields = nrow(dictionary),
-    fields_by_domain = as.list(table(dictionary$source_domain)),
-    dictionary_sha256 = file_sha256(output)
-  )
-  write_json(summary, trace_path(config$paths$profile_dir, "profile_summary.json"))
-  trace_info("已生成数据画像：%s 个字段。", nrow(dictionary))
-  dictionary
+  profile_sources_v06(config)
 }

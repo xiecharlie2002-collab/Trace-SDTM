@@ -122,7 +122,7 @@ studio_supported_standards <- function() {
 
 studio_default_policy_v06 <- function(study_id) {
   list(
-    schema_version = "0.4", policy_version = "3.0.0", scenario = "generic",
+    schema_version = "0.6", policy_version = "3.0.0", scenario = "generic",
     identifiers = list(usubjid = list(
       components = list(), separator = "-", missing_component_policy = "reject"
     )),
@@ -185,8 +185,8 @@ studio_create_project <- function(project_id, name, study_id = "TRACE001", descr
     metadata = matched[[1]]$metadata,
     transform_registry = trace_path("config", "transform_registry.yml"),
     transform_registry_schema = trace_path("config", "transform_registry.schema.json"),
-    controlled_terminology = trace_path("specs", "v0.2", "controlled_terminology.yml"),
-    unit_conversions = trace_path("specs", "v0.2", "unit_conversions.yml")
+    controlled_terminology = trace_path("specs", "resources", "controlled_terminology.yml"),
+    unit_conversions = trace_path("specs", "resources", "unit_conversions.yml")
   )
   target_names <- c(metadata = "metadata.yml", transform_registry = "transform_registry.yml",
                     transform_registry_schema = "transform_registry.schema.json",
@@ -336,7 +336,7 @@ studio_required_fields <- function(project_id, dataset) {
   source <- specification$source_catalog[[dataset]]
   if (is.null(source) || isTRUE(source$derived)) trace_abort(sprintf("未知或派生来源槽位：%s。", dataset))
   refs <- unlist(lapply(specification$tasks, function(task) {
-    Filter(function(ref) identical(as.character(ref$dataset), dataset), task_source_refs_v04(task))
+    Filter(function(ref) identical(as.character(ref$dataset), dataset), task_source_refs(task))
   }), recursive = FALSE)
   derived_catalog <- Filter(function(item) {
     parents <- unlist(item$profile_parents %||% character(), use.names = FALSE)
@@ -346,11 +346,11 @@ studio_required_fields <- function(project_id, dataset) {
     for (derived_name in names(derived_catalog)) {
       derived <- derived_catalog[[derived_name]]
       derived_refs <- unlist(lapply(specification$tasks, function(task) {
-        Filter(function(ref) identical(as.character(ref$dataset), derived_name), task_source_refs_v04(task))
+        Filter(function(ref) identical(as.character(ref$dataset), derived_name), task_source_refs(task))
       }), recursive = FALSE)
       other_parents <- setdiff(unlist(derived$profile_parents, use.names = FALSE), dataset)
       explicitly_owned_elsewhere <- unique(unlist(lapply(specification$tasks, function(task) {
-        other <- Filter(function(ref) as.character(ref$dataset) %in% other_parents, task_source_refs_v04(task))
+        other <- Filter(function(ref) as.character(ref$dataset) %in% other_parents, task_source_refs(task))
         vapply(other, function(ref) as.character(ref$variable), character(1))
       }), use.names = FALSE))
       derived_keys <- unlist(derived$keys %||% character(), use.names = FALSE)
@@ -908,7 +908,7 @@ studio_create_run <- function(project_id, actor = "local_user") {
       config_manifest[[name]] <- file_sha256(target)
     }
     task_specification <- list(
-      schema_version = "0.4",
+      schema_version = "0.6",
       specification = list(
         name = paste0(project$name, " 通用原子任务"), version = "0.6.0",
         status = "profile_pending", standard = paste(project$standard, project$standard_version),
@@ -934,7 +934,7 @@ studio_create_run <- function(project_id, actor = "local_user") {
         validate_local = "pending", validate_p21 = "pending", report = "pending"
       ),
       inputs = input_manifest, configuration_sha256 = config_manifest,
-      studio_version = "0.6.0", contains_gold_standard = FALSE
+      studio_version = "0.6.0"
     )
     write_yaml(manifest, file.path(run_path, "run.yml"))
     project$active_run_id <- run_id
@@ -1010,7 +1010,7 @@ studio_load_run_config <- function(project_id, run_id) {
   config$project$run_id <- run_id
   config$paths <- list(
     raw_dir = file.path(run_path, "inputs"),
-    specification_template = file.path(run_path, "config", "tasks.yml"),
+    task_specification = file.path(run_path, "config", "tasks.yml"),
     mapping_policies = file.path(run_path, "config", "mapping_policies.yml"),
     metadata = file.path(run_path, "config", "metadata.yml"),
     controlled_terminology = file.path(run_path, "config", "controlled_terminology.yml"),
@@ -1022,21 +1022,23 @@ studio_load_run_config <- function(project_id, run_id) {
   config <- configure_output_paths(config, run_path)
   config$paths$task_dir <- file.path(run_path, "tasks")
   config$paths$project_context <- file.path(run_path, "profile", "project_context.json")
-  task_specification <- yaml::read_yaml(config$paths$specification_template)
+  task_specification <- yaml::read_yaml(config$paths$task_specification)
   task_domains <- unique(vapply(task_specification$tasks %||% list(), function(task) as.character(task$target_domain %||% ""), character(1)))
   task_domains <- task_domains[nzchar(task_domains)]
   if (!length(task_domains)) task_domains <- unlist(project$target_domains %||% character(), use.names = FALSE)
   if (!length(task_domains)) task_domains <- names(yaml::read_yaml(config$paths$metadata)$domains)
   config$project$generated_domains <- as.list(task_domains)
-  config$studio <- list(project_id = project_id, run_id = run_id, project_path = studio_project_path(project_id),
-                        run_path = run_path, contains_gold_standard = FALSE)
+  config$studio <- list(
+    project_id = project_id, run_id = run_id,
+    project_path = studio_project_path(project_id), run_path = run_path
+  )
   config
 }
 
-studio_resolve_cli_config <- function(args, scenario = scenario_from_args(args)) {
+studio_resolve_cli_config <- function(args) {
   project_id <- argument_value(args, "--project", default = NULL)
   run_id <- argument_value(args, "--run", default = NULL)
-  if (is.null(project_id) && is.null(run_id)) return(load_project_config(scenario))
+  if (is.null(project_id) && is.null(run_id)) return(load_project_config())
   if (is.null(project_id) || is.null(run_id)) trace_abort("工作台命令必须同时提供 --project 和 --run。")
   studio_load_run_config(project_id, run_id)
 }

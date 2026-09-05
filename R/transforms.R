@@ -137,7 +137,7 @@ derive_sequence <- function(data, mapping) {
   )
 }
 
-# TraceSDTM 0.2 registered transformation engine ---------------------------------
+# 登记转换函数执行器 ----------------------------------------------------------
 
 load_controlled_terminology <- function(config = load_project_config()) {
   yaml::read_yaml(trace_path(config$paths$controlled_terminology))

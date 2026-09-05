@@ -13,19 +13,19 @@ studio_initialize_review <- function(config, overwrite = FALSE) {
   if (file.exists(path) && !isTRUE(overwrite)) return(jsonlite::read_json(path, simplifyVector = FALSE))
   studio_assert_run_writable(config)
   assembled <- studio_load_assembled(config)
-  specification <- load_mapping_template(config)
+  specification <- load_task_specification(config)
   plans <- assembled$plans %||% list()
   by_task <- split(plans, vapply(plans, function(plan) as.character(plan$task_id), character(1)))
   task_state <- stats::setNames(lapply(specification$tasks, function(task) {
-    candidates <- by_task[[task_id_v04(task)]] %||% list()
+    candidates <- by_task[[task_identifier(task)]] %||% list()
     ranks <- sort(vapply(candidates, function(plan) as.integer(plan$candidate_rank), integer(1)))
     list(
-      task_id = task_id_v04(task), required = isTRUE(task$required),
+      task_id = task_identifier(task), required = isTRUE(task$required),
       decision = "pending", selected_rank = if (length(ranks)) ranks[[1L]] else NULL,
       review_comment = "", reviewer = "", reviewed_at = NULL,
       modified_step = NULL, validation = list(valid = FALSE, messages = list("尚未审核"))
     )
-  }), vapply(specification$tasks, task_id_v04, character(1)))
+  }), vapply(specification$tasks, task_identifier, character(1)))
   state <- list(
     schema_version = "0.6", status = "in_review", created_at = utc_now(), updated_at = utc_now(),
     project_id = config$studio$project_id %||% NULL, run_id = config$studio$run_id %||% NULL,
@@ -53,8 +53,8 @@ studio_parameter_provenance <- function(parameters, source = "reviewer", referen
 }
 
 studio_validate_modified_step <- function(config, task_id, step) {
-  specification <- load_mapping_template(config)
-  tasks <- stats::setNames(specification$tasks, vapply(specification$tasks, task_id_v04, character(1)))
+  specification <- load_task_specification(config)
+  tasks <- stats::setNames(specification$tasks, vapply(specification$tasks, task_identifier, character(1)))
   task <- tasks[[task_id]]
   if (is.null(task)) trace_abort(sprintf("未知审核任务：%s。", task_id))
   if (!is.list(step) || !nzchar(as.character(step$transform_id %||% ""))) trace_abort("修改方案必须选择转换函数。")
@@ -73,7 +73,7 @@ studio_validate_modified_step <- function(config, task_id, step) {
   output_kind <- if (output_mode == "dataset") "dataset" else if (output_mode == "none") "none" else "variables"
   task$semantic_decision <- list(output_kind = output_kind, target_variables = step$target_variables)
   task$approved_plan <- list(steps = list(step))
-  validate_task_v04(task, specification, load_metadata(config), load_transform_registry(config), config, require_approved = TRUE)
+  validate_task(task, specification, load_metadata(config), load_transform_registry(config), config, require_approved = TRUE)
   step
 }
 
@@ -131,9 +131,9 @@ studio_save_review_decision <- function(config, task_id, decision, reviewer,
 studio_review_tables <- function(config, state = studio_read_review(config)) {
   assembled <- studio_load_assembled(config)
   plans <- assembled$plans %||% list()
-  specification <- load_mapping_template(config)
-  task_index <- stats::setNames(specification$tasks, vapply(specification$tasks, task_id_v04, character(1)))
-  candidates <- v04_plan_rows(plans)
+  specification <- load_task_specification(config)
+  task_index <- stats::setNames(specification$tasks, vapply(specification$tasks, task_identifier, character(1)))
+  candidates <- plan_rows(plans)
   review <- purrr::map_dfr(names(state$tasks), function(id) {
     item <- state$tasks[[id]]
     task <- task_index[[id]]
@@ -163,7 +163,7 @@ studio_review_tables <- function(config, state = studio_read_review(config)) {
       parameter_sources = as.character(registry_json(step$parameter_sources %||% list()))
     )
   })
-  if (!nrow(final_steps)) final_steps <- v04_step_rows(plans, top_only = TRUE) |> dplyr::select(-"candidate_rank")
+  if (!nrow(final_steps)) final_steps <- step_rows(plans, top_only = TRUE) |> dplyr::select(-"candidate_rank")
   list(review = review, candidates = candidates, final_steps = final_steps, plans = plans)
 }
 
@@ -186,7 +186,7 @@ studio_write_review_workbook <- function(config, state = studio_read_review(conf
     studio_assert_run_writable(config)
   }
   tables <- studio_review_tables(config, state)
-  specification <- load_mapping_template(config)
+  specification <- load_task_specification(config)
   workbook <- openxlsx::createWorkbook()
   write_review_sheet(workbook, "Instructions", data.frame(
     item = c("用途", "审核边界", "批准边界"),
@@ -196,9 +196,9 @@ studio_write_review_workbook <- function(config, state = studio_read_review(conf
   write_review_sheet(workbook, "Task Review", tables$review)
   write_review_sheet(workbook, "Candidate Plans", tables$candidates)
   write_review_sheet(workbook, "Final Steps", tables$final_steps)
-  write_review_sheet(workbook, "Function Skeletons", v04_step_rows(tables$plans) |> dplyr::select(-dplyr::all_of(c("parameters", "parameter_sources"))))
-  write_review_sheet(workbook, "Parameter Resolution", v04_parameter_rows(tables$plans))
-  write_review_sheet(workbook, "Source Context", v04_source_context_rows(specification, config))
+  write_review_sheet(workbook, "Function Skeletons", step_rows(tables$plans) |> dplyr::select(-dplyr::all_of(c("parameters", "parameter_sources"))))
+  write_review_sheet(workbook, "Parameter Resolution", parameter_rows(tables$plans))
+  write_review_sheet(workbook, "Source Context", source_context_rows(specification, config))
   write_review_sheet(workbook, "Transform Catalog", registry_catalog_table(load_transform_registry(config)))
   ensure_parent(path)
   openxlsx::saveWorkbook(workbook, path, overwrite = TRUE)
@@ -216,14 +216,14 @@ studio_approve_review <- function(config, reviewer = NULL) {
   if (!nzchar(reviewer)) trace_abort("批准时必须提供唯一审核者标识。")
   workbook <- studio_write_review_workbook(config, state, "mapping_review.xlsx")
   tables <- studio_review_tables(config, state)
-  specification <- approved_specification_from_review_tables_v04(
+  specification <- approved_specification_from_review_tables(
     tables$review, tables$candidates, tables$final_steps, config, reviewer, file_sha256(workbook)
   )
   output <- trace_path(config$paths$approved_specification)
   write_yaml(specification, output)
   approval <- list(
     schema_version = "0.6", status = "approved", reviewer = reviewer,
-    approved_at = utc_now(), compatible_mapping_schema = "0.4",
+    approved_at = utc_now(), compatible_mapping_schema = "0.6",
     approved_specification = studio_relative_path(output, config$studio$run_path %||% dirname(output)),
     approved_specification_sha256 = file_sha256(output), review_workbook_sha256 = file_sha256(workbook),
     ai_review_sha256 = file_sha256(v06_ai_review_path(config)),
@@ -253,8 +253,8 @@ studio_import_review_workbook <- function(config, uploaded_file, reviewer) {
 studio_review_task_details <- function(config, task_id) {
   state <- studio_read_review(config)
   assembled <- studio_load_assembled(config)
-  specification <- load_mapping_template(config)
-  task <- Filter(function(x) identical(task_id_v04(x), task_id), specification$tasks)
+  specification <- load_task_specification(config)
+  task <- Filter(function(x) identical(task_identifier(x), task_id), specification$tasks)
   if (length(task) != 1L) trace_abort("未知审核任务。")
   plans <- Filter(function(x) identical(as.character(x$task_id), task_id), assembled$plans %||% list())
   list(task = task[[1L]], state = state$tasks[[task_id]], candidates = plans)
@@ -273,7 +273,7 @@ studio_review_editor_options <- function(config, task_id, target_variables = NUL
   }, registry$transforms)
   list(
     source_refs = {
-      refs <- task_source_refs_v04(task)
+      refs <- task_source_refs(task)
       ids <- vapply(refs, `[[`, character(1), "ref_id")
       labels <- vapply(refs, function(ref) paste0(ref$ref_id, " — ", ref$dataset, ".", ref$variable), character(1))
       stats::setNames(ids, labels)

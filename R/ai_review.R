@@ -5,8 +5,8 @@ v06_ai_review_ack_path <- function(config) file.path(trace_path(config$paths$rev
 
 v06_effective_review_plans <- function(config, state = studio_read_review(config)) {
   assembled <- studio_load_assembled(config)
-  specification <- load_mapping_template(config)
-  task_index <- stats::setNames(specification$tasks, vapply(specification$tasks, task_id_v04, character(1)))
+  specification <- load_task_specification(config)
+  task_index <- stats::setNames(specification$tasks, vapply(specification$tasks, task_identifier, character(1)))
   lapply(names(task_index), function(id) {
     item <- state$tasks[[id]]
     if (is.null(item)) trace_abort(sprintf("人工审核状态缺少任务 %s。", id))
@@ -51,8 +51,8 @@ v06_reviewable_plan_sha256 <- function(config, state = studio_read_review(config
 }
 
 v06_deterministic_review_checks <- function(config, plans, state = studio_read_review(config)) {
-  specification <- load_mapping_template(config)
-  task_index <- stats::setNames(specification$tasks, vapply(specification$tasks, task_id_v04, character(1)))
+  specification <- load_task_specification(config)
+  task_index <- stats::setNames(specification$tasks, vapply(specification$tasks, task_identifier, character(1)))
   issues <- list()
   for (plan in plans) {
     id <- as.character(plan$task_id)
@@ -89,11 +89,11 @@ v06_deterministic_review_checks <- function(config, plans, state = studio_read_r
 
 v06_sanitized_frozen_tasks <- function(specification) {
   lapply(specification$tasks %||% list(), function(task) list(
-    task_id = task_id_v04(task), assembly_group_id = task$assembly_group_id,
+    task_id = task_identifier(task), assembly_group_id = task$assembly_group_id,
     clinical_action = task$clinical_action %||% task$action %||% "",
     candidate_target_domains = task$candidate_target_domains %||% list(task$target_domain),
     target_domain = task$target_domain,
-    source_refs = lapply(task_source_refs_v04(task), function(ref) list(
+    source_refs = lapply(task_source_refs(task), function(ref) list(
       ref_id = ref$ref_id, dataset = ref$dataset, variable = ref$variable, role = ref$role %||% ""
     )),
     depends_on = task$depends_on %||% list(), expected_cardinality = task$expected_cardinality %||% "",
@@ -105,7 +105,7 @@ v06_review_profile_context <- function(config, tasks) {
   path <- trace_path(config$paths$project_context)
   context <- if (file.exists(path)) jsonlite::read_json(path, simplifyVector = FALSE) else list()
   source_keys <- unique(unlist(lapply(tasks, function(task) vapply(
-    task_source_refs_v04(task), function(ref) paste(ref$dataset, ref$variable, sep = "."), character(1)
+    task_source_refs(task), function(ref) paste(ref$dataset, ref$variable, sep = "."), character(1)
   )), use.names = FALSE))
   datasets <- unique(sub("\\..*$", "", source_keys))
   profiles <- Filter(function(row) {
@@ -143,7 +143,7 @@ v06_review_function_contracts <- function(config, plans) {
 }
 
 ai_review_prompt_v06 <- function(config, plans, deterministic) {
-  specification <- load_mapping_template(config)
+  specification <- load_task_specification(config)
   tasks <- v06_sanitized_frozen_tasks(specification)
   payload <- list(
     frozen_tasks = tasks,
@@ -227,14 +227,14 @@ run_ai_review_v06 <- function(config, request_fn = NULL) {
   started <- utc_now()
   result <- tryCatch({
     raw <- if (is.null(request_fn)) {
-      request_json_v02(
+      request_model_json(
         prompt, settings$endpoint, settings$api_key, settings$model, config, "independent_ai_review",
         file.path(directory, "ai_review_raw_response.json")
       )$parsed
     } else {
-      v04_call_request(request_fn, prompt, "ai_review", "all_tasks")
+      call_request(request_fn, prompt, "ai_review", "all_tasks")
     }
-    task_ids <- vapply(load_mapping_template(config)$tasks, task_id_v04, character(1))
+    task_ids <- vapply(load_task_specification(config)$tasks, task_identifier, character(1))
     reviews <- parse_ai_review_v06(raw, task_ids)
     counts <- table(factor(vapply(reviews, `[[`, character(1), "status"), levels = c("pass", "warning", "error")))
     output <- list(

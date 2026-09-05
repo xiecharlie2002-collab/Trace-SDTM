@@ -1,24 +1,24 @@
-# TraceSDTM 0.4 parameter resolution -----------------------------------------
+# 确定性参数解析 --------------------------------------------------------------
 #
 # Parameters are resolved from the frozen task, project policy, registry and
 # controlled resources.  Gold plans are deliberately not accepted by this API.
 
-v04_named_list <- function(x) {
+named_list <- function(x) {
   if (is.null(x) || !length(x)) return(setNames(list(), character()))
   if (!is.list(x)) x <- as.list(x)
   x
 }
 
-v04_parameter_value <- function(value, source, reference = "") {
+parameter_value <- function(value, source, reference = "") {
   list(value = value, source = source, reference = as.character(reference))
 }
 
 # 注册表中的 resolver_id 只能从此受控绑定表解析。每个解析器接收已经由
 # 项目政策、资源目录和任务上下文计算出的候选值；不存在的值保持未解析，
 # 绝不把 resolver_id 当作函数名动态执行。
-v04_resolver_from_evidence <- function(parameter_name, evidence, ...) evidence[[parameter_name]]
+resolver_from_evidence <- function(parameter_name, evidence, ...) evidence[[parameter_name]]
 
-parameter_resolver_bindings_v04 <- function() {
+parameter_resolver_bindings <- function() {
   ids <- c(
     "target_constant", "target_codelist", "approved_formats", "partial_date_tokens",
     "source_relationship", "source_priority", "conflict_policy", "reference_datetime_policy",
@@ -27,11 +27,11 @@ parameter_resolver_bindings_v04 <- function() {
     "unit_policy", "sequence_policy", "study_day_policy", "visit_policy",
     "baseline_policy", "task_policy"
   )
-  stats::setNames(rep(list(v04_resolver_from_evidence), length(ids)), ids)
+  stats::setNames(rep(list(resolver_from_evidence), length(ids)), ids)
 }
 
-v04_parameter_bindings <- function(task, transform_id, policies) {
-  task_id <- task_id_v04(task)
+parameter_bindings <- function(task, transform_id, policies) {
+  task_id <- task_identifier(task)
   candidates <- list(
     task$known_parameters,
     task$parameter_policy,
@@ -47,10 +47,10 @@ v04_parameter_bindings <- function(task, transform_id, policies) {
   result
 }
 
-v04_source_key <- function(ref) paste0(as.character(ref$dataset), ".", as.character(ref$variable))
+source_key <- function(ref) paste0(as.character(ref$dataset), ".", as.character(ref$variable))
 
-v04_policy_date_record <- function(ref, policies) {
-  key <- v04_source_key(ref)
+policy_date_record <- function(ref, policies) {
+  key <- source_key(ref)
   approved <- policies$date_time_formats$approved_sources %||% list()
   for (item in approved) {
     source <- item$source %||% list()
@@ -61,28 +61,28 @@ v04_policy_date_record <- function(ref, policies) {
   NULL
 }
 
-v04_resolve_date_parameters <- function(task, selected_refs, transform_id, policies) {
-  records <- lapply(selected_refs, v04_policy_date_record, policies = policies)
+resolve_date_parameters <- function(task, selected_refs, transform_id, policies) {
+  records <- lapply(selected_refs, policy_date_record, policies = policies)
   if (!length(records) || any(vapply(records, is.null, logical(1)))) return(list())
   formats <- unname(unlist(lapply(records, function(x) x$formats %||% character()), use.names = FALSE))
-  resolved <- list(formats = v04_parameter_value(as.list(formats), "policy", "date_time_formats"))
+  resolved <- list(formats = parameter_value(as.list(formats), "policy", "date_time_formats"))
   if (transform_id %in% c("to_iso8601_datetime", "to_iso8601_partial_datetime")) {
     tokens <- unique(c(
       unname(unlist(lapply(records, function(x) x$unknown_tokens %||% character()), use.names = FALSE)),
       unname(unlist(policies$date_time_formats$partial_date_tokens %||% character(), use.names = FALSE))
     ))
-    if (length(tokens)) resolved$unknown_tokens <- v04_parameter_value(as.list(tokens), "policy", "date_time_formats.partial_date_tokens")
+    if (length(tokens)) resolved$unknown_tokens <- parameter_value(as.list(tokens), "policy", "date_time_formats.partial_date_tokens")
   }
   resolved
 }
 
-v04_identifier_policy <- function(policies, kind) {
+identifier_policy <- function(policies, kind) {
   identifiers <- policies$identifiers %||% list()
   if (identical(kind, "usubjid")) identifiers$usubjid %||% identifiers$subject_identifier %||% list()
   else identifiers$site_id %||% identifiers$site_identifier %||% list()
 }
 
-v04_target_codelist <- function(target) {
+target_codelist <- function(target) {
   map <- c(
     AGEU = "AGEU", SEX = "SEX", ETHNIC = "ETHNIC", RACE = "RACE",
     AESEV = "AESEV", AESER = "NY", AESHOSP = "NY", AEREL = "AEREL",
@@ -92,7 +92,7 @@ v04_target_codelist <- function(target) {
   if (!length(value) || is.na(value[[1L]])) "" else value[[1L]]
 }
 
-v04_findings_policy <- function(task, selected_refs, policies) {
+findings_policy <- function(task, selected_refs, policies) {
   findings <- policies$unit_standardization$findings %||% list()
   variables <- vapply(selected_refs, function(x) as.character(x$variable), character(1))
   for (item in findings) {
@@ -101,12 +101,12 @@ v04_findings_policy <- function(task, selected_refs, policies) {
   NULL
 }
 
-v04_find_conversion <- function(task, selected_refs, policies, resources) {
+find_conversion <- function(task, selected_refs, policies, resources) {
   conversion_set_id <- as.character(policies$unit_standardization$conversion_set_id %||% "")
   sets <- resources$unit_conversions$sets %||% resources$unit_conversion_sets %||% list()
   if (!nzchar(conversion_set_id) && length(sets) == 1L) conversion_set_id <- names(sets)[[1]]
   if (!nzchar(conversion_set_id) || is.null(sets[[conversion_set_id]])) return(NULL)
-  token <- toupper(paste(c(task_id_v04(task), task$assembly_group_id %||% "", vapply(selected_refs, function(x) x$variable, character(1))), collapse = "_"))
+  token <- toupper(paste(c(task_identifier(task), task$assembly_group_id %||% "", vapply(selected_refs, function(x) x$variable, character(1))), collapse = "_"))
   entries <- sets[[conversion_set_id]]
   matches <- Filter(function(x) nzchar(as.character(x$test_code %||% "")) && grepl(as.character(x$test_code), token, fixed = TRUE), entries)
   if (!length(matches)) return(NULL)
@@ -115,7 +115,7 @@ v04_find_conversion <- function(task, selected_refs, policies, resources) {
   list(conversion_set_id = conversion_set_id, target_unit = target_units[[1]])
 }
 
-v04_merge_parameters <- function(task, selected_refs, specification) {
+merge_parameters <- function(task, selected_refs, specification) {
   datasets <- unique(vapply(selected_refs, function(x) as.character(x$dataset), character(1)))
   if (length(datasets) != 2L) return(list())
   left <- datasets[[1]]
@@ -139,7 +139,7 @@ v04_merge_parameters <- function(task, selected_refs, specification) {
   )
 }
 
-v04_reference_datetime_parameters <- function(policies) {
+reference_datetime_parameters <- function(policies) {
   rule <- policies$reference_datetime_rules %||% list()
   if (!length(rule$sources %||% list())) return(list())
   approved <- policies$date_time_formats$approved_sources %||% list()
@@ -161,32 +161,32 @@ v04_reference_datetime_parameters <- function(policies) {
   list(selection = selection, subject_keys = as.list(subject_keys), sources = sources)
 }
 
-v04_fallback_resolved_parameters <- function(task, decision, candidate, selected_refs, specification, policies, resources) {
+fallback_resolved_parameters <- function(task, decision, candidate, selected_refs, specification, policies, resources) {
   id <- candidate$transform_id
   targets <- unname(unlist(decision$target_variables %||% character(), use.names = FALSE))
   target <- if (length(targets)) targets[[1]] else ""
   value <- switch(id,
     assign_no_ct = list(),
     hardcode_no_ct = if (identical(target, "DOMAIN")) list(value = task$target_domain) else list(),
-    assign_ct = { codelist <- v04_target_codelist(target); if (nzchar(codelist)) list(codelist_id = codelist) else list() },
+    assign_ct = { codelist <- target_codelist(target); if (nzchar(codelist)) list(codelist_id = codelist) else list() },
     hardcode_ct = if (identical(target, "AGEU")) list(value = "YEARS", codelist_id = "AGEU") else list(),
-    to_iso8601_date = lapply(v04_resolve_date_parameters(task, selected_refs, id, policies), `[[`, "value"),
-    to_iso8601_datetime = lapply(v04_resolve_date_parameters(task, selected_refs, id, policies), `[[`, "value"),
-    to_iso8601_partial_datetime = lapply(v04_resolve_date_parameters(task, selected_refs, id, policies), `[[`, "value"),
-    derive_usubjid = { p <- v04_identifier_policy(policies, "usubjid"); if (nzchar(as.character(p$separator %||% ""))) list(separator = p$separator) else list() },
+    to_iso8601_date = lapply(resolve_date_parameters(task, selected_refs, id, policies), `[[`, "value"),
+    to_iso8601_datetime = lapply(resolve_date_parameters(task, selected_refs, id, policies), `[[`, "value"),
+    to_iso8601_partial_datetime = lapply(resolve_date_parameters(task, selected_refs, id, policies), `[[`, "value"),
+    derive_usubjid = { p <- identifier_policy(policies, "usubjid"); if (nzchar(as.character(p$separator %||% ""))) list(separator = p$separator) else list() },
     extract_delimited_part = {
-      p <- v04_identifier_policy(policies, "siteid")
+      p <- identifier_policy(policies, "siteid")
       separator <- p$separator %||% p$delimiter
       position <- p$position %||% p$part_position
       if (!is.null(separator) && !is.null(position)) list(separator = separator, position = as.integer(position)) else list()
     },
-    derive_reference_datetime = v04_reference_datetime_parameters(policies),
-    merge_sources = v04_merge_parameters(task, selected_refs, specification),
+    derive_reference_datetime = reference_datetime_parameters(policies),
+    merge_sources = merge_parameters(task, selected_refs, specification),
     transpose_findings = {
-      p <- v04_findings_policy(task, selected_refs, policies)
+      p <- findings_policy(task, selected_refs, policies)
       if (is.null(p)) list() else list(test_code = p$test_code, test_name = p$test_name, original_unit = p$original_unit %||% NULL, unit_source = p$unit_source %||% NULL)
     },
-    standardize_unit = v04_find_conversion(task, selected_refs, policies, resources) %||% list(),
+    standardize_unit = find_conversion(task, selected_refs, policies, resources) %||% list(),
     derive_sequence = {
       p <- policies$sequence_rules[[task$target_domain]] %||% list()
       if (length(p$record_variables %||% character())) list(record_variables = as.list(unname(unlist(p$record_variables, use.names = FALSE))), start_at = as.integer(p$start_at %||% 1L)) else list()
@@ -210,7 +210,7 @@ v04_fallback_resolved_parameters <- function(task, decision, candidate, selected
   value
 }
 
-v04_parameter_options <- function(schema) {
+parameter_options <- function(schema) {
   properties <- schema$properties %||% list()
   lapply(properties, function(property) {
     direct <- unname(unlist(property$enum %||% character(), use.names = FALSE))
@@ -220,23 +220,23 @@ v04_parameter_options <- function(schema) {
   })
 }
 
-resolve_parameters_v04 <- function(task, decision, candidate, specification, registry,
+resolve_parameters <- function(task, decision, candidate, specification, registry,
                                     policies, resources = list()) {
-  refs <- task_source_refs_v04(task)
+  refs <- task_source_refs(task)
   ref_index <- stats::setNames(refs, vapply(refs, function(x) x$ref_id, character(1)))
   selected_ids <- unname(unlist(candidate$source_ref_ids %||% character(), use.names = FALSE))
   unknown_refs <- setdiff(selected_ids, names(ref_index))
-  if (length(unknown_refs)) trace_abort(sprintf("%s 引用了未知来源编号：%s", task_id_v04(task), paste(unknown_refs, collapse = ", ")))
+  if (length(unknown_refs)) trace_abort(sprintf("%s 引用了未知来源编号：%s", task_identifier(task), paste(unknown_refs, collapse = ", ")))
   selected_refs <- unname(ref_index[selected_ids])
   entry <- registry_entry(candidate$transform_id, registry)
-  explicit <- v04_parameter_bindings(task, candidate$transform_id, policies)
-  fallback_evidence <- v04_fallback_resolved_parameters(task, decision, candidate, selected_refs, specification, policies, resources)
+  explicit <- parameter_bindings(task, candidate$transform_id, policies)
+  fallback_evidence <- fallback_resolved_parameters(task, decision, candidate, selected_refs, specification, policies, resources)
   declarations <- entry$parameter_resolution %||% list()
-  bindings <- parameter_resolver_bindings_v04()
+  bindings <- parameter_resolver_bindings()
   resolver_ids <- vapply(declarations, function(x) as.character(x$resolver_id %||% ""), character(1))
   unknown_resolvers <- setdiff(resolver_ids, names(bindings))
   if (length(unknown_resolvers)) trace_abort(sprintf(
-    "%s/%s 使用未绑定的参数解析器：%s", task_id_v04(task), candidate$transform_id,
+    "%s/%s 使用未绑定的参数解析器：%s", task_identifier(task), candidate$transform_id,
     paste(unknown_resolvers, collapse = ", ")
   ))
   fallback <- setNames(list(), character())
@@ -249,7 +249,7 @@ resolve_parameters_v04 <- function(task, decision, candidate, specification, reg
   known[names(explicit)] <- explicit
   properties <- entry$parameter_schema$properties %||% list()
   unknown_names <- setdiff(names(known), names(properties))
-  if (length(unknown_names)) trace_abort(sprintf("%s/%s 的政策注入了未登记参数：%s", task_id_v04(task), candidate$transform_id, paste(unknown_names, collapse = ", ")))
+  if (length(unknown_names)) trace_abort(sprintf("%s/%s 的政策注入了未登记参数：%s", task_identifier(task), candidate$transform_id, paste(unknown_names, collapse = ", ")))
 
   resolved <- setNames(list(), character())
   provenance <- setNames(list(), character())
@@ -267,11 +267,11 @@ resolve_parameters_v04 <- function(task, decision, candidate, specification, reg
   }
   required <- unname(unlist(entry$parameter_schema$required %||% character(), use.names = FALSE))
   unresolved <- setdiff(required, names(resolved))
-  options <- v04_parameter_options(entry$parameter_schema)
+  options <- parameter_options(entry$parameter_schema)
   finite <- unresolved[vapply(unresolved, function(x) length(options[[x]] %||% list()) > 0L, logical(1))]
   unavailable <- setdiff(unresolved, finite)
   list(
-    task_id = task_id_v04(task), candidate_rank = candidate$candidate_rank,
+    task_id = task_identifier(task), candidate_rank = candidate$candidate_rank,
     transform_id = candidate$transform_id, injected_parameters = resolved,
     parameter_sources = provenance, unresolved_parameters = finite,
     parameter_options = options[finite], unavailable_parameters = unavailable,
@@ -279,8 +279,8 @@ resolve_parameters_v04 <- function(task, decision, candidate, specification, reg
   )
 }
 
-merge_parameter_completion_v04 <- function(resolution, model_parameters = list()) {
-  model_parameters <- v04_named_list(model_parameters)
+merge_parameter_completion <- function(resolution, model_parameters = list()) {
+  model_parameters <- named_list(model_parameters)
   overwritten <- intersect(names(model_parameters), names(resolution$injected_parameters))
   if (length(overwritten)) trace_abort(sprintf("%s 的模型参数试图覆盖自动注入值：%s", resolution$task_id, paste(overwritten, collapse = ", ")))
   illegal <- setdiff(names(model_parameters), resolution$unresolved_parameters)
@@ -295,6 +295,6 @@ merge_parameter_completion_v04 <- function(resolution, model_parameters = list()
   parameters <- resolution$injected_parameters
   parameters[names(model_parameters)] <- model_parameters
   sources <- resolution$parameter_sources
-  for (name in names(model_parameters)) sources[[name]] <- list(source = "model", reference = "parameter_completion_v04")
+  for (name in names(model_parameters)) sources[[name]] <- list(source = "model", reference = "parameter_completion")
   list(parameters = parameters, parameter_sources = sources)
 }

@@ -1,6 +1,13 @@
-# TraceSDTM 0.4 atomic-task review and approval --------------------------------
+# Atomic-task review and approval --------------------------------------------
 
-v04_plan_rows <- function(plans) {
+write_review_sheet <- function(workbook, name, data, filter = TRUE) {
+  openxlsx::addWorksheet(workbook, name)
+  openxlsx::writeData(workbook, name, data, withFilter = filter)
+  openxlsx::freezePane(workbook, name, firstRow = TRUE)
+  if (ncol(data)) openxlsx::setColWidths(workbook, name, cols = seq_len(ncol(data)), widths = "auto")
+}
+
+plan_rows <- function(plans) {
   if (is.null(plans)) plans <- list()
   purrr::map_dfr(plans, function(plan) tibble::tibble(
     task_id = as.character(plan$task_id),
@@ -17,7 +24,7 @@ v04_plan_rows <- function(plans) {
   ))
 }
 
-v04_step_rows <- function(plans, top_only = FALSE) {
+step_rows <- function(plans, top_only = FALSE) {
   selected <- if (isTRUE(top_only)) Filter(function(x) identical(as.integer(x$candidate_rank), 1L), plans) else plans
   purrr::map_dfr(selected, function(plan) purrr::imap_dfr(plan$steps %||% list(), function(step, order) tibble::tibble(
     task_id = as.character(plan$task_id),
@@ -32,7 +39,7 @@ v04_step_rows <- function(plans, top_only = FALSE) {
   )))
 }
 
-v04_parameter_rows <- function(plans) {
+parameter_rows <- function(plans) {
   purrr::map_dfr(plans, function(plan) purrr::imap_dfr(plan$steps %||% list(), function(step, order) {
     parameters <- step$parameters %||% list()
     if (!length(parameters)) return(tibble::tibble(
@@ -51,11 +58,11 @@ v04_parameter_rows <- function(plans) {
   }))
 }
 
-v04_source_context_rows <- function(specification, config) {
+source_context_rows <- function(specification, config) {
   dictionary_path <- trace_path(config$paths$profile_dir, "source_dictionary.csv")
   dictionary <- if (file.exists(dictionary_path)) readr::read_csv(dictionary_path, show_col_types = FALSE) else tibble::tibble()
   purrr::map_dfr(specification$tasks, function(task) {
-    refs <- task_source_refs_v04(task)
+    refs <- task_source_refs(task)
     if (!length(refs)) return(tibble::tibble(
       task_id = task$task_id, ref_id = "", source_dataset = "", source_variable = "",
       role = "", example_values = "", missing_rate = NA_real_
@@ -74,11 +81,11 @@ v04_source_context_rows <- function(specification, config) {
   })
 }
 
-create_review_workbook_v04 <- function(assembled, config = load_project_config(), preapprove = FALSE) {
+create_review_workbook <- function(assembled, config = load_project_config()) {
   plans <- assembled$plans %||% assembled
-  specification <- load_mapping_template(config)
-  tasks <- stats::setNames(specification$tasks, vapply(specification$tasks, task_id_v04, character(1)))
-  candidates <- v04_plan_rows(plans)
+  specification <- load_task_specification(config)
+  tasks <- stats::setNames(specification$tasks, vapply(specification$tasks, task_identifier, character(1)))
+  candidates <- plan_rows(plans)
   top <- candidates |>
     dplyr::filter(.data$candidate_rank == 1L) |>
     dplyr::arrange(.data$target_domain, .data$task_id)
@@ -91,12 +98,12 @@ create_review_workbook_v04 <- function(assembled, config = load_project_config()
       required = isTRUE(task$required), selected_rank = if (nrow(hit)) hit$candidate_rank[[1]] else NA_integer_,
       recommendation_score = if (nrow(hit)) hit$recommendation_score[[1]] else NA_real_,
       model_status = if (nrow(hit)) hit$status[[1]] else "missing",
-      decision = if (preapprove && nrow(hit)) "accept" else "",
-      review_comment = if (preapprove && nrow(hit)) "专家金标准种子，仅用于离线演示。" else ""
+      decision = "",
+      review_comment = ""
     )
   })
-  steps <- v04_step_rows(plans)
-  final_steps <- v04_step_rows(plans, top_only = TRUE) |> dplyr::select(-"candidate_rank")
+  steps <- step_rows(plans)
+  final_steps <- step_rows(plans, top_only = TRUE) |> dplyr::select(-"candidate_rank")
 
   workbook <- openxlsx::createWorkbook()
   write_review_sheet(workbook, "Instructions", data.frame(
@@ -107,7 +114,7 @@ create_review_workbook_v04 <- function(assembled, config = load_project_config()
       "在 Final Steps 中填写完整且通过注册表验证的单步方案。",
       "仅非必需任务可以拒绝。",
       "信息不足未解决时不能批准或构建。",
-      "正式构建只读取批准后的0.4 YAML，构建过程不调用模型。",
+      "正式构建只读取批准后的 0.6 YAML，构建过程不调用模型。",
       "policy、registry、resource、derived、model、reviewer 分别记录每个参数的来源。"
     ), stringsAsFactors = FALSE
   ), filter = FALSE)
@@ -118,10 +125,10 @@ create_review_workbook_v04 <- function(assembled, config = load_project_config()
   )
   write_review_sheet(workbook, "Target Decisions", dplyr::select(candidates, dplyr::all_of(c("task_id", "candidate_rank", "output_kind", "target_variables"))))
   write_review_sheet(workbook, "Function Skeletons", dplyr::select(steps, -dplyr::all_of(c("parameters", "parameter_sources"))))
-  write_review_sheet(workbook, "Parameter Resolution", v04_parameter_rows(plans))
+  write_review_sheet(workbook, "Parameter Resolution", parameter_rows(plans))
   write_review_sheet(workbook, "Candidate Plans", candidates)
   write_review_sheet(workbook, "Final Steps", final_steps)
-  write_review_sheet(workbook, "Source Context", v04_source_context_rows(specification, config))
+  write_review_sheet(workbook, "Source Context", source_context_rows(specification, config))
   write_review_sheet(workbook, "Transform Catalog", registry_catalog_table(load_transform_registry(config)))
   path <- trace_path(config$paths$review_dir, "mapping_review.xlsx")
   ensure_parent(path)
@@ -129,7 +136,7 @@ create_review_workbook_v04 <- function(assembled, config = load_project_config()
   invisible(path)
 }
 
-v04_steps_from_review <- function(data, task_id) {
+steps_from_review <- function(data, task_id) {
   rows <- dplyr::filter(data, .data$task_id == .env$task_id) |> dplyr::arrange(.data$step_order)
   if (!nrow(rows)) return(list())
   purrr::pmap(rows, function(task_id, assembly_group_id, step_order, transform_id,
@@ -143,53 +150,13 @@ v04_steps_from_review <- function(data, task_id) {
   ))
 }
 
-v04_candidate_steps <- function(candidates, task_id, rank) {
+candidate_steps <- function(candidates, task_id, rank) {
   hit <- dplyr::filter(candidates, .data$task_id == .env$task_id, .data$candidate_rank == .env$rank)
   if (nrow(hit) != 1L) trace_abort(sprintf("%s 无法唯一定位候选序号 %s。", task_id, rank))
   from_json_text(hit$plan_json[[1]])$steps %||% list()
 }
 
-review_against_gold_v04 <- function(config = load_project_config()) {
-  path <- trace_path(config$paths$review_dir, "mapping_review.xlsx")
-  if (!file.exists(path)) trace_abort("缺少审核工作簿，请先执行 recommend。")
-  review <- openxlsx::read.xlsx(path, sheet = "Task Review", check.names = FALSE)
-  candidates <- openxlsx::read.xlsx(path, sheet = "Candidate Plans", check.names = FALSE)
-  gold <- load_gold_specification(config)$plans
-  registry <- load_transform_registry(config)
-  replacement <- list()
-  for (index in seq_len(nrow(review))) {
-    id <- as.character(review$task_id[[index]])
-    expected <- gold[[id]] %||% list()
-    proposed <- tryCatch(v04_candidate_steps(candidates, id, as.integer(review$selected_rank[[index]])), error = function(e) list())
-    components <- compare_plan_components_v04(proposed, expected, registry)
-    exact <- length(proposed) == length(expected) && all(unlist(components, use.names = FALSE))
-    review$decision[[index]] <- if (exact) "accept" else "modify"
-    review$review_comment[[index]] <- if (exact) "评价用金标准复核：完整原子方案一致。" else "评价用金标准复核：已替换为专家原子方案；不等同于法规签字。"
-    replacement[[id]] <- expected
-  }
-  tasks <- stats::setNames(load_mapping_template(config)$tasks, vapply(load_mapping_template(config)$tasks, task_id_v04, character(1)))
-  final <- purrr::imap_dfr(replacement, function(steps, id) purrr::imap_dfr(steps, function(step, order) tibble::tibble(
-    task_id = id, assembly_group_id = tasks[[id]]$assembly_group_id, step_order = as.integer(order),
-    transform_id = step$transform_id,
-    source_ref_ids = as.character(registry_json(step$source_ref_ids %||% list())),
-    target_variables = as.character(registry_json(step$target_variables %||% list())),
-    parameters = as.character(registry_json(step$parameters %||% list())),
-    parameter_sources = as.character(registry_json(stats::setNames(lapply(names(step$parameters %||% list()), function(x) list(source = "reviewer", reference = "gold_review_v04")), names(step$parameters %||% list()))))
-  )))
-  workbook <- openxlsx::loadWorkbook(path)
-  openxlsx::writeData(workbook, "Task Review", review, startRow = 1L, startCol = 1L, colNames = TRUE)
-  openxlsx::writeData(workbook, "Final Steps", final, startRow = 1L, startCol = 1L, colNames = TRUE)
-  openxlsx::saveWorkbook(workbook, path, overwrite = TRUE)
-  summary <- list(
-    method = "gold_standard_atomic_plan_v04", reviewed_at = utc_now(), total = nrow(review),
-    accepted = sum(review$decision == "accept"), modified = sum(review$decision == "modify"),
-    disclaimer = "用于作品集实验评价，不等同于法规流程中的独立临床标准专家签字。"
-  )
-  write_json(summary, trace_path(config$paths$review_dir, "expert_review_summary.json"))
-  invisible(review)
-}
-
-approved_specification_from_review_tables_v04 <- function(review, candidates, final_steps,
+approved_specification_from_review_tables <- function(review, candidates, final_steps,
                                                            config = load_project_config(),
                                                            reviewer,
                                                            review_artifact_sha256 = NA_character_) {
@@ -199,8 +166,8 @@ approved_specification_from_review_tables_v04 <- function(review, candidates, fi
   if (any(!review$decision %in% c("accept", "modify", "reject", "needs_information"))) trace_abort("每个原子任务都必须选择有效审核决定。")
   if (any(review$decision == "needs_information")) trace_abort("仍有 needs_information，不能锁定规格。")
 
-  specification <- load_mapping_template(config)
-  tasks <- stats::setNames(specification$tasks, vapply(specification$tasks, task_id_v04, character(1)))
+  specification <- load_task_specification(config)
+  tasks <- stats::setNames(specification$tasks, vapply(specification$tasks, task_identifier, character(1)))
   registry <- load_transform_registry(config)
   approved <- list()
   for (index in seq_len(nrow(review))) {
@@ -213,8 +180,8 @@ approved_specification_from_review_tables_v04 <- function(review, candidates, fi
       next
     }
     steps <- if (decision == "accept") {
-      v04_candidate_steps(candidates, id, as.integer(review$selected_rank[[index]]))
-    } else v04_steps_from_review(final_steps, id)
+      candidate_steps(candidates, id, as.integer(review$selected_rank[[index]]))
+    } else steps_from_review(final_steps, id)
     if (length(steps) != 1L) trace_abort(sprintf("原子任务 %s 必须且只能包含一个最终步骤。", id))
     entry <- registry_entry(steps[[1]]$transform_id, registry)
     output_mode <- as.character(entry$target_contract$output_mode)
@@ -230,7 +197,7 @@ approved_specification_from_review_tables_v04 <- function(review, candidates, fi
     )
     approved[[id]] <- task
   }
-  task_order <- vapply(specification$tasks, task_id_v04, character(1))
+  task_order <- vapply(specification$tasks, task_identifier, character(1))
   specification$tasks <- unname(approved[intersect(task_order, names(approved))])
   specification$specification$status <- "approved"
   specification$specification$approval <- list(
@@ -239,11 +206,11 @@ approved_specification_from_review_tables_v04 <- function(review, candidates, fi
     registry_version = registry$registry_version,
     registry_sha256 = file_sha256(trace_path(config$paths$transform_registry))
   )
-  validate_specification_v04(specification, config, require_approved = TRUE)
+  validate_specification(specification, config, require_approved = TRUE)
   specification
 }
 
-approve_mapping_v04 <- function(config = load_project_config()) {
+approve_mapping <- function(config = load_project_config()) {
   path <- trace_path(config$paths$review_dir, "mapping_review.xlsx")
   if (!file.exists(path)) trace_abort("缺少 mapping_review.xlsx。请先执行 recommend。")
   review <- openxlsx::read.xlsx(path, sheet = "Task Review", check.names = FALSE)
@@ -251,7 +218,7 @@ approve_mapping_v04 <- function(config = load_project_config()) {
   final_steps <- openxlsx::read.xlsx(path, sheet = "Final Steps", check.names = FALSE)
   reviewer <- Sys.getenv("TRACE_SDTM_REVIEWER", unset = if (isTRUE(config$project$studio)) "" else "portfolio_demo_reviewer")
   if (!nzchar(trimws(reviewer))) trace_abort("请通过 TRACE_SDTM_REVIEWER 提供审核者标识。")
-  specification <- approved_specification_from_review_tables_v04(
+  specification <- approved_specification_from_review_tables(
     review, candidates, final_steps, config, reviewer, file_sha256(path)
   )
   output <- trace_path(config$paths$approved_specification)
@@ -259,6 +226,6 @@ approve_mapping_v04 <- function(config = load_project_config()) {
   yaml::write_yaml(specification, output)
   write_csv(review, trace_path(config$paths$review_dir, "task_review_audit.csv"))
   write_csv(final_steps, trace_path(config$paths$review_dir, "final_steps_audit.csv"))
-  trace_info("已锁定 0.4 审核规格：%s", output)
+  trace_info("已锁定审核规格：%s", output)
   invisible(specification)
 }

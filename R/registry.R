@@ -119,9 +119,9 @@ validate_transform_registry <- function(registry, config = load_project_config()
     if (length(resolution_names)) {
       invalid_override <- vapply(entry$parameter_resolution, function(x) !identical(x$override, FALSE), logical(1))
       if (any(invalid_override)) trace_abort(sprintf("%s 不允许模型覆盖自动注入参数。", entry$transform_id))
-      if (exists("parameter_resolver_bindings_v04", mode = "function")) {
+      if (exists("parameter_resolver_bindings", mode = "function")) {
         resolver_ids <- vapply(entry$parameter_resolution, function(x) as.character(x$resolver_id %||% ""), character(1))
-        unknown_resolvers <- setdiff(resolver_ids, names(parameter_resolver_bindings_v04()))
+        unknown_resolvers <- setdiff(resolver_ids, names(parameter_resolver_bindings()))
         if (length(unknown_resolvers)) trace_abort(sprintf(
           "%s 使用未绑定的参数解析器：%s。", entry$transform_id, paste(unknown_resolvers, collapse = ", ")
         ))
@@ -337,8 +337,10 @@ validate_concept_plan <- function(concept, specification, metadata, registry, co
   invisible(TRUE)
 }
 
-validate_specification_v02 <- function(specification, config = load_project_config(), require_approved = FALSE) {
-  if (!identical(as.character(specification$schema_version), "0.2")) trace_abort("规格 schema_version 必须为 0.2。")
+validate_specification_compiled <- function(specification, config = load_project_config(), require_approved = FALSE) {
+  if (!identical(as.character(specification$schema_version), "compiled")) {
+    trace_abort("内部编译规格的 schema_version 必须为 compiled。")
+  }
   if (require_approved && !identical(specification$specification$status, "approved")) trace_abort("规格尚未批准。")
   metadata <- load_metadata(config)
   registry <- load_transform_registry(config)
@@ -359,38 +361,36 @@ validate_specification_v02 <- function(specification, config = load_project_conf
 }
 
 # -----------------------------------------------------------------------------
-# 0.4：原子任务规格。外部规格只保存 task/source_ref_id；构建前编译为现有
-# 确定性执行器能够消费的临床概念组。编译结果只存在于内存中，并不是旧规格兼容层。
+# 当前任务规格只保存 task/source_ref_id；构建前编译为确定性执行器能够消费的
+# 临床概念组。编译结果只存在于内存中，不作为对外兼容格式。
 
-task_id_v04 <- function(task) as.character(task$task_id %||% "")
+specification_tasks <- function(specification) specification$tasks %||% list()
 
-specification_tasks_v04 <- function(specification) specification$tasks %||% list()
-
-task_steps_v04 <- function(task) {
+task_steps <- function(task) {
   task$approved_plan$steps %||% task$steps %||% list()
 }
 
-task_ref_index_v04 <- function(task) {
+task_ref_index <- function(task) {
   refs <- concept_source_refs(task)
   ids <- vapply(refs, function(ref) as.character(ref$ref_id %||% ""), character(1))
   stats::setNames(refs, ids)
 }
 
-resolve_step_sources_v04 <- function(step, task) {
+resolve_step_sources <- function(step, task) {
   ids <- unlist(step$source_ref_ids %||% character(), use.names = FALSE)
-  refs <- task_ref_index_v04(task)
+  refs <- task_ref_index(task)
   missing <- setdiff(ids, names(refs))
   if (length(missing)) {
-    trace_abort(sprintf("%s/%s 引用了任务外来源编号：%s。", task_id_v04(task), step$transform_id, paste(missing, collapse = ", ")))
+    trace_abort(sprintf("%s/%s 引用了任务外来源编号：%s。", task_identifier(task), step$transform_id, paste(missing, collapse = ", ")))
   }
   step$source_ref_ids <- as.list(ids)
   step$source_keys <- as.list(vapply(refs[ids], source_ref_key, character(1)))
-  step$.task_id <- task_id_v04(task)
+  step$.task_id <- task_identifier(task)
   step
 }
 
-topological_task_order_v04 <- function(tasks) {
-  ids <- vapply(tasks, task_id_v04, character(1))
+topological_task_order <- function(tasks) {
+  ids <- vapply(tasks, task_identifier, character(1))
   dependencies <- lapply(tasks, function(task) unlist(task$depends_on %||% character(), use.names = FALSE))
   names(dependencies) <- ids
   unknown <- unique(setdiff(unlist(dependencies, use.names = FALSE), ids))
@@ -406,9 +406,9 @@ topological_task_order_v04 <- function(tasks) {
   ordered
 }
 
-validate_task_v04 <- function(task, specification, metadata, registry, config, require_approved = FALSE) {
-  id <- task_id_v04(task)
-  if (!nzchar(id)) trace_abort("v0.4 任务缺少 task_id。")
+validate_task <- function(task, specification, metadata, registry, config, require_approved = FALSE) {
+  id <- task_identifier(task)
+  if (!nzchar(id)) trace_abort("任务缺少 task_id。")
   if (!nzchar(as.character(task$assembly_group_id %||% ""))) trace_abort(sprintf("%s 缺少 assembly_group_id。", id))
   if (!task$target_domain %in% names(metadata$domains)) trace_abort(sprintf("%s 使用未知域。", id))
   if (!is.logical(task$required) || length(task$required) != 1L) trace_abort(sprintf("%s 的 required 必须为单个逻辑值。", id))
@@ -422,12 +422,12 @@ validate_task_v04 <- function(task, specification, metadata, registry, config, r
     if (!nzchar(as.character(ref$variable %||% ""))) trace_abort(sprintf("%s 存在缺少变量名的来源引用。", id))
   }
 
-  steps <- task_steps_v04(task)
+  steps <- task_steps(task)
   if (require_approved && isTRUE(task$required) && !length(steps)) trace_abort(sprintf("必需任务 %s 没有批准计划。", id))
   if (length(steps)) {
     concept <- task
     concept$concept_id <- id
-    concept$steps <- lapply(steps, resolve_step_sources_v04, task = task)
+    concept$steps <- lapply(steps, resolve_step_sources, task = task)
     validate_concept_plan(concept, specification, metadata, registry, config)
     decision <- task$semantic_decision %||% list()
     if (length(decision)) {
@@ -445,14 +445,16 @@ validate_task_v04 <- function(task, specification, metadata, registry, config, r
   invisible(TRUE)
 }
 
-validate_specification_v04 <- function(specification, config = load_project_config(), require_approved = FALSE) {
-  if (!identical(as.character(specification$schema_version), "0.4")) trace_abort("规格 schema_version 必须为 0.4。")
+validate_task_specification <- function(specification, config = load_project_config(), require_approved = FALSE) {
+  if (!identical(as.character(specification$schema_version), "0.6")) {
+    trace_abort("任务规格的 schema_version 必须为 0.6。")
+  }
   if (require_approved && !identical(specification$specification$status, "approved")) trace_abort("规格尚未批准。")
-  tasks <- specification_tasks_v04(specification)
-  if (!length(tasks)) trace_abort("v0.4 规格没有原子任务。")
-  ids <- vapply(tasks, task_id_v04, character(1))
+  tasks <- specification_tasks(specification)
+  if (!length(tasks)) trace_abort("任务规格没有原子任务。")
+  ids <- vapply(tasks, task_identifier, character(1))
   if (anyDuplicated(ids)) trace_abort(sprintf("规格存在重复任务编号：%s。", paste(unique(ids[duplicated(ids)]), collapse = ", ")))
-  topological_task_order_v04(tasks)
+  topological_task_order(tasks)
 
   # 同一个 ref_id 在不同任务出现时必须始终指向同一来源字段。
   ref_rows <- purrr::map_dfr(tasks, function(task) purrr::map_dfr(concept_source_refs(task), function(ref) tibble::tibble(
@@ -467,15 +469,15 @@ validate_specification_v04 <- function(specification, config = load_project_conf
   }
   metadata <- load_metadata(config)
   registry <- load_transform_registry(config)
-  invisible(lapply(tasks, validate_task_v04, specification = specification, metadata = metadata,
+  invisible(lapply(tasks, validate_task, specification = specification, metadata = metadata,
                    registry = registry, config = config, require_approved = require_approved))
 }
 
-compile_specification_v04 <- function(specification, config = load_project_config()) {
-  validate_specification_v04(specification, config, require_approved = TRUE)
-  tasks <- specification_tasks_v04(specification)
-  order <- topological_task_order_v04(tasks)
-  task_map <- stats::setNames(tasks, vapply(tasks, task_id_v04, character(1)))
+compile_specification <- function(specification, config = load_project_config()) {
+  validate_specification(specification, config, require_approved = TRUE)
+  tasks <- specification_tasks(specification)
+  order <- topological_task_order(tasks)
+  task_map <- stats::setNames(tasks, vapply(tasks, task_identifier, character(1)))
   tasks <- unname(task_map[order])
   task_to_group <- stats::setNames(vapply(tasks, function(task) as.character(task$assembly_group_id), character(1)), order)
   group_order <- unique(unname(task_to_group[order]))
@@ -495,13 +497,13 @@ compile_specification_v04 <- function(specification, config = load_project_confi
     }), use.names = FALSE))
     dependencies <- setdiff(dependencies, group_id)
     steps <- unlist(lapply(members, function(task) {
-      lapply(task_steps_v04(task), function(step) {
-        resolved <- resolve_step_sources_v04(step, task)
+      lapply(task_steps(task), function(step) {
+        resolved <- resolve_step_sources(step, task)
         source_keys <- unlist(resolved$source_keys %||% character(), use.names = FALSE)
         if (length(source_keys)) {
           canonical <- unname(canonical_ref_ids[source_keys])
           if (any(is.na(canonical))) trace_abort(sprintf(
-            "%s 的步骤无法映射到组合组 %s 的规范来源编号。", task_id_v04(task), group_id
+            "%s 的步骤无法映射到组合组 %s 的规范来源编号。", task_identifier(task), group_id
           ))
           resolved$source_ref_ids <- as.list(canonical)
         }
@@ -511,7 +513,7 @@ compile_specification_v04 <- function(specification, config = load_project_confi
     list(
       concept_id = group_id,
       assembly_group_id = group_id,
-      task_ids = vapply(members, task_id_v04, character(1)),
+      task_ids = vapply(members, task_identifier, character(1)),
       target_domain = first$target_domain,
       form_name = first$form_name %||% "",
       source_refs = refs,
@@ -524,18 +526,20 @@ compile_specification_v04 <- function(specification, config = load_project_confi
   })
 
   compiled <- specification
-  compiled$schema_version <- "0.2"
+  compiled$schema_version <- "compiled"
   compiled$concepts <- concepts
   compiled$tasks <- NULL
-  compiled$specification$compiled_from_schema <- "0.4"
-  validate_specification_v02(compiled, config, require_approved = TRUE)
+  compiled$specification$compiled_from_schema <- "0.6"
+  validate_specification_compiled(compiled, config, require_approved = TRUE)
   compiled
 }
 
 validate_specification <- function(specification, config = load_project_config(), require_approved = FALSE) {
   version <- as.character(specification$schema_version %||% "")
-  if (identical(version, "0.4")) return(validate_specification_v04(specification, config, require_approved))
-  trace_abort("TraceSDTM v0.4 只接受 schema_version 0.4；旧规格请通过历史 Git 标签运行。")
+  if (identical(version, "0.6")) {
+    return(validate_task_specification(specification, config, require_approved))
+  }
+  trace_abort("当前版本只接受 schema_version 0.6 的任务规格。")
 }
 
 registry_catalog_table <- function(registry = load_transform_registry()) {

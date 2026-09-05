@@ -1,3 +1,8 @@
+cell_text <- function(x, default = "") {
+  if (is.null(x) || !length(x) || all(is.na(x))) return(default)
+  paste(as.character(stats::na.omit(x)), collapse = " | ")
+}
+
 detect_windows_file_version <- function(path) {
   if (.Platform$OS.type != "windows" || !file.exists(path)) return(NA_character_)
   powershell <- file.path(Sys.getenv("SystemRoot"), "System32", "WindowsPowerShell", "v1.0", "powershell.exe")

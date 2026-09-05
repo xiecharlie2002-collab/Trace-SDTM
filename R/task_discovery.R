@@ -159,11 +159,11 @@ v06_task_repair_prompt <- function(tasks, validation, repair_number) {
 
 run_task_discovery_v06 <- function(config, request_fn = NULL, max_repairs = 2L) {
   studio_assert_mapping_editable_v06(config)
-  specification <- load_mapping_template(config)
+  specification <- load_task_specification(config)
   metadata <- load_metadata(config)
   allowed_domains <- v06_allowed_domains(config, metadata)
   if (!length(allowed_domains)) trace_abort("当前标准没有可用目标域。")
-  if (is.null(request_fn)) request_fn <- v04_default_request_fn(config, v06_task_dir(config))
+  if (is.null(request_fn)) request_fn <- default_request_fn(config, v06_task_dir(config))
   original_prompt <- task_discovery_prompt_v06(config)
   writeLines(enc2utf8(original_prompt), file.path(v06_task_dir(config), "task_discovery_prompt.txt"), useBytes = TRUE)
   prompt <- original_prompt
@@ -171,7 +171,7 @@ run_task_discovery_v06 <- function(config, request_fn = NULL, max_repairs = 2L) 
   tasks <- list()
   validation <- list(valid = FALSE, tasks = list(), errors = list(v06_validation_error("not_run", "尚未执行任务发现。")))
   for (attempt in seq_len(as.integer(max_repairs) + 1L)) {
-    raw <- tryCatch(v04_call_request(request_fn, prompt, paste0("task_discovery_attempt_", attempt), "all_sources"), error = identity)
+    raw <- tryCatch(call_request(request_fn, prompt, paste0("task_discovery_attempt_", attempt), "all_sources"), error = identity)
     if (inherits(raw, "error")) stop(raw)
     parsed <- tryCatch(lapply(v06_task_records(raw), v06_normalize_task), error = identity)
     if (inherits(parsed, "error")) {
@@ -273,7 +273,7 @@ studio_update_task_draft_v06 <- function(config, task_id, clinical_action, targe
   task$required <- isTRUE(required)
   task$status <- "proposed"
   draft$tasks[[index]] <- task
-  specification <- load_mapping_template(config)
+  specification <- load_task_specification(config)
   validation <- validate_task_drafts_v06(draft$tasks, specification, load_metadata(config), v06_allowed_domains(config))
   draft$tasks <- validation$tasks
   draft$validation <- validation
@@ -348,7 +348,7 @@ studio_freeze_tasks_v06 <- function(config, reviewer) {
   accepted_ids <- names(decisions)[decisions == "accept"]
   if (!length(accepted_ids)) trace_abort("至少需要确认一个任务。")
   tasks <- Filter(function(task) task$task_id %in% accepted_ids, draft$tasks)
-  specification <- load_mapping_template(config)
+  specification <- load_task_specification(config)
   validation <- validate_task_drafts_v06(tasks, specification, load_metadata(config), v06_allowed_domains(config))
   if (!isTRUE(validation$valid)) trace_abort(paste(
     "确认后的任务仍未通过结构校验：",
@@ -363,7 +363,7 @@ studio_freeze_tasks_v06 <- function(config, reviewer) {
     draft_sha256 = file_sha256(v06_task_draft_path(config)),
     confirmation_sha256 = file_sha256(v06_task_confirmation_path(config))
   )
-  tasks_path <- trace_path(config$paths$specification_template)
+  tasks_path <- trace_path(config$paths$task_specification)
   write_yaml(specification, tasks_path)
   frozen_path <- file.path(v06_task_dir(config), "frozen_tasks.yml")
   write_yaml(specification, frozen_path)
@@ -383,7 +383,7 @@ studio_freeze_tasks_v06 <- function(config, reviewer) {
 }
 
 v06_assert_tasks_frozen <- function(config) {
-  specification <- load_mapping_template(config)
+  specification <- load_task_specification(config)
   if (!identical(as.character(specification$specification$status %||% ""), "frozen") || !length(specification$tasks %||% list())) {
     trace_abort("请先确认并冻结结构有效的任务。")
   }

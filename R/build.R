@@ -1,126 +1,3 @@
-mapping_lineage_row <- function(domain, source_file, mapping, records_created, approval) {
-  tibble::tibble(
-    mapping_id = as.character(mapping$mapping_id),
-    target_domain = domain,
-    target_variable = as.character(mapping$target_variable %||% ""),
-    target_value = as.character(mapping$target_value %||% ""),
-    source_dataset = tools::file_path_sans_ext(source_file),
-    source_variables = paste(mapping_sources(mapping), collapse = " | "),
-    transform_id = as.character(mapping$transform_id),
-    transform_parameters = as_json_text(mapping$parameters %||% list()),
-    records_created = as.integer(records_created),
-    reviewer = as.character(approval$reviewer %||% ""),
-    approved_at = as.character(approval$approved_at %||% "")
-  )
-}
-
-apply_tabular_mappings <- function(raw, domain, domain_spec, approval) {
-  raw$.SOURCE_ROW <- seq_len(nrow(raw))
-  target <- tibble::tibble(.SOURCE_ROW = raw$.SOURCE_ROW)
-  lineage <- list()
-  sequence_mapping <- NULL
-  deferred_mappings <- list()
-
-  for (mapping in domain_spec$mappings) {
-    if (identical(mapping$transform_id, "derive_sequence")) {
-      sequence_mapping <- mapping
-      next
-    }
-    if (identical(mapping$transform_id, "derive_study_day")) {
-      deferred_mappings[[length(deferred_mappings) + 1L]] <- mapping
-      next
-    }
-    target[[mapping$target_variable]] <- execute_mapping(raw, mapping)
-    lineage[[length(lineage) + 1L]] <- mapping_lineage_row(
-      domain, domain_spec$source_file, mapping, nrow(target), approval
-    )
-  }
-
-  if (!is.null(sequence_mapping)) {
-    target <- derive_sequence(target, sequence_mapping)
-    lineage[[length(lineage) + 1L]] <- mapping_lineage_row(
-      domain, domain_spec$source_file, sequence_mapping, nrow(target), approval
-    )
-  }
-  list(data = target, lineage = dplyr::bind_rows(lineage), deferred_mappings = deferred_mappings)
-}
-
-apply_vs_mappings <- function(raw, domain_spec, approval) {
-  raw$.SOURCE_ROW <- seq_len(nrow(raw))
-  base <- tibble::tibble(.SOURCE_ROW = raw$.SOURCE_ROW)
-  lineage <- list()
-  sequence_mapping <- NULL
-  deferred_mappings <- list()
-
-  for (mapping in domain_spec$mappings) {
-    if (identical(mapping$transform_id, "derive_sequence")) {
-      sequence_mapping <- mapping
-      next
-    }
-    if (identical(mapping$transform_id, "derive_study_day")) {
-      deferred_mappings[[length(deferred_mappings) + 1L]] <- mapping
-      next
-    }
-    base[[mapping$target_variable]] <- execute_mapping(raw, mapping)
-    lineage[[length(lineage) + 1L]] <- mapping_lineage_row(
-      "VS", domain_spec$source_file, mapping, nrow(base), approval
-    )
-  }
-
-  blocks <- purrr::map(domain_spec$transpose_mappings, function(mapping) {
-    source <- mapping_sources(mapping)
-    if (length(source) != 1L || !source %in% names(raw)) {
-      trace_abort(sprintf("%s 的纵向转换来源无效。", mapping$mapping_id))
-    }
-    observed <- !is.na(raw[[source]]) & nzchar(trimws(as.character(raw[[source]])))
-    block <- base[observed, , drop = FALSE]
-    value <- as.character(raw[[source]][observed])
-    block$VSTESTCD <- as.character(mapping$target_value)
-    block$VSTEST <- as.character(mapping$target_test)
-    block$VSORRES <- value
-    block$VSORRESU <- as.character(mapping$unit)
-    block$VSSTRESC <- value
-    block$VSSTRESN <- suppressWarnings(as.numeric(value))
-    block$VSSTRESU <- as.character(mapping$unit)
-    block$.MAPPING_ID <- as.character(mapping$mapping_id)
-    lineage[[length(lineage) + 1L]] <<- mapping_lineage_row(
-      "VS", domain_spec$source_file, mapping, nrow(block), approval
-    )
-    block
-  })
-  target <- dplyr::bind_rows(blocks)
-  if (!is.null(sequence_mapping)) {
-    target <- derive_sequence(target, sequence_mapping)
-    lineage[[length(lineage) + 1L]] <- mapping_lineage_row(
-      "VS", domain_spec$source_file, sequence_mapping, nrow(target), approval
-    )
-  }
-  list(data = target, lineage = dplyr::bind_rows(lineage), deferred_mappings = deferred_mappings)
-}
-
-apply_deferred_study_days <- function(result, dm, domain, domain_spec, approval) {
-  deferred <- result$deferred_mappings %||% list()
-  if (!length(deferred)) return(result)
-  for (mapping in deferred) {
-    target_date <- mapping$parameters$target_date
-    original_target_date <- as.character(result$data[[target_date]])
-    result$data <- sdtm.oak::derive_study_day(
-      sdtm_in = result$data,
-      dm_domain = dm,
-      tgdt = target_date,
-      refdt = mapping$parameters$reference_date,
-      study_day_var = mapping$target_variable,
-      merge_key = "USUBJID"
-    )
-    result$data[[target_date]] <- original_target_date
-    result$lineage <- dplyr::bind_rows(
-      result$lineage,
-      mapping_lineage_row(domain, domain_spec$source_file, mapping, nrow(result$data), approval)
-    )
-  }
-  result
-}
-
 apply_sdtm_labels <- function(data, domain, metadata) {
   domain_metadata <- metadata$domains[[domain]]
   for (variable in intersect(names(data), names(domain_metadata$variables))) {
@@ -178,54 +55,6 @@ write_domain_outputs <- function(data, domain, config, metadata) {
   )
 }
 
-build_sdtm <- function(config = load_project_config()) {
-  ensure_output_directories(config)
-  specification <- load_approved_mapping(config)
-  metadata <- load_metadata(config)
-  approval <- specification$specification$approval
-  datasets <- list()
-  lineage <- list()
-  manifest <- list()
-
-  domains <- unlist(config$project$generated_domains, use.names = FALSE)
-  domains <- unique(c(intersect("DM", domains), setdiff(domains, "DM")))
-  for (domain in domains) {
-    domain_spec <- specification$domains[[domain]]
-    raw_path <- trace_path(config$paths$raw_dir, domain_spec$source_file)
-    raw <- read_raw_csv(raw_path)
-    result <- if (domain == "VS") {
-      apply_vs_mappings(raw, domain_spec, approval)
-    } else {
-      apply_tabular_mappings(raw, domain, domain_spec, approval)
-    }
-    if (domain != "DM") {
-      result <- apply_deferred_study_days(result, datasets$DM, domain, domain_spec, approval)
-    }
-    data <- finalize_domain(result$data, domain, metadata)
-    datasets[[domain]] <- data
-    lineage[[domain]] <- result$lineage
-    manifest[[domain]] <- write_domain_outputs(data, domain, config, metadata)
-  }
-
-  lineage_data <- dplyr::bind_rows(lineage) |>
-    dplyr::arrange(target_domain, mapping_id)
-  write_csv(lineage_data, trace_path(config$paths$lineage_dir, "field_lineage.csv"))
-
-  manifest_data <- dplyr::bind_rows(manifest)
-  write_csv(manifest_data, trace_path(config$paths$manifest_dir, "dataset_manifest.csv"))
-  write_json(list(
-    run_id = new_run_id("build"),
-    generated_at = utc_now(),
-    standard = config$project$standard,
-    standard_version = config$project$standard_version,
-    specification_sha256 = file_sha256(trace_path(config$paths$approved_specification)),
-    sdtm_oak_version = as.character(utils::packageVersion("sdtm.oak")),
-    datasets = as.data.frame(manifest_data)
-  ), trace_path(config$paths$manifest_dir, "build_manifest.json"))
-  trace_info("已生成 SDTM：%s。", paste(sprintf("%s=%s 行", manifest_data$domain, manifest_data$records), collapse = "，"))
-  invisible(datasets)
-}
-
 load_built_datasets <- function(config = load_project_config()) {
   domains <- unlist(config$project$generated_domains, use.names = FALSE)
   paths <- setNames(lapply(domains, function(domain) trace_path(config$paths$xpt_dir, paste0(tolower(domain), ".xpt"))), domains)
@@ -234,10 +63,9 @@ load_built_datasets <- function(config = load_project_config()) {
   lapply(paths, function(path) tibble::as_tibble(haven::read_xpt(path)))
 }
 
-# -----------------------------------------------------------------------------
-# 0.2：按批准的临床概念函数链执行，不解析模型文本。
+# 批准后的任务规格先编译为内部结构，再由程序确定性执行。
 
-load_registered_sources_v02 <- function(specification, config) {
+load_registered_sources_compiled <- function(specification, config) {
   sources <- list()
   for (dataset in names(specification$source_catalog)) {
     entry <- specification$source_catalog[[dataset]]
@@ -255,7 +83,7 @@ load_registered_sources_v02 <- function(specification, config) {
   sources
 }
 
-lineage_step_v02 <- function(concept, step, entry, records_created, specification, approval, config) {
+lineage_step_compiled <- function(concept, step, entry, records_created, specification, approval, config) {
   refs <- step_source_refs(concept, step)
   source_datasets <- unique(vapply(refs, function(ref) as.character(ref$dataset), character(1)))
   source_fields <- vapply(refs, source_ref_key, character(1))
@@ -284,11 +112,11 @@ lineage_step_v02 <- function(concept, step, entry, records_created, specificatio
   )
 }
 
-domain_concepts_v02 <- function(specification, domain) {
+domain_concepts_compiled <- function(specification, domain) {
   Filter(function(concept) identical(concept$target_domain, domain), specification$concepts)
 }
 
-check_concept_dependencies_v02 <- function(specification) {
+check_concept_dependencies_compiled <- function(specification) {
   positions <- stats::setNames(seq_along(specification$concepts), vapply(specification$concepts, `[[`, character(1), "concept_id"))
   for (concept in specification$concepts) {
     dependencies <- unlist(concept$depends_on %||% character(), use.names = FALSE)
@@ -301,7 +129,7 @@ check_concept_dependencies_v02 <- function(specification) {
   invisible(TRUE)
 }
 
-prepare_domain_state_v02 <- function(domain, specification, sources, dm = NULL) {
+prepare_domain_state_compiled <- function(domain, specification, sources, dm = NULL) {
   base_dataset <- specification$domain_sources[[domain]]
   base <- sources[[base_dataset]]
   if (is.null(base)) trace_abort(sprintf("%s 的基础来源数据集 %s 不存在。", domain, base_dataset))
@@ -316,10 +144,10 @@ prepare_domain_state_v02 <- function(domain, specification, sources, dm = NULL) 
   )
 }
 
-execute_domain_v02 <- function(domain, specification, sources, dm, config, registry) {
-  state <- prepare_domain_state_v02(domain, specification, sources, dm)
+execute_domain_compiled <- function(domain, specification, sources, dm, config, registry) {
+  state <- prepare_domain_state_compiled(domain, specification, sources, dm)
   lineage <- list()
-  concepts <- domain_concepts_v02(specification, domain)
+  concepts <- domain_concepts_compiled(specification, domain)
   approval <- specification$specification$approval
   for (concept in concepts) {
     has_transpose <- any(vapply(concept$steps, function(step) identical(step$transform_id, "transpose_findings"), logical(1)))
@@ -332,7 +160,7 @@ execute_domain_v02 <- function(domain, specification, sources, dm, config, regis
       entry <- registry_entry(step$transform_id, registry)
       state <- execute_registered_step(state, concept, step, config, registry)
       records <- if (!is.null(state$current_records)) nrow(state$current_records) else nrow(state$target)
-      lineage[[length(lineage) + 1L]] <- lineage_step_v02(
+      lineage[[length(lineage) + 1L]] <- lineage_step_compiled(
         concept, step, entry, records, specification, approval, config
       )
     }
@@ -346,7 +174,7 @@ execute_domain_v02 <- function(domain, specification, sources, dm, config, regis
   list(data = state$target, lineage = dplyr::bind_rows(lineage), sources = state$sources)
 }
 
-partial_date_notes_v02 <- function(datasets) {
+partial_date_notes_compiled <- function(datasets) {
   purrr::imap_dfr(datasets, function(data, domain) {
     variables <- grep("DTC$", names(data), value = TRUE)
     purrr::map_dfr(variables, function(variable) {
@@ -364,19 +192,19 @@ partial_date_notes_v02 <- function(datasets) {
 build_sdtm <- function(config = load_project_config()) {
   ensure_output_directories(config)
   approved_specification <- load_approved_mapping(config)
-  validate_specification_v04(approved_specification, config, require_approved = TRUE)
-  specification <- compile_specification_v04(approved_specification, config)
-  check_concept_dependencies_v02(specification)
+  validate_specification(approved_specification, config, require_approved = TRUE)
+  specification <- compile_specification(approved_specification, config)
+  check_concept_dependencies_compiled(specification)
   metadata <- load_metadata(config)
   registry <- load_transform_registry(config)
-  sources <- load_registered_sources_v02(specification, config)
+  sources <- load_registered_sources_compiled(specification, config)
   datasets <- list()
   lineage <- list()
   manifests <- list()
   domains <- unlist(config$project$generated_domains, use.names = FALSE)
   domains <- unique(c(intersect("DM", domains), setdiff(domains, "DM")))
   for (domain in domains) {
-    result <- execute_domain_v02(domain, specification, sources, datasets$DM, config, registry)
+    result <- execute_domain_compiled(domain, specification, sources, datasets$DM, config, registry)
     sources <- result$sources
     data <- finalize_domain(result$data, domain, metadata)
     datasets[[domain]] <- data
@@ -385,7 +213,7 @@ build_sdtm <- function(config = load_project_config()) {
   }
   lineage_data <- dplyr::bind_rows(lineage) |> dplyr::arrange(target_domain, concept_id)
   write_csv(lineage_data, trace_path(config$paths$lineage_dir, "field_lineage.csv"))
-  partial_notes <- partial_date_notes_v02(datasets)
+  partial_notes <- partial_date_notes_compiled(datasets)
   write_csv(partial_notes, trace_path(config$paths$lineage_dir, "partial_date_notes.csv"))
   manifest_data <- dplyr::bind_rows(manifests)
   write_csv(manifest_data, trace_path(config$paths$manifest_dir, "dataset_manifest.csv"))
@@ -399,6 +227,6 @@ build_sdtm <- function(config = load_project_config()) {
     unit_conversion_version = load_unit_conversions(config)$version,
     datasets = as.data.frame(manifest_data)
   ), trace_path(config$paths$manifest_dir, "build_manifest.json"))
-  trace_info("已按 0.4 原子任务批准规格生成 SDTM：%s。", paste(sprintf("%s=%s 行", manifest_data$domain, manifest_data$records), collapse = "，"))
+  trace_info("已按批准任务规格生成 SDTM：%s。", paste(sprintf("%s=%s 行", manifest_data$domain, manifest_data$records), collapse = "，"))
   invisible(datasets)
 }
